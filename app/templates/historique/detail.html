@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% from "composants/page.html" import entete_page %}
+{% block titre %}Détail de l'historique{% endblock %}
+{% block contenu %}
+{% call entete_page("Détail de l'historique", entree.action.libelle ~ " — " ~ (entree.created_at | date_heure) ~ " (UTC)", "bi-journal-text") %}
+  <a class="btn btn-outline-secondary" href="/historique"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à l'historique</span></a>
+{% endcall %}
+
+<section class="card section-page" aria-labelledby="titre-informations">
+  <div class="card-header">
+    <h2 class="titre-carte" id="titre-informations"><i class="bi bi-info-circle" aria-hidden="true"></i>Informations</h2>
+  </div>
+  <div class="card-body">
+    <dl class="liste-details">
+      <dt>Date et heure</dt>
+      <dd>{{ entree.created_at | date_heure }} (UTC)</dd>
+
+      <dt>Action</dt>
+      <dd><span class="badge-action{% if entree.action in actions_alerte %} badge-action-alerte{% endif %}">{{ entree.action.libelle }}</span></dd>
+
+      <dt>Module</dt>
+      <dd>{{ libelle_module(entree.module) }}</dd>
+
+      <dt>Description</dt>
+      <dd>{{ entree.description }}</dd>
+
+      <dt>Utilisateur</dt>
+      <dd>
+        {%- if auteur %}
+        <a class="lien-nom" href="/utilisateurs/{{ auteur.id }}">{{ auteur.nom_complet }}</a>
+        <span class="d-block texte-discret">{{ entree.utilisateur_email or auteur.email }}</span>
+        {%- elif entree.utilisateur_email %}
+        {{ entree.utilisateur_email }}
+        <span class="d-block texte-discret">Aucun compte associé (adresse inconnue ou compte supprimé).</span>
+        {%- else %}
+        <span class="texte-discret">Non renseigné</span>
+        {%- endif %}
+      </dd>
+
+      <dt>Objet concerné</dt>
+      <dd>{% if entree.objet_id %}<span class="texte-technique">{{ entree.objet_id }}</span>{% else %}<span class="texte-discret">Non renseigné</span>{% endif %}</dd>
+
+      <dt>Adresse IP</dt>
+      <dd>{% if entree.adresse_ip %}<span class="texte-technique">{{ entree.adresse_ip }}</span>{% else %}<span class="texte-discret">Non renseignée</span>{% endif %}</dd>
+
+      <dt>Navigateur</dt>
+      <dd>{% if entree.user_agent %}{{ entree.user_agent }}{% else %}<span class="texte-discret">Non renseigné</span>{% endif %}</dd>
+
+      <dt>Identifiant de l'entrée</dt>
+      <dd><span class="texte-technique">{{ entree.id }}</span></dd>
+    </dl>
+  </div>
+</section>
+
+<section class="section-page" aria-labelledby="titre-donnees">
+  <div class="section-entete">
+    <div>
+      <h2 class="section-titre" id="titre-donnees"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Données enregistrées</h2>
+      {%- if comparaison.lignes %}
+      <p class="section-sous-titre">
+        {%- if comparaison.avec_avant and comparaison.avec_apres %}
+        Les lignes marquées « Modifié » indiquent les champs dont la valeur a changé.
+        {%- endif %}
+        Les mots de passe, jetons et secrets ne sont jamais enregistrés dans l'historique.
+      </p>
+      {%- endif %}
+    </div>
+  </div>
+  {%- if comparaison.lignes %}
+  <div class="conteneur-tableau">
+    <div class="cadre-tableau">
+      <table class="table table-liste table-empilable tableau-comparaison">
+        <caption class="visually-hidden">Valeurs des champs avant et après l'action</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="col-champ">Champ</th>
+            {%- if comparaison.avec_avant %}
+            <th scope="col">Avant</th>
+            {%- endif %}
+            {%- if comparaison.avec_apres %}
+            <th scope="col">Après</th>
+            {%- endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {%- for ligne in comparaison.lignes %}
+          <tr{% if ligne.modifie %} class="ligne-modifiee"{% endif %}>
+            <th scope="row" class="col-champ cellule-principale">
+              <span>{{ ligne.libelle }}</span>
+              {%- if ligne.modifie %} <span class="badge-action badge-modifie">Modifié</span>{% endif %}
+            </th>
+            {%- if comparaison.avec_avant %}
+            <td class="valeur-donnee" data-label="Avant">{% if ligne.avant is not none %}{{ ligne.avant }}{% else %}<span class="texte-discret">(vide)</span>{% endif %}</td>
+            {%- endif %}
+            {%- if comparaison.avec_apres %}
+            <td class="valeur-donnee" data-label="Après">{% if ligne.apres is not none %}{{ ligne.apres }}{% else %}<span class="texte-discret">(vide)</span>{% endif %}</td>
+            {%- endif %}
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {%- else %}
+  <div class="card">
+    <div class="card-body">
+      <p class="mb-0 texte-discret">Aucune donnée détaillée n'a été enregistrée pour cette action.</p>
+    </div>
+  </div>
+  {%- endif %}
+</section>
+{% endblock %}

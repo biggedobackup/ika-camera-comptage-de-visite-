@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% import "composants/badges.html" as b %}
+{% from "composants/page.html" import entete_page %}
+{% block titre %}Double authentification{% endblock %}
+{% block contenu %}
+{{ entete_page("Double authentification", "Protégez votre compte avec un code temporaire généré par une application d'authentification.", "bi-shield-lock") }}
+
+<div class="row">
+  <div class="col-12 col-xl-9 col-xxl-8">
+    {%- if utilisateur.otp_active %}
+    <section class="card" aria-labelledby="titre-otp-statut">
+      <div class="card-header">
+        <h2 class="titre-carte" id="titre-otp-statut"><i class="bi bi-shield-check" aria-hidden="true"></i>Statut de la double authentification</h2>
+        {{ b.badge_otp(True) }}
+      </div>
+      <div class="card-body">
+        <p>La double authentification protège votre compte : à chaque connexion, après votre mot de passe, le code à 6 chiffres affiché dans votre application d'authentification vous est demandé.</p>
+
+        <h3 class="auth-sous-titre mt-4">Désactiver la double authentification</h3>
+        <p class="texte-discret">Votre compte ne sera plus protégé que par votre mot de passe. Pour confirmer, saisissez votre mot de passe actuel.</p>
+        {{ form.resume_erreurs(erreurs) }}
+        <form method="post" action="/otp/desactivation">
+          {{ form.champ_csrf() }}
+          <div class="auth-champ-limite">
+            {{ form.champ_mot_de_passe("mot_de_passe_actuel", "Mot de passe actuel", erreur=erreurs.mot_de_passe_actuel, autocomplete="current-password") }}
+          </div>
+          <div class="actions-formulaire">
+            {{ form.bouton_envoyer("Désactiver la double authentification", "bi-shield-x", classe="btn-danger") }}
+          </div>
+        </form>
+      </div>
+    </section>
+    {%- else %}
+    <section class="card" aria-labelledby="titre-otp-activation">
+      <div class="card-header">
+        <h2 class="titre-carte" id="titre-otp-activation"><i class="bi bi-shield-lock" aria-hidden="true"></i>Activer la double authentification</h2>
+        {{ b.badge_otp(False) }}
+      </div>
+      <div class="card-body">
+        {{ form.resume_erreurs(erreurs) }}
+        <ol class="auth-etapes">
+          <li class="auth-etape">
+            <span class="auth-etape-numero" aria-hidden="true">1</span>
+            <div class="auth-etape-contenu">
+              <h3 class="auth-sous-titre">Installez une application d'authentification</h3>
+              <p class="texte-discret mb-0">Par exemple Google Authenticator, Microsoft Authenticator ou FreeOTP, sur votre téléphone.</p>
+            </div>
+          </li>
+          <li class="auth-etape">
+            <span class="auth-etape-numero" aria-hidden="true">2</span>
+            <div class="auth-etape-contenu">
+              <h3 class="auth-sous-titre">Scannez ce QR code avec l'application</h3>
+              <div class="auth-qr">
+                <img class="qr-code" src="{{ qr_code }}" alt="QR code à scanner pour configurer la double authentification de {{ app_name }}" width="200" height="200">
+                <div class="auth-qr-texte">
+                  <p class="texte-discret mb-1">Impossible de scanner ? Saisissez cette clé manuellement dans l'application :</p>
+                  <p class="code-secret mb-0">{{ secret_formate }}</p>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="auth-etape">
+            <span class="auth-etape-numero" aria-hidden="true">3</span>
+            <div class="auth-etape-contenu">
+              <h3 class="auth-sous-titre">Saisissez le code affiché pour confirmer</h3>
+              <form method="post" action="/otp/configuration">
+                {{ form.champ_csrf() }}
+                <div class="mb-3 auth-champ-limite">
+                  <label class="form-label" for="champ-code">Code de vérification <span class="champ-requis" aria-hidden="true">*</span></label>
+                  <input type="text" class="form-control champ-code-otp{% if erreurs.code %} is-invalid{% endif %}" id="champ-code" name="code"
+                    inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" required
+                    aria-describedby="champ-code-aide{% if erreurs.code %} champ-code-erreur{% endif %}"{% if erreurs.code %} aria-invalid="true"{% endif %}>
+                  {%- if erreurs.code %}
+                  <div class="invalid-feedback" id="champ-code-erreur">{{ erreurs.code }}</div>
+                  {%- endif %}
+                  <div class="form-text" id="champ-code-aide">La double authentification n'est activée qu'après la saisie d'un code valide.</div>
+                </div>
+                <div class="actions-formulaire">
+                  {{ form.bouton_envoyer("Activer la double authentification", "bi-shield-check") }}
+                </div>
+              </form>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+    {%- endif %}
+  </div>
+</div>
+{% endblock %}

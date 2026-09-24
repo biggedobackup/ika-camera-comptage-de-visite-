@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "composants/erreur.html" import page_erreur with context %}
+{% block titre %}{{ titre }}{% endblock %}
+{% block contenu %}
+{% call page_erreur(code, titre, message, "bi-hourglass-split") %}
+{%- if retry_after %}
+{%- set minutes = ((retry_after | int) / 60) | round(0, "ceil") | int %}
+<p class="page-erreur-detail">Vous pourrez réessayer dans environ {{ minutes }} minute{{ "s" if minutes > 1 }}.</p>
+{%- endif %}
+{% endcall %}
+{% endblock %}

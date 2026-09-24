@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}Ajouter une caméra de comptage{% endblock %}
+
+{% block contenu %}
+{% call entete_page("Ajouter une caméra", "Enregistrez une nouvelle caméra 3D HX-CCD21 pour le suivi des flux de visiteurs.", "bi-camera-video") %}
+  <a class="btn btn-outline-secondary" href="/cameras"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la liste</span></a>
+{% endcall %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+    <form method="post" action="/cameras/ajouter">
+      {{ form.champ_csrf() }}
+      {{ form.resume_erreurs(erreurs) }}
+
+      <fieldset class="section-formulaire mb-4">
+        <legend class="section-formulaire-titre">Identification du matériel</legend>
+        <p class="section-formulaire-aide">Les champs marqués d'un astérisque (<span class="champ-requis">*</span>) sont obligatoires.</p>
+
+        <div class="row gx-4">
+          <div class="col-12 col-md-6">
+            {{ form.champ("sn", "Numéro de série (SN)", valeurs.sn, erreur=erreurs.sn, requis=True, autofocus=True, placeholder="Ex. 211000002604280145", aide="Identifiant matériel unique gravé sur l'appareil ou fourni dans son interface.") }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ("modele", "Modèle de caméra", valeurs.modele or "HX-CCD21", erreur=erreurs.modele, requis=True, placeholder="HX-CCD21", aide="Référence constructeur de la caméra 3D stéréoscopique.") }}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="section-formulaire mb-4">
+        <legend class="section-formulaire-titre">Emplacement et affectation</legend>
+        <div class="row gx-4">
+          <div class="col-12 col-md-6">
+            {{ form.champ("nom", "Nom convivial de l'entrée", valeurs.nom, erreur=erreurs.nom, placeholder="Ex. Entrée Principale, Porte Vitrée…", aide="Nom affiché dans les rapports et sur le tableau de bord.") }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ("emplacement", "Emplacement physique", valeurs.emplacement, erreur=erreurs.emplacement, placeholder="Ex. Hall RDC, Aile Ouest, Porte 2…", aide="Localisation géographique ou zonage dans le bâtiment.") }}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="section-formulaire mb-4">
+        <legend class="section-formulaire-titre">Paramètres réseau & communication</legend>
+        <div class="row gx-4">
+          <div class="col-12 col-md-4">
+            {{ form.champ("ip_address", "Adresse IP locale", valeurs.ip_address, erreur=erreurs.ip_address, placeholder="Ex. 192.168.1.50", aide="Adresse IP attribuée à la caméra sur votre réseau local.") }}
+          </div>
+          <div class="col-12 col-md-4">
+            {{ form.champ("mac_address", "Adresse MAC", valeurs.mac_address, erreur=erreurs.mac_address, placeholder="Ex. 00:1A:2B:3C:4D:5E", aide="Adresse physique Ethernet de l'appareil (facultatif).") }}
+          </div>
+          <div class="col-12 col-md-4">
+            {{ form.champ_select("role_reseau", "Rôle sur le réseau", options_roles, valeurs.role_reseau, erreur=erreurs.role_reseau, requis=True, aide="Maître (agrège et transmet les flux) ou Esclave.") }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ("version_logiciel", "Version logicielle / Firmware", valeurs.version_logiciel, erreur=erreurs.version_logiciel, placeholder="Ex. V1.0.12 ou V2.5", aide="Numéro de version du micrologiciel caméra.") }}
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+        <a class="btn btn-outline-secondary" href="/cameras">Annuler</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Ajouter cette caméra</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

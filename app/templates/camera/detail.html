@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}Caméra {{ camera.libelle_affiche }}{% endblock %}
+
+{% block contenu %}
+{% call entete_page(camera.libelle_affiche, "Paramètres et informations techniques de la caméra HX-CCD21.", "bi-camera-video") %}
+  <div class="d-flex align-items-center gap-2">
+    <a class="btn btn-outline-secondary" href="/cameras"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la liste</span></a>
+    {% if peut_gerer %}
+    {{ form.bouton_suppression("/cameras/" ~ camera.id ~ "/supprimer", "Voulez-vous vraiment supprimer définitivement la caméra " ~ camera.libelle_affiche ~ " (" ~ camera.sn ~ ") ? Tout l'historique associé sera effacé.", libelle="Supprimer cette caméra", classe="btn-outline-danger") }}
+    {% endif %}
+  </div>
+{% endcall %}
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="card-title mb-0 fw-bold">État matériel & Réseau</h5>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-5 text-muted">Numéro de série</dt>
+          <dd class="col-sm-7"><code class="fw-semibold text-primary">{{ camera.sn }}</code></dd>
+
+          <dt class="col-sm-5 text-muted">Modèle</dt>
+          <dd class="col-sm-7"><span class="badge bg-light text-dark border">{{ camera.modele }}</span></dd>
+
+          <dt class="col-sm-5 text-muted">Statut réseau</dt>
+          <dd class="col-sm-7">
+            {% if camera.est_en_ligne %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-circle-fill me-1 small"></i>En ligne</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-circle-fill me-1 small"></i>Hors ligne</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-5 text-muted">Adresse IP</dt>
+          <dd class="col-sm-7">{{ camera.ip_address or "Non assignée" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Adresse MAC</dt>
+          <dd class="col-sm-7">{{ camera.mac_address or "Non renseignée" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Rôle réseau</dt>
+          <dd class="col-sm-7"><span class="badge bg-secondary-subtle text-secondary">{{ camera.role_reseau }}</span></dd>
+
+          <dt class="col-sm-5 text-muted">Firmware</dt>
+          <dd class="col-sm-7">{{ camera.version_logiciel or "—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Dernier Heartbeat</dt>
+          <dd class="col-sm-7">
+            {% if camera.dernier_heartbeat %}
+              {{ camera.dernier_heartbeat | date_heure }}
+            {% else %}
+              <span class="text-body-secondary fst-italic">Jamais contacté</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-5 text-muted">Créée le</dt>
+          <dd class="col-sm-7 text-muted small">{{ camera.created_at | date_heure }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="card-title mb-0 fw-bold">Modifier les paramètres de la caméra</h5>
+      </div>
+      <div class="card-body p-4">
+        {% if peut_gerer %}
+        <form method="post" action="/cameras/{{ camera.id }}">
+          {{ form.champ_csrf() }}
+          {{ form.resume_erreurs(erreurs) }}
+
+          <div class="row gx-3">
+            <div class="col-12 col-md-6">
+              {{ form.champ("nom", "Nom de l'entrée", valeurs.nom, erreur=erreurs.nom, placeholder="Ex. Main entrance, Porte 1…", aide="Nom affiché dans les rapports.") }}
+            </div>
+            <div class="col-12 col-md-6">
+              {{ form.champ("emplacement", "Emplacement physique", valeurs.emplacement, erreur=erreurs.emplacement, placeholder="Ex. Rez-de-chaussée, Aile Ouest…") }}
+            </div>
+          </div>
+
+          <div class="row gx-3">
+            <div class="col-12 col-md-6">
+              {{ form.champ("ip_address", "Adresse IP locale", valeurs.ip_address, erreur=erreurs.ip_address, placeholder="Ex. 192.168.1.50") }}
+            </div>
+            <div class="col-12 col-md-6">
+              {{ form.champ("mac_address", "Adresse MAC", valeurs.mac_address, erreur=erreurs.mac_address, placeholder="Ex. 00:1A:2B:3C:4D:5E") }}
+            </div>
+          </div>
+
+          <div class="row gx-3">
+            <div class="col-12 col-md-4">
+              {{ form.champ("modele", "Modèle", valeurs.modele, erreur=erreurs.modele, requis=True) }}
+            </div>
+            <div class="col-12 col-md-4">
+              {{ form.champ_select("role_reseau", "Rôle réseau", options_roles, valeurs.role_reseau, erreur=erreurs.role_reseau, requis=True) }}
+            </div>
+            <div class="col-12 col-md-4">
+              {{ form.champ("version_logiciel", "Version Firmware", valeurs.version_logiciel, erreur=erreurs.version_logiciel) }}
+            </div>
+          </div>
+
+          <div class="pt-3 border-top d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Enregistrer les modifications</button>
+          </div>
+        </form>
+        {% else %}
+        <p class="text-muted">Vous disposez d'un accès en lecture seule sur cette caméra.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

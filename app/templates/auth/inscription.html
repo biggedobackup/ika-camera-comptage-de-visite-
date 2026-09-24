@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% block titre %}Inscription{% endblock %}
+{% block classe_carte %}carte-large{% endblock %}
+{% block contenu %}
+<div class="entete-formulaire">
+  <h1 class="titre-formulaire">Créer un compte</h1>
+  <p class="sous-titre-formulaire">Renseignez vos informations pour créer votre compte. Les champs marqués d'un astérisque (<span class="champ-requis">*</span>) sont obligatoires.</p>
+</div>
+
+{{ form.resume_erreurs(erreurs) }}
+
+<form method="post" action="/inscription">
+  {{ form.champ_csrf() }}
+  {{ form.champ("nom_complet", "Nom complet", valeurs.nom_complet, erreur=erreurs.nom_complet, requis=True, autocomplete="name", maxlength=150, autofocus=True) }}
+  <div class="row gx-3">
+    <div class="col-12 col-md-6">
+      {{ form.champ("email", "Adresse e-mail", valeurs.email, type="email", erreur=erreurs.email, requis=True, autocomplete="email", maxlength=255, placeholder="nom@exemple.com") }}
+    </div>
+    <div class="col-12 col-md-6">
+      {{ form.champ("telephone", "Téléphone", valeurs.telephone, type="tel", erreur=erreurs.telephone, autocomplete="tel", maxlength=30, placeholder="+226 70 00 00 00") }}
+    </div>
+  </div>
+  {{ form.champ_mot_de_passe("mot_de_passe", "Mot de passe", erreur=erreurs.mot_de_passe, autocomplete="new-password", afficher_regles=True) }}
+  {{ form.champ_mot_de_passe("confirmation", "Confirmation du mot de passe", erreur=erreurs.confirmation, autocomplete="new-password") }}
+  {{ form.bouton_envoyer("Créer mon compte", "bi-person-plus", pleine_largeur=True) }}
+</form>
+
+<p class="bas-formulaire">
+  <span>Vous avez déjà un compte ?</span>
+  <a href="/connexion">Se connecter</a>
+</p>
+{% endblock %}

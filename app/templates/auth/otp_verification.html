@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% block titre %}Vérification en deux étapes{% endblock %}
+{% block contenu %}
+<div class="entete-formulaire">
+  <div class="icone-formulaire" aria-hidden="true"><i class="bi bi-shield-lock"></i></div>
+  <h1 class="titre-formulaire">Vérification en deux étapes</h1>
+  <p class="sous-titre-formulaire">Ouvrez votre application d'authentification et saisissez le code à 6 chiffres affiché pour {{ app_name }}.</p>
+</div>
+
+{{ form.resume_erreurs(erreurs) }}
+
+<form method="post" action="/otp/verification">
+  {{ form.champ_csrf() }}
+  <div class="mb-3">
+    <label class="form-label" for="champ-code">Code de vérification <span class="champ-requis" aria-hidden="true">*</span></label>
+    <input type="text" class="form-control champ-code-otp{% if erreurs.code %} is-invalid{% endif %}" id="champ-code" name="code"
+      inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" required autofocus
+      aria-describedby="champ-code-aide{% if erreurs.code %} champ-code-erreur{% endif %}"{% if erreurs.code %} aria-invalid="true"{% endif %}>
+    {%- if erreurs.code %}
+    <div class="invalid-feedback" id="champ-code-erreur">{{ erreurs.code }}</div>
+    {%- endif %}
+    <div class="form-text" id="champ-code-aide">Le code change toutes les 30 secondes. Cette étape expire 5 minutes après la saisie de votre mot de passe.</div>
+  </div>
+  {{ form.bouton_envoyer("Vérifier et se connecter", "bi-shield-check", pleine_largeur=True) }}
+</form>
+
+<p class="bas-formulaire">
+  <a href="/connexion"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la connexion</span></a>
+</p>
+{% endblock %}

@@ -1,0 +1,118 @@
+{#-
+  Macros des pages liste.html (utilisent l'objet `liste` : app.core.listes.PageListe).
+  Import : {% import "composants/liste.html" as l with context %}
+-#}
+
+{#- Formulaire GET de recherche + filtres (contenu du bloc {% call %} = colonnes de filtres). -#}
+{% macro barre_recherche(liste, placeholder="Rechercher…", libelle="Rechercher") -%}
+<form method="get" action="{{ liste.parametres.chemin }}" class="barre-recherche" role="search">
+  <input type="hidden" name="tri" value="{{ liste.parametres.tri }}">
+  <input type="hidden" name="ordre" value="{{ liste.parametres.ordre }}">
+  <div class="barre-recherche-grille">
+    <div class="barre-recherche-champ barre-recherche-principale">
+      <label class="form-label" for="recherche">{{ libelle }}</label>
+      <div class="champ-recherche">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input type="search" class="form-control" id="recherche" name="q" value="{{ liste.parametres.recherche }}" placeholder="{{ placeholder }}" maxlength="100">
+      </div>
+    </div>
+    {%- if caller is defined %}{{ caller() }}{% endif %}
+    <div class="barre-recherche-actions">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-funnel" aria-hidden="true"></i><span>Filtrer</span></button>
+      <a class="btn btn-outline-secondary" href="{{ liste.parametres.chemin }}"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>Réinitialiser</span></a>
+    </div>
+  </div>
+</form>
+{%- endmacro %}
+
+{#- Filtre liste déroulante à placer dans le {% call barre_recherche(...) %}. `options` : [(valeur, libellé)]. -#}
+{% macro filtre_select(liste, nom, libelle, options, tous="Tous") -%}
+{%- set valeur = liste.parametres.filtres.get(nom, "") -%}
+<div class="barre-recherche-champ">
+  <label class="form-label" for="filtre-{{ nom }}">{{ libelle }}</label>
+  <select class="form-select" id="filtre-{{ nom }}" name="{{ nom }}">
+    <option value="">{{ tous }}</option>
+    {%- for cle, texte in options %}
+    <option value="{{ cle }}"{% if cle | string == valeur %} selected{% endif %}>{{ texte }}</option>
+    {%- endfor %}
+  </select>
+</div>
+{%- endmacro %}
+
+{#- Boutons d'export : exportent TOUTES les lignes correspondant aux filtres et au tri actifs. -#}
+{% macro boutons_export(liste, url_pdf, url_excel) -%}
+<div class="boutons-export" role="group" aria-label="Exporter la liste">
+  <a class="btn btn-outline-secondary" href="{{ liste.url_export(url_pdf) }}"><i class="bi bi-file-earmark-pdf icone-pdf" aria-hidden="true"></i><span>Export PDF</span></a>
+  <a class="btn btn-outline-secondary" href="{{ liste.url_export(url_excel) }}"><i class="bi bi-file-earmark-excel icone-excel" aria-hidden="true"></i><span>Export Excel</span></a>
+</div>
+{%- endmacro %}
+
+{#- En-tête de la colonne « N° ». -#}
+{% macro entete_numero() -%}
+<th scope="col" class="col-numero">N°</th>
+{%- endmacro %}
+
+{#- En-tête de colonne triable (clic : croissant ↔ décroissant). `colonne` doit être dans la liste blanche du module. -#}
+{% macro entete_triable(liste, colonne, libelle, classe="") -%}
+{%- set sens = liste.sens_tri(colonne) -%}
+<th scope="col" class="col-triable{% if classe %} {{ classe }}{% endif %}"{% if sens %} aria-sort="{{ 'ascending' if sens == 'asc' else 'descending' }}"{% endif %}>
+  <a class="lien-tri{% if sens %} actif{% endif %}" href="{{ liste.url_tri(colonne) }}">
+    <span>{{ libelle }}</span>
+    <i class="bi {% if sens == 'asc' %}bi-caret-up-fill{% elif sens == 'desc' %}bi-caret-down-fill{% else %}bi-chevron-expand{% endif %}" aria-hidden="true"></i>
+    <span class="visually-hidden">
+      {%- if sens == 'asc' %} (trié par ordre croissant){% elif sens == 'desc' %} (trié par ordre décroissant){% else %} (trier){% endif -%}
+    </span>
+  </a>
+</th>
+{%- endmacro %}
+
+{#- Ligne affichée quand la liste est vide. -#}
+{% macro ligne_vide(nb_colonnes, message="Aucun élément ne correspond à votre recherche.") -%}
+<tr>
+  <td colspan="{{ nb_colonnes }}" class="ligne-vide"><i class="bi bi-inbox" aria-hidden="true"></i><span>{{ message }}</span></td>
+</tr>
+{%- endmacro %}
+
+{#- « X éléments au total — 20 par page — page p/n ». -#}
+{% macro resume_liste(liste) -%}
+<p class="resume-liste">
+  <strong>{{ liste.total }}</strong> élément{{ "s" if liste.total > 1 }} au total — {{ liste.taille_page }} par page — page {{ liste.page }}/{{ liste.nb_pages }}
+</p>
+{%- endmacro %}
+
+{#- Pagination serveur (20 éléments par page). -#}
+{% macro pagination(liste) -%}
+{%- if liste.nb_pages > 1 %}
+<nav aria-label="Pagination de la liste">
+  <ul class="pagination mb-0">
+    {%- if liste.page > 1 %}
+    <li class="page-item"><a class="page-link" href="{{ liste.url_page(liste.page - 1) }}" aria-label="Page précédente"><i class="bi bi-chevron-left" aria-hidden="true"></i></a></li>
+    {%- else %}
+    <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left" aria-hidden="true"></i><span class="visually-hidden">Page précédente</span></span></li>
+    {%- endif %}
+    {%- for numero in liste.pages_visibles %}
+    {%- if numero is none %}
+    <li class="page-item disabled"><span class="page-link">…</span></li>
+    {%- elif numero == liste.page %}
+    <li class="page-item active" aria-current="page"><span class="page-link">{{ numero }}</span></li>
+    {%- else %}
+    <li class="page-item"><a class="page-link" href="{{ liste.url_page(numero) }}" aria-label="Page {{ numero }}">{{ numero }}</a></li>
+    {%- endif %}
+    {%- endfor %}
+    {%- if liste.page < liste.nb_pages %}
+    <li class="page-item"><a class="page-link" href="{{ liste.url_page(liste.page + 1) }}" aria-label="Page suivante"><i class="bi bi-chevron-right" aria-hidden="true"></i></a></li>
+    {%- else %}
+    <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right" aria-hidden="true"></i><span class="visually-hidden">Page suivante</span></span></li>
+    {%- endif %}
+  </ul>
+</nav>
+{%- endif %}
+{%- endmacro %}
+
+{#- Pied de tableau : résumé + pagination alignés. -#}
+{% macro pied_liste(liste) -%}
+<div class="pied-liste">
+  {{ resume_liste(liste) }}
+  {{ pagination(liste) }}
+</div>
+{%- endmacro %}

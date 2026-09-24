@@ -1,0 +1,57 @@
+{#- Menu latéral : liens visibles selon le rôle, lien de la page active mis en évidence. -#}
+{%- set sections = [
+  {"titre": None, "liens": [
+    {"url": "/tableau-de-bord", "libelle": "Tableau de bord", "icone": "bi-speedometer2", "roles": None},
+  ]},
+  {"titre": "Administration", "liens": [
+    {"url": "/cameras", "libelle": "Caméras 3D", "icone": "bi-camera-video", "roles": [Role.ADMIN, Role.MANAGER]},
+    {"url": "/cameras/passages", "libelle": "Flux & Passages", "icone": "bi-graph-up", "roles": [Role.ADMIN, Role.MANAGER]},
+    {"url": "/cameras/rapport/statistiques", "libelle": "Rapport d'analyse", "icone": "bi-bar-chart-line", "roles": [Role.ADMIN, Role.MANAGER]},
+    {"url": "/utilisateurs", "libelle": "Utilisateurs", "icone": "bi-people", "roles": [Role.ADMIN, Role.MANAGER]},
+    {"url": "/utilisateurs/ajouter", "libelle": "Nouvel utilisateur", "icone": "bi-person-plus", "roles": [Role.ADMIN]},
+    {"url": "/historique", "libelle": "Historique", "icone": "bi-clock-history", "roles": [Role.ADMIN, Role.MANAGER]},
+  ]},
+  {"titre": "Mon compte", "liens": [
+    {"url": "/profil", "libelle": "Mon profil", "icone": "bi-person-circle", "roles": None},
+    {"url": "/otp/configuration", "libelle": "Double auth", "icone": "bi-shield-lock", "roles": None},
+  ]},
+] -%}
+{%- set urls = [] -%}
+{%- for section in sections -%}{%- for lien in section.liens -%}{%- set _ = urls.append(lien.url) -%}{%- endfor -%}{%- endfor -%}
+{%- set actif = page_active or lien_menu_actif(request.url.path, urls) -%}
+
+<aside class="offcanvas-lg offcanvas-start app-menu" tabindex="-1" id="menu-lateral" aria-labelledby="menu-lateral-titre">
+  <div class="offcanvas-header">
+    <span class="app-marque" id="menu-lateral-titre">
+      <img src="{{ static('img/logo.png') }}" alt="" width="32" height="32">
+      <span class="app-marque-nom">{{ app_name }}</span>
+    </span>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#menu-lateral" aria-label="Fermer le menu"></button>
+  </div>
+  <div class="offcanvas-body app-menu-corps">
+    <a class="app-marque d-none d-lg-flex" href="/tableau-de-bord">
+      <img src="{{ static('img/logo.png') }}" alt="" width="36" height="36">
+      <span class="app-marque-nom">{{ app_name }}</span>
+    </a>
+    <nav class="app-menu-nav" aria-label="Navigation principale" data-menu-principal>
+      {%- for section in sections %}
+      {%- set visibles = [] %}
+      {%- for lien in section.liens if lien.roles is none or utilisateur.role in lien.roles %}{% set _ = visibles.append(lien) %}{% endfor %}
+      {%- if visibles %}
+      {%- if section.titre %}
+      <p class="menu-section">{{ section.titre }}</p>
+      {%- endif %}
+      <ul class="menu-liste">
+        {%- for lien in visibles %}
+        <li>
+          <a class="menu-lien{% if lien.url == actif %} active{% endif %}" href="{{ lien.url }}"{% if lien.url == actif %} aria-current="page"{% endif %}>
+            <i class="bi {{ lien.icone }}" aria-hidden="true"></i><span>{{ lien.libelle }}</span>
+          </a>
+        </li>
+        {%- endfor %}
+      </ul>
+      {%- endif %}
+      {%- endfor %}
+    </nav>
+  </div>
+</aside>

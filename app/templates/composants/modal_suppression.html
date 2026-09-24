@@ -1,0 +1,25 @@
+{#- Modal de confirmation unique, ouverte par les boutons générés par la macro bouton_suppression(). -#}
+<div class="modal fade" id="modal-suppression" tabindex="-1" aria-labelledby="modal-suppression-titre" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="" data-formulaire-suppression>
+        <input type="hidden" name="{{ NOM_CHAMP_CSRF }}" value="{{ csrf_token }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="modal-suppression-titre">
+            <i class="bi bi-exclamation-triangle-fill text-danger" aria-hidden="true"></i>
+            Confirmer la suppression
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2" data-message-suppression>Voulez-vous vraiment supprimer cet élément ?</p>
+          <p class="text-body-secondary small mb-0">Cette action est définitive et ne pourra pas être annulée.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash" aria-hidden="true"></i>Supprimer définitivement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

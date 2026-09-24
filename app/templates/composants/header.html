@@ -1,0 +1,37 @@
+<header class="app-entete">
+  <div class="dropdown">
+    <button class="btn avatar-bouton" type="button" id="menu-compte" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu du compte : {{ utilisateur.nom_complet }}">
+      <span class="avatar-rond" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+      <span class="avatar-infos d-none d-sm-flex">
+        <span class="avatar-nom">{{ utilisateur.nom_complet }}</span>
+        <span class="avatar-role">{{ utilisateur.role.libelle }}</span>
+      </span>
+      <i class="bi bi-chevron-down avatar-chevron" aria-hidden="true"></i>
+    </button>
+    <ul class="dropdown-menu menu-compte" aria-labelledby="menu-compte">
+      <li class="menu-compte-entete">
+        <span class="avatar-rond" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+        <span class="menu-compte-identite">
+          <span class="menu-compte-nom">{{ utilisateur.nom_complet }}</span>
+          <span class="menu-compte-email">{{ utilisateur.email }}</span>
+        </span>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <a class="dropdown-item" href="/profil"><i class="bi bi-person-circle" aria-hidden="true"></i>Profil</a>
+      </li>
+      <li>
+        <form method="post" action="/deconnexion">
+          <input type="hidden" name="{{ NOM_CHAMP_CSRF }}" value="{{ csrf_token }}">
+          <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Déconnexion</button>
+        </form>
+      </li>
+    </ul>
+  </div>
+
+  <div class="app-entete-droite">
+    <button class="btn btn-outline-secondary bouton-menu-mobile d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menu-lateral" aria-controls="menu-lateral" aria-label="Ouvrir le menu de navigation">
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+  </div>
+</header>

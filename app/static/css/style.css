@@ -1,0 +1,2380 @@
+/* ==========================================================================
+   IKA COMPTEUR — feuille de style principale
+   Couleurs : bleu #1270b8 (primaire), rouge #e51b35 (danger / accent), fond blanc.
+   Règles de design (voir demarrage.txt) :
+   - aucun dégradé, aucun style inline dans les templates ;
+   - aucun lien ni nom d'utilisateur souligné (ni au survol) : le focus clavier reste
+     visible grâce à un contour (outline) ;
+   - aucune bordure colorée décorative (page de connexion, cartes, menus) ;
+   - aucun défilement dans les tableaux : le tableau tient dans la largeur disponible
+     et, quand la place manque (mobile, tablette), chaque ligne devient une carte.
+   ========================================================================== */
+
+/* --- Variables ----------------------------------------------------------- */
+:root {
+  --ika-bleu: #1270b8;
+  --ika-bleu-fonce: #0e5a94;
+  --ika-bleu-tres-fonce: #0b4a7a;
+  --ika-bleu-clair: #e8f1f9;
+  --ika-bleu-focus: #89b8dc;
+  --ika-rouge: #e51b35;
+  --ika-rouge-fonce: #c0152b;
+  --ika-rouge-tres-fonce: #a31224;
+  --ika-rouge-clair: #fdecee;
+  --ika-texte: #1a2330;
+  --ika-texte-secondaire: #4b5563;
+  --ika-texte-discret: #6b7280;
+  --ika-bordure: #e5e7eb;
+  --ika-bordure-legere: #eef0f3;
+  --ika-bordure-forte: #d1d5db;
+  --ika-fond-doux: #f8fafc;
+  --ika-fond-survol: #f3f5f8;
+  --ika-ombre-xs: 0 1px 2px rgba(16, 24, 40, .05);
+  --ika-ombre: 0 2px 4px rgba(16, 24, 40, .06), 0 1px 2px rgba(16, 24, 40, .05);
+  --ika-ombre-haute: 0 20px 48px rgba(16, 24, 40, .10);
+  --ika-anneau-focus: 0 0 0 3px rgba(18, 112, 184, .18);
+  --ika-rayon-carte: .875rem;
+  --ika-largeur-menu: 264px;
+  --ika-hauteur-entete: 64px;
+  --ika-fond-menu: #f9fafb;
+
+  /* Surcharge des variables Bootstrap */
+  --bs-primary: #1270b8;
+  --bs-primary-rgb: 18, 112, 184;
+  --bs-primary-text-emphasis: #07304f;
+  --bs-primary-bg-subtle: #e8f1f9;
+  --bs-primary-border-subtle: #a9cbe6;
+  --bs-danger: #e51b35;
+  --bs-danger-rgb: 229, 27, 53;
+  --bs-danger-text-emphasis: #6b0c18;
+  --bs-danger-bg-subtle: #fdecee;
+  --bs-danger-border-subtle: #f5a3ae;
+  --bs-link-color: #1270b8;
+  --bs-link-color-rgb: 18, 112, 184;
+  --bs-link-hover-color: #0e5a94;
+  --bs-link-hover-color-rgb: 14, 90, 148;
+  --bs-link-decoration: none;
+  --bs-focus-ring-color: rgba(18, 112, 184, .25);
+  --bs-form-invalid-color: #c0152b;
+  --bs-form-invalid-border-color: #e51b35;
+  --bs-body-color: #1a2330;
+  --bs-body-bg: #fff;
+  --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bs-body-font-size: .9375rem;
+  --bs-body-line-height: 1.55;
+  --bs-border-color: #e5e7eb;
+  --bs-border-radius: .5rem;
+  --bs-border-radius-sm: .375rem;
+  --bs-border-radius-lg: .75rem;
+  --bs-secondary-color: #4b5563;
+  --bs-heading-color: #1a2330;
+}
+
+body {
+  background-color: #fff;
+  color: var(--ika-texte);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--ika-texte);
+  letter-spacing: -.01em;
+}
+
+/* --- Liens : jamais soulignés (ni au survol), focus clavier visible ------- */
+a,
+a:hover,
+a:focus,
+a:active,
+.btn-link,
+.btn-link:hover,
+.btn-link:focus {
+  text-decoration: none;
+}
+
+a {
+  color: var(--ika-bleu);
+  transition: color .15s ease-in-out;
+}
+
+a:hover {
+  color: var(--ika-bleu-fonce);
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-check-input:focus-visible {
+  outline: 2px solid var(--ika-bleu);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible {
+  box-shadow: none;
+}
+
+/* Nom d'un utilisateur affiché comme lien : texte sombre, bleu au survol. */
+.lien-nom,
+.cellule-compte-nom a {
+  color: var(--ika-texte);
+  font-weight: 600;
+}
+
+.lien-nom:hover,
+.cellule-compte-nom a:hover {
+  color: var(--ika-bleu);
+}
+
+/* --- Boutons ----------------------------------------------------------------- */
+.btn {
+  --bs-btn-padding-x: 1rem;
+  --bs-btn-padding-y: .5rem;
+  --bs-btn-font-size: .9375rem;
+  --bs-btn-font-weight: 500;
+  --bs-btn-border-radius: .5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  transition: background-color .15s ease-in-out, border-color .15s ease-in-out,
+    box-shadow .15s ease-in-out, color .15s ease-in-out, transform .1s ease-in-out;
+}
+
+.btn-primary:hover,
+.btn-danger:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary:active,
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+.btn-sm {
+  --bs-btn-padding-x: .75rem;
+  --bs-btn-padding-y: .3125rem;
+  --bs-btn-font-size: .8125rem;
+  --bs-btn-border-radius: .4375rem;
+  gap: .375rem;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--ika-bleu);
+  --bs-btn-border-color: var(--ika-bleu);
+  --bs-btn-hover-bg: var(--ika-bleu-fonce);
+  --bs-btn-hover-border-color: var(--ika-bleu-fonce);
+  --bs-btn-focus-shadow-rgb: 18, 112, 184;
+  --bs-btn-active-bg: var(--ika-bleu-tres-fonce);
+  --bs-btn-active-border-color: var(--ika-bleu-tres-fonce);
+  --bs-btn-disabled-bg: var(--ika-bleu);
+  --bs-btn-disabled-border-color: var(--ika-bleu);
+  box-shadow: var(--ika-ombre-xs);
+}
+
+.btn-danger {
+  --bs-btn-bg: var(--ika-rouge);
+  --bs-btn-border-color: var(--ika-rouge);
+  --bs-btn-hover-bg: var(--ika-rouge-fonce);
+  --bs-btn-hover-border-color: var(--ika-rouge-fonce);
+  --bs-btn-focus-shadow-rgb: 229, 27, 53;
+  --bs-btn-active-bg: var(--ika-rouge-tres-fonce);
+  --bs-btn-active-border-color: var(--ika-rouge-tres-fonce);
+  --bs-btn-disabled-bg: var(--ika-rouge);
+  --bs-btn-disabled-border-color: var(--ika-rouge);
+}
+
+/* Boutons secondaires : bordure neutre, texte coloré selon l'intention. */
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-danger {
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: var(--ika-bordure-forte);
+  --bs-btn-hover-border-color: #c3c8d0;
+  --bs-btn-active-border-color: #c3c8d0;
+  --bs-btn-disabled-bg: #fff;
+  --bs-btn-disabled-border-color: var(--ika-bordure);
+  box-shadow: var(--ika-ombre-xs);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--ika-texte);
+  --bs-btn-hover-color: var(--ika-texte);
+  --bs-btn-hover-bg: var(--ika-fond-survol);
+  --bs-btn-active-color: var(--ika-texte);
+  --bs-btn-active-bg: #e9edf1;
+  --bs-btn-disabled-color: var(--ika-texte-discret);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--ika-bleu);
+  --bs-btn-hover-color: var(--ika-bleu-fonce);
+  --bs-btn-hover-bg: var(--ika-bleu-clair);
+  --bs-btn-active-color: var(--ika-bleu-tres-fonce);
+  --bs-btn-active-bg: #d6e7f5;
+  --bs-btn-disabled-color: var(--ika-bleu);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--ika-rouge-fonce);
+  --bs-btn-hover-color: var(--ika-rouge-tres-fonce);
+  --bs-btn-hover-bg: var(--ika-rouge-clair);
+  --bs-btn-active-color: var(--ika-rouge-tres-fonce);
+  --bs-btn-active-bg: #fbd9de;
+  --bs-btn-disabled-color: var(--ika-rouge-fonce);
+}
+
+/* Bouton carré ne contenant qu'une icône (actions des lignes de tableau). */
+.btn-icone {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  --bs-btn-font-size: .9375rem;
+  --bs-btn-border-radius: .4375rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.btn-icone .bi {
+  line-height: 1;
+}
+
+.icone-pdf {
+  color: var(--ika-rouge);
+}
+
+.icone-excel {
+  color: var(--ika-bleu);
+}
+
+/* --- Formulaires ------------------------------------------------------------- */
+.form-label {
+  margin-bottom: .375rem;
+  color: var(--ika-texte);
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+.form-control,
+.form-select {
+  padding: .5rem .875rem;
+  border-color: var(--ika-bordure-forte);
+  border-radius: .5rem;
+  font-size: .9375rem;
+  box-shadow: var(--ika-ombre-xs);
+}
+
+.form-select {
+  padding-right: 2.25rem;
+}
+
+.form-control::placeholder {
+  color: #8b94a1;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--ika-bleu-focus);
+  box-shadow: var(--ika-anneau-focus);
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(229, 27, 53, .15);
+}
+
+.form-check-input {
+  border-color: var(--ika-bordure-forte);
+}
+
+.form-check-input:checked {
+  background-color: var(--ika-bleu);
+  border-color: var(--ika-bleu);
+}
+
+.form-check-label {
+  font-weight: 500;
+}
+
+.form-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: .75rem;
+  padding-left: 0;
+}
+
+.form-switch .form-check-input {
+  flex: 0 0 auto;
+  width: 2.25em;
+  height: 1.25em;
+  margin-top: .15em;
+  margin-left: 0;
+}
+
+.form-switch .form-check-label {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.form-switch .form-text {
+  flex: 0 0 100%;
+  margin-top: .25rem;
+  padding-left: 3rem;
+}
+
+.form-text {
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+}
+
+.invalid-feedback {
+  font-size: .8125rem;
+}
+
+.champ-requis {
+  color: var(--ika-rouge-fonce);
+}
+
+/* Œil afficher / masquer le mot de passe (input-group + bouton). */
+.btn-oeil {
+  --bs-btn-padding-x: .875rem;
+  border: var(--bs-border-width) solid var(--ika-bordure-forte);
+  background-color: #fff;
+  color: var(--ika-texte-discret);
+  box-shadow: var(--ika-ombre-xs);
+}
+
+.btn-oeil:hover,
+.btn-oeil:focus-visible {
+  border-color: var(--ika-bordure-forte);
+  background-color: var(--ika-fond-survol);
+  color: var(--ika-bleu);
+}
+
+.input-group .form-control.is-invalid ~ .btn-oeil {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
+.input-group .form-control:focus ~ .btn-oeil {
+  border-color: var(--ika-bleu-focus);
+}
+
+/* Règles de mot de passe affichées sous le champ. */
+.regles-mot-de-passe {
+  margin-top: .625rem;
+  padding: .75rem .875rem;
+  border-radius: .5rem;
+  background-color: var(--ika-fond-doux);
+  color: var(--ika-texte-secondaire);
+  font-size: .8125rem;
+}
+
+.regles-mot-de-passe-titre {
+  margin-bottom: .375rem;
+  color: var(--ika-texte);
+  font-weight: 500;
+}
+
+.regles-mot-de-passe ul {
+  display: grid;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.regles-mot-de-passe li {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+}
+
+.regles-mot-de-passe li .bi {
+  flex: 0 0 auto;
+  color: var(--ika-bleu);
+  line-height: 1.5;
+}
+
+/* Pied de formulaire : actions alignées à droite, séparateur neutre. */
+.actions-formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ika-bordure);
+}
+
+.section-formulaire + .section-formulaire {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ika-bordure);
+}
+
+.section-formulaire-titre {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.section-formulaire-aide {
+  margin: -.75rem 0 1.25rem;
+  color: var(--ika-texte-discret);
+  font-size: .875rem;
+}
+
+/* --- Composants Bootstrap aux couleurs IKA ------------------------------ */
+.pagination {
+  --bs-pagination-color: var(--ika-texte);
+  --bs-pagination-bg: #fff;
+  --bs-pagination-border-color: var(--ika-bordure-forte);
+  --bs-pagination-hover-color: var(--ika-bleu);
+  --bs-pagination-hover-bg: var(--ika-fond-survol);
+  --bs-pagination-hover-border-color: var(--ika-bordure-forte);
+  --bs-pagination-focus-color: var(--ika-bleu-fonce);
+  --bs-pagination-focus-bg: #fff;
+  --bs-pagination-focus-box-shadow: var(--ika-anneau-focus);
+  --bs-pagination-active-bg: var(--ika-bleu);
+  --bs-pagination-active-border-color: var(--ika-bleu);
+  --bs-pagination-disabled-color: #a0a7b1;
+  --bs-pagination-disabled-bg: #fff;
+  --bs-pagination-disabled-border-color: var(--ika-bordure);
+  --bs-pagination-font-size: .875rem;
+  flex-wrap: wrap;
+  gap: .25rem;
+}
+
+.pagination .page-item .page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  margin-left: 0;
+  padding: 0 .625rem;
+  border-radius: .5rem;
+  font-weight: 500;
+}
+
+.dropdown-menu {
+  --bs-dropdown-link-active-bg: var(--ika-bleu);
+  --bs-dropdown-border-color: var(--ika-bordure);
+  --bs-dropdown-border-radius: var(--ika-rayon-carte);
+  --bs-dropdown-box-shadow: 0 12px 32px rgba(16, 24, 40, .12);
+  --bs-dropdown-link-hover-bg: var(--ika-fond-survol);
+  --bs-dropdown-font-size: .9375rem;
+  padding: .375rem;
+  box-shadow: var(--bs-dropdown-box-shadow);
+}
+
+.dropdown-menu .dropdown-item {
+  border-radius: .5rem;
+}
+
+.card {
+  --bs-card-border-color: var(--ika-bordure);
+  --bs-card-border-radius: var(--ika-rayon-carte);
+  --bs-card-inner-border-radius: calc(var(--ika-rayon-carte) - 1px);
+  --bs-card-cap-bg: #fff;
+  --bs-card-cap-padding-y: 1rem;
+  --bs-card-cap-padding-x: 1.25rem;
+  --bs-card-spacer-y: 1.25rem;
+  --bs-card-spacer-x: 1.25rem;
+  box-shadow: var(--ika-ombre-xs);
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem .75rem;
+  border-bottom-color: var(--ika-bordure);
+}
+
+.card-footer {
+  border-top-color: var(--ika-bordure);
+  background-color: var(--ika-fond-doux);
+}
+
+.titre-carte {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.titre-carte .bi {
+  color: var(--ika-bleu);
+  font-size: 1.0625rem;
+}
+
+.modal {
+  --bs-modal-border-radius: .875rem;
+  --bs-modal-border-color: var(--ika-bordure);
+  --bs-modal-header-border-color: var(--ika-bordure);
+  --bs-modal-footer-border-color: var(--ika-bordure);
+  --bs-modal-padding: 1.25rem;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  font-weight: 600;
+}
+
+/* --- Badges ------------------------------------------------------------------ */
+.badge-ika {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  max-width: 100%;
+  padding: .25rem .625rem;
+  border-radius: 999px;
+  background-color: var(--ika-fond-survol);
+  color: var(--ika-texte-secondaire);
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.badge-ika .bi {
+  font-size: .8125rem;
+  line-height: 1;
+}
+
+.badge-bleu,
+.badge-role-admin,
+.badge-statut-actif {
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu-tres-fonce);
+}
+
+.badge-statut-verrouille {
+  background-color: var(--ika-rouge-clair);
+  color: var(--ika-rouge-tres-fonce);
+}
+
+.badge-role-manager {
+  background-color: #eceff3;
+  color: #1f2937;
+}
+
+.badge-role-utilisateur,
+.badge-statut-inactif {
+  background-color: var(--ika-fond-survol);
+  color: var(--ika-texte-secondaire);
+}
+
+/* Pastille de statut devant le libellé. */
+.badge-statut::before {
+  content: "";
+  flex: 0 0 auto;
+  width: .4375rem;
+  height: .4375rem;
+  border-radius: 50%;
+  background-color: currentcolor;
+}
+
+.badge-statut-actif::before {
+  background-color: var(--ika-bleu);
+}
+
+.badge-statut-verrouille::before {
+  background-color: var(--ika-rouge);
+}
+
+.badge-statut-inactif::before {
+  background-color: #9ca3af;
+}
+
+.badge-vous {
+  padding: .125rem .5rem;
+  background-color: #fff;
+  box-shadow: inset 0 0 0 1px var(--ika-bordure-forte);
+  color: var(--ika-texte-secondaire);
+  font-size: .6875rem;
+}
+
+/* Actions de l'historique (libellés parfois longs : retour à la ligne autorisé). */
+.badge-action {
+  display: inline-block;
+  max-width: 100%;
+  padding: .25rem .625rem;
+  border-radius: .5rem;
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu-tres-fonce);
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.badge-action-alerte {
+  background-color: var(--ika-rouge-clair);
+  color: var(--ika-rouge-tres-fonce);
+}
+
+.badge-modifie {
+  margin-left: .375rem;
+  background-color: var(--ika-bleu);
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* Avatar rond portant les initiales d'un utilisateur. */
+.avatar-initiales {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu-tres-fonce);
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.avatar-initiales.avatar-grand {
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.125rem;
+}
+
+/* --- Accessibilité -------------------------------------------------------- */
+.lien-evitement {
+  position: absolute;
+  top: .5rem;
+  left: .5rem;
+  z-index: 2000;
+  padding: .5rem 1rem;
+  border-radius: var(--bs-border-radius);
+  background-color: var(--ika-bleu);
+  color: #fff;
+}
+
+.lien-evitement:hover,
+.lien-evitement:focus {
+  color: #fff;
+}
+
+main:focus {
+  outline: none;
+}
+
+/* --- Mise en page applicative (utilisateur connecté) ---------------------- */
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-principal {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-contenu {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 1680px;
+  padding: 2rem;
+}
+
+.app-pied {
+  padding: 1rem 2rem;
+  border-top: 1px solid var(--ika-bordure);
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+}
+
+/* Menu latéral — TEST : fond bleu, liens en blanc */
+.app-menu {
+  --bs-offcanvas-width: 280px;
+  --bs-offcanvas-bg: var(--ika-bleu);
+  background-color: var(--ika-bleu) !important;
+}
+
+.app-menu-corps {
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.app-marque {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  color: #fff;
+}
+
+.app-marque:hover {
+  color: #fff;
+}
+
+.app-marque img {
+  border-radius: .5rem;
+}
+
+.app-marque-nom {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.app-menu-nav {
+  width: 100%;
+}
+
+.menu-section {
+  margin: 1.5rem .75rem .5rem;
+  color: rgba(255, 255, 255, .75);
+  font-size: .6875rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.menu-liste {
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-lien {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.5rem;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 500;
+  transition: background-color .15s ease-in-out, color .15s ease-in-out;
+}
+
+.menu-lien .bi {
+  width: 1.25rem;
+  color: rgba(255, 255, 255, .85);
+  font-size: 1.125rem;
+  line-height: 1;
+  text-align: center;
+  transition: color .15s ease-in-out;
+}
+
+.menu-lien:hover {
+  background-color: rgba(255, 255, 255, .15);
+  color: #fff;
+}
+
+.menu-lien:hover .bi {
+  color: #fff;
+}
+
+/* Page active — TEST : fond blanc, texte bleu + barre bleue en bas. */
+.menu-lien.active,
+.menu-lien.active:hover {
+  background-color: #fff;
+  color: var(--ika-bleu);
+  font-weight: 700;
+  box-shadow: inset 0 -3px 0 var(--ika-bleu-tres-fonce);
+}
+
+.menu-lien.active .bi {
+  color: var(--ika-bleu);
+}
+
+@media (min-width: 992px) {
+  .app-menu {
+    position: sticky;
+    top: 0;
+    flex: 0 0 var(--ika-largeur-menu);
+    width: var(--ika-largeur-menu);
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--ika-bleu-fonce);
+    /* Bootstrap force background-color: transparent !important sur .offcanvas-lg à partir de 992px. */
+    background-color: var(--ika-bleu) !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ika-bordure-forte) transparent;
+  }
+
+  .app-menu::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .app-menu::-webkit-scrollbar-thumb {
+    border: 2px solid var(--ika-fond-menu);
+    border-radius: 999px;
+    background-color: var(--ika-bordure-forte);
+  }
+
+  .app-menu .app-menu-corps {
+    padding: 0 1rem 1.5rem;
+  }
+
+  .app-menu .app-marque {
+    min-height: var(--ika-hauteur-entete);
+    margin: 0 -1rem .25rem;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, .25);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .app-menu .offcanvas-header {
+    min-height: var(--ika-hauteur-entete);
+    border-bottom: 1px solid rgba(255, 255, 255, .25);
+    color: #fff;
+  }
+
+  .app-menu .offcanvas-header .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+    opacity: .9;
+  }
+
+  .app-menu .app-menu-corps {
+    padding: .5rem 1rem 1.5rem;
+  }
+}
+
+/* En-tête — TEST : fond blanc */
+.app-entete {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: var(--ika-hauteur-entete);
+  padding: .5rem 2rem;
+  border-bottom: 1px solid var(--ika-bordure-legere);
+  background-color: #fff;
+  box-shadow: var(--ika-ombre-xs);
+  color: var(--ika-texte);
+}
+
+.app-entete-droite {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+@media (min-width: 992px) {
+  .app-entete .dropdown {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .app-entete-droite {
+    margin-left: auto;
+  }
+}
+
+.bouton-menu-mobile {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.375rem;
+}
+
+.avatar-bouton {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  gap: .625rem;
+  padding: .25rem .75rem .25rem .25rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--ika-texte);
+}
+
+.avatar-bouton:hover,
+.avatar-bouton:focus-visible,
+.avatar-bouton[aria-expanded="true"] {
+  border-color: var(--ika-bordure);
+  background-color: var(--ika-fond-survol);
+  color: var(--ika-texte);
+}
+
+.avatar-rond {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--ika-bleu);
+  color: #fff;
+  font-size: 1.1875rem;
+}
+
+.avatar-infos {
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.avatar-nom {
+  max-width: 14rem;
+  overflow: hidden;
+  font-size: .9375rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar-role {
+  color: var(--ika-texte-discret);
+  font-size: .75rem;
+  font-weight: 500;
+}
+
+.avatar-chevron {
+  color: var(--ika-texte-discret);
+  font-size: .75rem;
+}
+
+.menu-compte {
+  min-width: 17rem;
+}
+
+.menu-compte-entete {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .625rem .625rem .5rem;
+}
+
+.menu-compte-entete .avatar-rond {
+  width: 36px;
+  height: 36px;
+  font-size: 1.125rem;
+}
+
+.menu-compte-identite {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.menu-compte-nom {
+  font-weight: 600;
+}
+
+.menu-compte-email {
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+  overflow-wrap: anywhere;
+}
+
+.menu-compte .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .5rem .625rem;
+}
+
+.menu-compte .dropdown-item .bi {
+  color: var(--ika-texte-discret);
+  font-size: 1rem;
+}
+
+.menu-compte .dropdown-item.text-danger .bi {
+  color: inherit;
+}
+
+.menu-compte .dropdown-item.text-danger:hover,
+.menu-compte .dropdown-item.text-danger:focus {
+  background-color: var(--ika-rouge-clair);
+  color: var(--ika-rouge-tres-fonce) !important;
+}
+
+@media (max-width: 575.98px) {
+  .app-contenu {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .app-entete {
+    padding: .5rem 1rem;
+  }
+
+  .app-pied {
+    padding: 1rem;
+  }
+}
+
+/* --- Mise en page simple (connexion, inscription, erreurs hors session) --- */
+.page-simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2.5rem 1rem;
+  background-color: #fff;
+}
+
+.page-simple-conteneur {
+  width: 100%;
+  max-width: 440px;
+}
+
+.page-simple-conteneur.carte-large {
+  max-width: 580px;
+}
+
+.page-simple-marque {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  margin-bottom: 1.75rem;
+  color: var(--ika-texte);
+}
+
+.page-simple-marque img {
+  border-radius: .625rem;
+}
+
+.page-simple-nom {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+/* Carte sobre : bordure neutre fine, ombre douce, aucune bordure colorée. */
+.page-simple-carte {
+  padding: 2.25rem 2.25rem 2rem;
+  border: 1px solid var(--ika-bordure);
+  border-radius: 1.125rem;
+  background-color: #fff;
+  box-shadow: var(--ika-ombre-haute);
+}
+
+.page-simple-pied {
+  margin: 1.5rem 0 0;
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+  text-align: center;
+}
+
+.entete-formulaire {
+  margin-bottom: 1.75rem;
+  text-align: center;
+}
+
+.titre-formulaire {
+  margin-bottom: .375rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.sous-titre-formulaire {
+  margin: 0;
+  color: var(--ika-texte-secondaire);
+}
+
+.icone-formulaire {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  border-radius: 1rem;
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu);
+  font-size: 1.375rem;
+}
+
+.lien-mot-de-passe-oublie {
+  display: flex;
+  justify-content: flex-end;
+  margin: -.5rem 0 1.25rem;
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+.bas-formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem .375rem;
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ika-bordure);
+  color: var(--ika-texte-secondaire);
+  font-size: .9375rem;
+}
+
+.bas-formulaire a {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .page-simple {
+    align-items: flex-start;
+    padding: 1.5rem 1rem;
+  }
+
+  .page-simple-carte {
+    padding: 1.5rem 1.25rem;
+    border-radius: .875rem;
+  }
+
+  .page-simple-marque {
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* --- En-tête de page ------------------------------------------------------ */
+.entete-page {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.entete-page-principal {
+  display: flex;
+  flex: 1 1 22rem;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.entete-page-icone {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu);
+  font-size: 1.375rem;
+}
+
+.entete-page-textes {
+  min-width: 0;
+}
+
+.entete-page-titre {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.entete-page-sous-titre {
+  margin: .25rem 0 0;
+  color: var(--ika-texte-secondaire);
+  overflow-wrap: anywhere;
+}
+
+.entete-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+
+.boutons-export {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+@media (max-width: 575.98px) {
+  .entete-page {
+    margin-bottom: 1.25rem;
+  }
+
+  .entete-page-titre {
+    font-size: 1.3125rem;
+  }
+
+  .entete-page-icone {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.125rem;
+  }
+
+  .entete-page-actions,
+  .boutons-export {
+    width: 100%;
+  }
+
+  .entete-page-actions > .btn,
+  .boutons-export > .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* --- Sections ------------------------------------------------------------- */
+.section-page + .section-page {
+  margin-top: 2rem;
+}
+
+.section-entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-titre {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.section-titre .bi {
+  color: var(--ika-bleu);
+}
+
+.section-sous-titre {
+  margin: .125rem 0 0;
+  color: var(--ika-texte-discret);
+  font-size: .875rem;
+}
+
+/* --- Messages flash ------------------------------------------------------- */
+.alert {
+  --bs-alert-border-color: transparent;
+  --bs-alert-padding-y: .875rem;
+  --bs-alert-padding-x: 1rem;
+  --bs-alert-border-radius: .625rem;
+  font-size: .9375rem;
+}
+
+.alert-danger {
+  --bs-alert-color: var(--ika-rouge-tres-fonce);
+  --bs-alert-bg: var(--ika-rouge-clair);
+}
+
+.zone-flash {
+  margin-bottom: 1.25rem;
+}
+
+.zone-flash .alert:last-child {
+  margin-bottom: 0;
+}
+
+.alerte {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+}
+
+.alerte-icone {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.alerte-texte {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.alert-dismissible .btn-close {
+  padding: 1.125rem 1rem;
+}
+
+/* --- Pages liste : barre de recherche et filtres --------------------------- */
+.carte-filtres {
+  margin-bottom: 1.25rem;
+}
+
+.carte-filtres .card-body {
+  padding: 1rem 1.25rem 1.125rem;
+}
+
+.barre-recherche-grille {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: .75rem;
+}
+
+.barre-recherche-champ {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.barre-recherche-principale {
+  flex: 2 1 15rem;
+}
+
+.barre-recherche-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: .5rem;
+}
+
+.champ-recherche {
+  position: relative;
+}
+
+.champ-recherche > .bi {
+  position: absolute;
+  top: 50%;
+  left: .875rem;
+  color: var(--ika-texte-discret);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.champ-recherche > .form-control {
+  padding-left: 2.5rem;
+}
+
+@media (max-width: 575.98px) {
+  .barre-recherche-actions {
+    flex: 1 1 100%;
+  }
+
+  .barre-recherche-actions > .btn {
+    flex: 1 1 0;
+  }
+}
+
+/* Pied de liste : résumé + pagination alignés. */
+.pied-liste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-top: 1.25rem;
+}
+
+.resume-liste {
+  margin: 0;
+  color: var(--ika-texte-secondaire);
+  font-size: .875rem;
+}
+
+.resume-liste strong {
+  color: var(--ika-texte);
+}
+
+/* --- Tableaux (sans aucun défilement) ------------------------------------
+   .conteneur-tableau est un conteneur de requêtes (container queries) :
+   - largeur >= 900px : tableau classique, colonnes compactes, textes longs
+     tronqués (texte complet dans l'attribut title) ;
+   - largeur <  900px : chaque ligne devient une carte empilée (libellé + valeur
+     via data-label), sur 2 colonnes à partir de 560px, 1 colonne en dessous.
+   ------------------------------------------------------------------------- */
+.conteneur-tableau {
+  container: tableau / inline-size;
+}
+
+.cadre-tableau {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ika-bordure);
+  border-radius: var(--ika-rayon-carte);
+  background-color: #fff;
+  box-shadow: var(--ika-ombre-xs);
+}
+
+.table-liste {
+  --bs-table-hover-bg: var(--ika-fond-doux);
+  --bs-table-border-color: var(--ika-bordure-legere);
+  width: 100%;
+  margin-bottom: 0;
+  font-size: .875rem;
+  vertical-align: middle;
+}
+
+.table-liste > thead > tr > th {
+  padding: .6875rem .625rem;
+  border-bottom: 1px solid var(--ika-bordure);
+  background-color: var(--ika-fond-doux);
+  color: var(--ika-texte-secondaire);
+  font-size: .71875rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.table-liste > tbody > tr > td,
+.table-liste > tbody > tr > th {
+  padding: .8125rem .625rem;
+  color: var(--ika-texte);
+}
+
+.table-liste > thead > tr > :first-child,
+.table-liste > tbody > tr > :first-child {
+  padding-left: 1.25rem;
+}
+
+.table-liste > thead > tr > :last-child,
+.table-liste > tbody > tr > :last-child {
+  padding-right: 1.25rem;
+}
+
+.table-liste > tbody > tr:last-child > * {
+  border-bottom-width: 0;
+}
+
+.col-numero {
+  width: 3.5rem;
+  color: var(--ika-texte-discret);
+  font-variant-numeric: tabular-nums;
+}
+
+.col-actions {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actions-ligne {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: .375rem;
+}
+
+.cellule-date {
+  color: var(--ika-texte-secondaire);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cellule-nowrap {
+  white-space: nowrap;
+}
+
+/* Colonne qui occupe l'espace restant et tronque le texte (texte complet dans l'attribut title). */
+.cellule-tronquee {
+  width: 100%;
+  min-width: 9rem;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Texte tronqué à une largeur maximale (texte complet dans l'attribut title). */
+.texte-tronque {
+  display: block;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.texte-tronque-court {
+  max-width: 7.5rem;
+}
+
+.texte-secondaire-cellule {
+  display: block;
+  margin-top: .125rem;
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+}
+
+/* Informations « repliées » : affichées sous une autre colonne quand la place manque. */
+.info-repliee {
+  display: none;
+}
+
+/* Libellé de bouton affiché seulement en mode carte. */
+.texte-mode-carte {
+  display: none;
+}
+
+/* Cellule « utilisateur » : avatar + nom + e-mail. */
+.cellule-compte {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-width: 0;
+}
+
+.cellule-compte-textes {
+  min-width: 0;
+}
+
+.cellule-compte-nom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .5rem;
+  line-height: 1.35;
+}
+
+.cellule-compte-email {
+  margin-top: .125rem;
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+  overflow-wrap: anywhere;
+}
+
+/* Tri par clic sur les en-têtes. */
+.lien-tri {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  color: inherit;
+}
+
+.lien-tri .bi {
+  font-size: .6875rem;
+  opacity: .5;
+}
+
+.lien-tri:hover,
+.lien-tri.actif {
+  color: var(--ika-bleu);
+}
+
+.lien-tri.actif .bi {
+  opacity: 1;
+}
+
+/* État vide. */
+.table-liste > tbody > tr > td.ligne-vide {
+  padding: 3rem 1rem;
+  color: var(--ika-texte-secondaire);
+  text-align: center;
+}
+
+.ligne-vide .bi {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto .75rem;
+  border-radius: 50%;
+  background-color: var(--ika-fond-survol);
+  color: var(--ika-texte-discret);
+  font-size: 1.375rem;
+}
+
+.ligne-vide span {
+  display: block;
+}
+
+/* Largeur intermédiaire : colonnes secondaires repliées, dates sur deux lignes. */
+@container tableau (min-width: 900px) and (max-width: 1099.98px) {
+  .col-repliable {
+    display: none;
+  }
+
+  .info-repliee {
+    display: block;
+  }
+}
+
+@container tableau (max-width: 999.98px) {
+  .cellule-date {
+    white-space: normal;
+  }
+
+  .texte-tronque {
+    max-width: 11rem;
+  }
+}
+
+/* Mode carte : chaque ligne devient une carte empilée (aucun défilement). */
+@container tableau (max-width: 899.98px) {
+  .cadre-tableau {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .table-empilable,
+  .table-empilable > tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .table-empilable {
+    --bs-table-hover-bg: transparent;
+    --bs-table-bg: transparent;
+  }
+
+  /* En-têtes triables présentés comme des pastilles « Trier par ». */
+  .table-empilable > thead {
+    display: block;
+    margin-bottom: .875rem;
+  }
+
+  .table-empilable > thead:not(:has(.col-triable)) {
+    display: none;
+  }
+
+  .table-empilable > thead > tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .table-empilable > thead > tr::before {
+    content: "Trier par :";
+    color: var(--ika-texte-secondaire);
+    font-size: .8125rem;
+    font-weight: 500;
+  }
+
+  .table-empilable > thead > tr > th {
+    display: none;
+  }
+
+  .table-empilable > thead > tr > th.col-triable {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .table-empilable > thead > tr > th.col-triable .lien-tri {
+    padding: .3125rem .75rem;
+    border: 1px solid var(--ika-bordure-forte);
+    border-radius: 999px;
+    background-color: #fff;
+  }
+
+  .table-empilable > thead > tr > th.col-triable .lien-tri.actif {
+    border-color: var(--ika-bleu-clair);
+    background-color: var(--ika-bleu-clair);
+  }
+
+  .table-empilable > tbody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .875rem;
+  }
+
+  .table-empilable > tbody > tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    min-width: 0;
+    padding: 1rem 1.125rem .5rem;
+    border: 1px solid var(--ika-bordure);
+    border-radius: var(--ika-rayon-carte);
+    background-color: #fff;
+    box-shadow: var(--ika-ombre-xs);
+  }
+
+  .table-empilable > tbody > tr > td,
+  .table-empilable > tbody > tr > th {
+    display: flex;
+    flex: 0 0 100%;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding: .5rem 0;
+    border: 0;
+    border-top: 1px solid var(--ika-bordure-legere);
+    background-color: transparent;
+    box-shadow: none;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .table-empilable > tbody > tr > :first-child,
+  .table-empilable > tbody > tr > :last-child {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .table-empilable > tbody > tr > [data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 50%;
+    color: var(--ika-texte-discret);
+    font-size: .71875rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  /* Cellule principale (titre de la carte) : en premier, sans libellé. */
+  .table-empilable > tbody > tr > .cellule-principale {
+    display: block;
+    flex: 1 1 60%;
+    order: -1;
+    padding: 0 0 .75rem;
+    border-top: 0;
+    text-align: left;
+  }
+
+  /* N° d'ordre en haut à droite de la carte. */
+  .table-empilable > tbody > tr > .col-numero {
+    display: block;
+    flex: 0 0 auto;
+    padding: 0 0 0 .75rem;
+    border-top: 0;
+    font-size: .8125rem;
+  }
+
+  .table-empilable > tbody > tr > .col-numero::before {
+    content: "N° ";
+  }
+
+  /* Textes longs : libellé au-dessus de la valeur, texte complet. */
+  .table-empilable > tbody > tr > .cellule-tronquee,
+  .table-empilable > tbody > tr > .valeur-donnee {
+    display: block;
+    overflow: visible;
+    text-align: left;
+    text-overflow: clip;
+  }
+
+  .table-empilable > tbody > tr > .cellule-tronquee::before,
+  .table-empilable > tbody > tr > .valeur-donnee::before {
+    display: block;
+    max-width: none;
+    margin-bottom: .25rem;
+  }
+
+  .table-empilable .texte-tronque {
+    max-width: none;
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .table-empilable .col-repliable {
+    display: flex;
+  }
+
+  .table-empilable .info-repliee {
+    display: none;
+  }
+
+  .table-empilable .cellule-date {
+    white-space: normal;
+  }
+
+  /* Actions : en pied de carte, alignées à droite. */
+  .table-empilable > tbody > tr > .col-actions {
+    justify-content: flex-end;
+    margin-top: .25rem;
+    padding: .75rem 0 .5rem;
+  }
+
+  .table-empilable .texte-mode-carte {
+    display: inline;
+  }
+
+  .table-empilable .btn-icone:has(.texte-mode-carte) {
+    width: auto;
+    padding: 0 .75rem;
+  }
+
+  /* Ligne « aucun élément » : carte centrée. */
+  .table-empilable > tbody > tr:has(> .ligne-vide) {
+    padding: 0;
+  }
+
+  .table-empilable > tbody > tr > td.ligne-vide {
+    display: block;
+    padding: 2.5rem 1rem;
+    border-top: 0;
+    text-align: center;
+  }
+}
+
+@container tableau (min-width: 560px) and (max-width: 899.98px) {
+  .table-empilable > tbody {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .table-empilable > tbody > tr:has(> .ligne-vide) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- Pages détail --------------------------------------------------------- */
+.liste-details {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) minmax(0, 1fr);
+  margin: 0;
+}
+
+.liste-details dt,
+.liste-details dd {
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--ika-bordure-legere);
+}
+
+.liste-details dt {
+  padding-right: 1.5rem;
+  color: var(--ika-texte-discret);
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+.liste-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.liste-details > dt:first-of-type,
+.liste-details > dt:first-of-type + dd {
+  padding-top: 0;
+}
+
+.liste-details > dt:last-of-type,
+.liste-details > dd:last-of-type {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+@media (max-width: 575.98px) {
+  .liste-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .liste-details dt {
+    padding-bottom: .125rem;
+    border-bottom: 0;
+  }
+
+  .liste-details dd {
+    padding-top: 0;
+  }
+
+  .liste-details > dt:last-of-type {
+    padding-bottom: .125rem;
+  }
+}
+
+/* Bandeau d'identité (fiche utilisateur, profil). */
+.carte-identite .card-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.25rem;
+}
+
+.carte-identite-textes {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.carte-identite-nom {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.carte-identite-email {
+  margin: .125rem 0 0;
+  color: var(--ika-texte-secondaire);
+  overflow-wrap: anywhere;
+}
+
+.carte-identite-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.actions-carte {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.actions-securite {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ika-bordure);
+}
+
+/* --- Indicateurs (tableau de bord) ---------------------------------------- */
+.grille-indicateurs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 1rem;
+}
+
+.carte-indicateur {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--ika-bordure);
+  border-radius: var(--ika-rayon-carte);
+  background-color: #fff;
+  box-shadow: var(--ika-ombre-xs);
+  transition: box-shadow .15s ease-in-out;
+}
+
+.carte-indicateur:hover {
+  box-shadow: var(--ika-ombre);
+}
+
+.carte-indicateur-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.carte-indicateur-icone {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: .75rem;
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu);
+  font-size: 1.1875rem;
+}
+
+.carte-indicateur-icone.accent {
+  background-color: var(--ika-rouge-clair);
+  color: var(--ika-rouge-fonce);
+}
+
+.carte-indicateur-icone.succes {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.carte-indicateur-icone.avertissement {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.carte-indicateur-icone.violet {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.carte-indicateur-icone.neutre {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.carte-indicateur-sous-titre {
+  margin: 0;
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  margin-top: auto;
+}
+
+.carte-indicateur-valeur {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+}
+
+.carte-indicateur-valeur-texte {
+  font-size: 1.125rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.carte-indicateur-libelle {
+  margin: 0;
+  color: var(--ika-texte-secondaire);
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+@media (max-width: 575.98px) {
+  .grille-indicateurs {
+    gap: .75rem;
+  }
+
+  .carte-indicateur {
+    padding: 1rem;
+  }
+
+  .carte-indicateur-valeur {
+    font-size: 1.625rem;
+  }
+}
+
+.petite-note {
+  margin: .75rem 0 0;
+  color: var(--ika-texte-discret);
+  font-size: .8125rem;
+}
+
+/* --- Pages d'erreur ------------------------------------------------------- */
+.page-erreur {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 34rem;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.page-simple .page-erreur {
+  margin: 0 auto;
+}
+
+.page-erreur-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.25rem;
+  border-radius: 1rem;
+  background-color: var(--ika-rouge-clair);
+  color: var(--ika-rouge-fonce);
+  font-size: 1.75rem;
+}
+
+.page-erreur-code {
+  margin-bottom: .375rem;
+  color: var(--ika-bleu);
+  font-size: .8125rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.page-erreur-titre {
+  margin-bottom: .75rem;
+  font-size: 1.625rem;
+  font-weight: 700;
+}
+
+.page-erreur-message,
+.page-erreur-detail {
+  margin-bottom: 0;
+  color: var(--ika-texte-secondaire);
+}
+
+.page-erreur-detail {
+  margin-top: .5rem;
+}
+
+.page-erreur-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  margin-top: 1.75rem;
+}
+
+/* --- OTP ------------------------------------------------------------------ */
+.qr-code {
+  display: block;
+  width: 184px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  padding: .5rem;
+  border: 1px solid var(--ika-bordure);
+  border-radius: .75rem;
+  background-color: #fff;
+}
+
+.code-secret {
+  display: inline-block;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  background-color: var(--ika-fond-survol);
+  color: var(--ika-texte);
+  font-family: var(--bs-font-monospace);
+  font-size: .875rem;
+  letter-spacing: .08em;
+  word-break: break-all;
+}
+
+.champ-code-otp {
+  font-family: var(--bs-font-monospace);
+  font-size: 1.375rem;
+  letter-spacing: .5em;
+  text-align: center;
+}
+
+.auth-champ-limite {
+  max-width: 420px;
+}
+
+.auth-etapes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-etape {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.auth-etape + .auth-etape {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ika-bordure);
+}
+
+.auth-etape-numero {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: var(--ika-bleu-clair);
+  color: var(--ika-bleu);
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+.auth-etape-contenu {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.auth-sous-titre {
+  margin: .25rem 0 .5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.auth-qr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.auth-qr .qr-code {
+  margin: 0;
+}
+
+.auth-qr-texte {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.auth-qr-texte .code-secret {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 575.98px) {
+  .auth-etape {
+    gap: .75rem;
+  }
+
+  .auth-qr {
+    justify-content: center;
+  }
+}
+
+/* --- Historique ---------------------------------------------------------- */
+.texte-technique {
+  font-family: var(--bs-font-monospace);
+  font-size: .8125rem;
+  overflow-wrap: anywhere;
+}
+
+.tableau-comparaison .col-champ {
+  width: 28%;
+  font-weight: 600;
+}
+
+.tableau-comparaison .ligne-modifiee > * {
+  --bs-table-bg-state: var(--ika-bleu-clair);
+}
+
+.valeur-donnee {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* --- Utilitaires ---------------------------------------------------------- */
+.texte-discret {
+  color: var(--ika-texte-discret);
+}
+
+/* --- Notifications toast (haut à droite, disparaissent seules) ------------ */
+.notif-conteneur {
+  z-index: 2100;
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+}
+
+.toast.notif {
+  --bs-toast-max-width: 22rem;
+  overflow: hidden;
+  border: 1px solid var(--ika-bordure);
+  border-radius: .75rem;
+  background-color: #fff;
+  box-shadow: 0 12px 32px rgba(16, 24, 40, .16);
+}
+
+.toast.notif .toast-body {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  padding: .75rem .75rem .75rem .875rem;
+  font-size: .875rem;
+}
+
+.notif-icone {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.notif-texte {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--ika-texte);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.notif-fermer {
+  flex: 0 0 auto;
+  font-size: .75rem;
+}
+
+.notif-barre {
+  height: 3px;
+  background-color: var(--ika-bleu);
+  transform-origin: left;
+  animation: notif-barre 5s linear forwards;
+}
+
+.notif-success .notif-icone {
+  color: #059669;
+}
+
+.notif-success .notif-barre {
+  background-color: #059669;
+}
+
+.notif-danger .notif-icone {
+  color: var(--ika-rouge);
+}
+
+.notif-danger .notif-barre {
+  background-color: var(--ika-rouge);
+}
+
+.notif-warning .notif-icone {
+  color: #d97706;
+}
+
+.notif-warning .notif-barre {
+  background-color: #d97706;
+}
+
+.notif-info .notif-icone {
+  color: var(--ika-bleu);
+}
+
+.notif-info .notif-barre {
+  background-color: var(--ika-bleu);
+}
+
+.notif-success {
+  border-left: 4px solid #059669;
+}
+
+.notif-danger {
+  border-left: 4px solid var(--ika-rouge);
+}
+
+.notif-warning {
+  border-left: 4px solid #d97706;
+}
+
+.notif-info {
+  border-left: 4px solid var(--ika-bleu);
+}
+
+@keyframes notif-barre {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-barre {
+    animation: none;
+  }
+}

@@ -1,0 +1,20 @@
+{#-
+  Contenu commun des pages d'erreur.
+  Import : {% from "composants/erreur.html" import page_erreur with context %}
+-#}
+{% macro page_erreur(code, titre, message, icone) -%}
+<section class="page-erreur" aria-labelledby="page-erreur-titre">
+  <span class="page-erreur-icone" aria-hidden="true"><i class="bi {{ icone }}"></i></span>
+  <p class="page-erreur-code">Erreur {{ code }}</p>
+  <h1 class="page-erreur-titre" id="page-erreur-titre">{{ titre }}</h1>
+  <p class="page-erreur-message">{{ message }}</p>
+  {%- if caller is defined %}{{ caller() }}{% endif %}
+  <div class="page-erreur-actions">
+    {%- if utilisateur %}
+    <a class="btn btn-primary" href="/tableau-de-bord"><i class="bi bi-house" aria-hidden="true"></i><span>Retour au tableau de bord</span></a>
+    {%- else %}
+    <a class="btn btn-primary" href="/connexion"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i><span>Aller à la page de connexion</span></a>
+    {%- endif %}
+  </div>
+</section>
+{%- endmacro %}

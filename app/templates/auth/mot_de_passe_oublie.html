@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% block titre %}Mot de passe oublié{% endblock %}
+{% block contenu %}
+<div class="entete-formulaire">
+  <div class="icone-formulaire" aria-hidden="true"><i class="bi bi-key"></i></div>
+  <h1 class="titre-formulaire">Mot de passe oublié</h1>
+  <p class="sous-titre-formulaire">Saisissez l'adresse e-mail de votre compte : vous recevrez un lien pour choisir un nouveau mot de passe.</p>
+</div>
+
+{{ form.resume_erreurs(erreurs) }}
+
+<form method="post" action="/mot-de-passe-oublie">
+  {{ form.champ_csrf() }}
+  {{ form.champ("email", "Adresse e-mail", valeurs.email, type="email", erreur=erreurs.email, requis=True, autocomplete="email", maxlength=255, placeholder="nom@exemple.com", autofocus=True) }}
+  {{ form.bouton_envoyer("Envoyer le lien de réinitialisation", "bi-envelope", pleine_largeur=True) }}
+</form>
+
+<p class="bas-formulaire">
+  <a href="/connexion"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la connexion</span></a>
+</p>
+{% endblock %}

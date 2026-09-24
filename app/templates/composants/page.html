@@ -1,0 +1,28 @@
+{#-
+  Macros de mise en page.
+  Import : {% from "composants/page.html" import entete_page %}
+-#}
+{% import "composants/badges.html" as b %}
+
+{#- En-tête de page : icône ou avatar à initiales (facultatifs), titre, sous-titre et actions
+    (contenu du bloc {% call %}), alignés. -#}
+{% macro entete_page(titre, sous_titre=None, icone=None, avatar=False) -%}
+<div class="entete-page">
+  <div class="entete-page-principal">
+    {%- if avatar %}
+    {{ b.avatar(titre, "avatar-grand") }}
+    {%- elif icone %}
+    <span class="entete-page-icone" aria-hidden="true"><i class="bi {{ icone }}"></i></span>
+    {%- endif %}
+    <div class="entete-page-textes">
+      <h1 class="entete-page-titre">{{ titre }}</h1>
+      {%- if sous_titre %}
+      <p class="entete-page-sous-titre">{{ sous_titre }}</p>
+      {%- endif %}
+    </div>
+  </div>
+  {%- if caller is defined %}
+  <div class="entete-page-actions">{{ caller() }}</div>
+  {%- endif %}
+</div>
+{%- endmacro %}

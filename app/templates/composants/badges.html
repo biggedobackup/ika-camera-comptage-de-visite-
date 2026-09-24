@@ -1,0 +1,29 @@
+{#-
+  Badges (rôle, statut) et avatar à initiales, partagés par les pages.
+  Import : {% import "composants/badges.html" as b %}
+-#}
+
+{#- Rôle d'un compte (Administrateur, Manager, Utilisateur). -#}
+{% macro badge_role(role) -%}
+{%- set icones = {"ADMIN": "bi-shield-lock", "MANAGER": "bi-briefcase", "UTILISATEUR": "bi-person"} -%}
+<span class="badge-ika badge-role badge-role-{{ role.value | lower }}"><i class="bi {{ icones.get(role.value, 'bi-person') }}" aria-hidden="true"></i>{{ role.libelle }}</span>
+{%- endmacro %}
+
+{#- Statut d'un compte (actif, inactif, verrouillé). -#}
+{% macro badge_statut(statut) -%}
+<span class="badge-ika badge-statut badge-statut-{{ statut.value }}">{{ statut.libelle }}</span>
+{%- endmacro %}
+
+{#- État de la double authentification. -#}
+{% macro badge_otp(active) -%}
+{%- if active %}
+<span class="badge-ika badge-bleu"><i class="bi bi-shield-check" aria-hidden="true"></i>Activée</span>
+{%- else %}
+<span class="badge-ika"><i class="bi bi-shield" aria-hidden="true"></i>Désactivée</span>
+{%- endif %}
+{%- endmacro %}
+
+{#- Avatar rond portant les initiales (deux premiers mots du nom). -#}
+{% macro avatar(nom, classe="") -%}
+<span class="avatar-initiales{% if classe %} {{ classe }}{% endif %}" aria-hidden="true">{{ nom.split()[:2] | map("first") | join | upper }}</span>
+{%- endmacro %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}Caméras & Comptage{% endblock %}
+
+{% block contenu %}
+{% call entete_page("Caméras 3D de comptage", "Gestion des caméras HX-CCD21 connectées et indicateurs en temps réel.", "bi-camera-video") %}
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
+      <i class="bi bi-broadcast"></i> <span id="texte-temps-reel">En direct (WebSocket)</span>
+    </span>
+    {% if peut_gerer %}
+    <a class="btn btn-primary" href="/cameras/ajouter"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i><span>Ajouter une caméra</span></a>
+    {% endif %}
+    <a class="btn btn-outline-primary" href="/cameras/passages"><i class="bi bi-list-check" aria-hidden="true"></i><span>Historique des passages</span></a>
+    <a class="btn btn-outline-secondary" href="/cameras/rapport/statistiques"><i class="bi bi-bar-chart-line" aria-hidden="true"></i><span>Rapport d'analyse</span></a>
+  </div>
+{% endcall %}
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Entrées du jour</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur" data-comptage-entrees>{{ indicateurs.entrees_jour }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Passages physiques</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Visiteurs uniques (IA)</p>
+        <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-success" data-comptage-uniques>{{ indicateurs.visiteurs_uniques_jour }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Clients réels dédoublés</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Personnel exclu</p>
+        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-secondary" data-comptage-personnel>{{ indicateurs.personnel_exclu_jour }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-badge"></i> Employés / livreurs filtrés</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Caméras actives</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-broadcast"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-primary" data-comptage-cameras-actives>{{ indicateurs.cameras_en_ligne }} / {{ indicateurs.cameras_total }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-activity"></i> En ligne (signal &lt; 3 min)</p>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0 fw-bold">Appareils configurés sur le réseau</h5>
+    <span class="badge bg-light text-dark border">{{ cameras | length }} caméra{{ "s" if cameras | length > 1 else "" }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" data-tableau-cameras>
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Numéro de série (SN)</th>
+          <th scope="col">Nom de l'entrée</th>
+          <th scope="col">Emplacement</th>
+          <th scope="col">Modèle</th>
+          <th scope="col">Adresse IP</th>
+          <th scope="col">Statut</th>
+          <th scope="col">Dernier Heartbeat</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cam in cameras %}
+        <tr data-camera-sn="{{ cam.sn }}">
+          <td><code class="fw-semibold text-primary">{{ cam.sn }}</code></td>
+          <td class="fw-medium">{{ cam.nom or "—" }}</td>
+          <td>{{ cam.emplacement or "—" }}</td>
+          <td><span class="badge bg-light text-dark border">{{ cam.modele }}</span></td>
+          <td>{{ cam.ip_address or "—" }}</td>
+          <td data-colonne-statut>
+            {% if cam.est_en_ligne %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-circle-fill me-1 small"></i>En ligne</span>
+            {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-circle-fill me-1 small"></i>Hors ligne</span>
+            {% endif %}
+          </td>
+          <td class="text-muted small" data-colonne-heartbeat>
+            {% if cam.dernier_heartbeat %}
+              {{ cam.dernier_heartbeat | date_heure }}
+            {% else %}
+              <span class="text-body-secondary fst-italic">Jamais contacté</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-inline-flex gap-1">
+              <a class="btn btn-sm btn-outline-secondary" href="/cameras/{{ cam.id }}" title="Modifier la caméra">
+                <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">Modifier</span>
+              </a>
+              {% if peut_gerer %}
+              {{ form.bouton_suppression("/cameras/" ~ cam.id ~ "/supprimer", "Voulez-vous vraiment supprimer définitivement la caméra " ~ cam.libelle_affiche ~ " (" ~ cam.sn ~ ") ? Tout l'historique associé sera effacé.", libelle="Supprimer " ~ cam.libelle_affiche, classe="btn-sm btn-outline-danger btn-icone", icone_seule=True) }}
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">
+            <i class="bi bi-camera-video-off fs-3 d-block mb-2 text-secondary"></i>
+            Aucune caméra configurée.
+            {% if peut_gerer %}
+            <br><a href="/cameras/ajouter" class="btn btn-primary btn-sm mt-2"><i class="bi bi-plus-lg me-1"></i>Ajouter la première caméra</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

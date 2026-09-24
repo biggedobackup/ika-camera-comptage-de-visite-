@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% import "composants/badges.html" as b %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}{{ compte.nom_complet }}{% endblock %}
+
+{% block contenu %}
+{% call entete_page(compte.nom_complet, "Fiche de l'utilisateur" ~ (" — votre compte" if est_soi_meme else ""), avatar=True) %}
+  <a class="btn btn-outline-secondary" href="/utilisateurs"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la liste</span></a>
+  {%- if peut_gerer %}
+  <a class="btn btn-primary" href="/utilisateurs/{{ compte.id }}/modifier"><i class="bi bi-pencil" aria-hidden="true"></i><span>Modifier</span></a>
+  {%- if not est_soi_meme %}
+  {{ form.bouton_suppression("/utilisateurs/" ~ compte.id ~ "/supprimer", "Voulez-vous vraiment supprimer le compte de " ~ compte.nom_complet ~ " (" ~ compte.email ~ ") ?") }}
+  {%- endif %}
+  {%- endif %}
+{% endcall %}
+
+<div class="row g-4">
+  <div class="col-12 col-xxl-7">
+    <section class="card h-100" aria-labelledby="titre-informations">
+      <div class="card-header">
+        <h2 class="titre-carte" id="titre-informations"><i class="bi bi-person-lines-fill" aria-hidden="true"></i>Informations du compte</h2>
+      </div>
+      <div class="card-body">
+        <dl class="liste-details">
+          <dt>Nom complet</dt>
+          <dd>{{ compte.nom_complet }}</dd>
+          <dt>Adresse e-mail</dt>
+          <dd>{{ compte.email }}</dd>
+          <dt>Téléphone</dt>
+          <dd>{{ compte.telephone or "Non renseigné" }}</dd>
+          <dt>Rôle</dt>
+          <dd>{{ b.badge_role(compte.role) }}</dd>
+          <dt>Statut</dt>
+          <dd>{{ b.badge_statut(statut) }}</dd>
+          <dt>Dernière connexion</dt>
+          <dd>{{ compte.derniere_connexion | date_heure or "Jamais connecté" }}</dd>
+          <dt>Créé le</dt>
+          <dd>{{ compte.created_at | date_heure }}</dd>
+          <dt>Modifié le</dt>
+          <dd>{{ compte.updated_at | date_heure }}</dd>
+        </dl>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12 col-xxl-5">
+    <section class="card h-100" aria-labelledby="titre-securite">
+      <div class="card-header">
+        <h2 class="titre-carte" id="titre-securite"><i class="bi bi-shield-lock" aria-hidden="true"></i>Sécurité du compte</h2>
+      </div>
+      <div class="card-body">
+        <dl class="liste-details">
+          <dt>Double authentification</dt>
+          <dd>{{ b.badge_otp(compte.otp_active) }}</dd>
+          <dt>Échecs de connexion</dt>
+          <dd>{{ compte.tentatives_echouees }} échec{{ "s" if compte.tentatives_echouees > 1 }} consécutif{{ "s" if compte.tentatives_echouees > 1 }}</dd>
+          <dt>Verrouillage</dt>
+          <dd>
+            {%- if compte.est_verrouille %}
+            {%- set minutes = compte.minutes_verrouillage_restantes %}
+            <span class="text-danger-emphasis">Verrouillé jusqu'au {{ compte.verrouille_jusqua | date_heure }} (UTC), encore {{ minutes }} minute{{ "s" if minutes > 1 }}</span>
+            {%- else %}
+            Non verrouillé
+            {%- endif %}
+          </dd>
+        </dl>
+
+        {%- if peut_gerer and (compte.est_verrouille or compte.otp_active) %}
+        <div class="actions-securite">
+          {%- if compte.est_verrouille %}
+          <form method="post" action="/utilisateurs/{{ compte.id }}/deverrouiller">
+            {{ form.champ_csrf() }}
+            {{ form.bouton_envoyer("Déverrouiller le compte", "bi-unlock", "btn-outline-primary") }}
+          </form>
+          {%- endif %}
+          {%- if compte.otp_active %}
+          <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modal-reinitialiser-otp">
+            <i class="bi bi-shield-x" aria-hidden="true"></i><span>Réinitialiser la double authentification</span>
+          </button>
+          {%- endif %}
+        </div>
+        {%- endif %}
+      </div>
+    </section>
+  </div>
+</div>
+
+{%- if peut_gerer and compte.otp_active %}
+<div class="modal fade" id="modal-reinitialiser-otp" tabindex="-1" aria-labelledby="modal-reinitialiser-otp-titre" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="/utilisateurs/{{ compte.id }}/reinitialiser-otp">
+        {{ form.champ_csrf() }}
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="modal-reinitialiser-otp-titre">
+            <i class="bi bi-exclamation-triangle-fill text-danger" aria-hidden="true"></i>
+            Réinitialiser la double authentification
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">Voulez-vous vraiment réinitialiser la double authentification de {{ compte.nom_complet }} ({{ compte.email }}) ?</p>
+          <p class="text-body-secondary small mb-0">Le secret actuel sera effacé : l'utilisateur se connectera avec son seul mot de passe jusqu'à ce qu'il configure à nouveau la double authentification.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-shield-x" aria-hidden="true"></i>Réinitialiser</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{%- endif %}
+{% endblock %}

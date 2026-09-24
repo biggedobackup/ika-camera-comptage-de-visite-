@@ -1,0 +1,16 @@
+{#- Notifications toast : succès / erreur / avertissement / info, en haut à droite, disparaissent seules. -#}
+{%- set icones = {"success": "bi-check-circle-fill", "danger": "bi-x-octagon-fill", "warning": "bi-exclamation-triangle-fill", "info": "bi-info-circle-fill"} -%}
+{%- if flashs %}
+<div class="notif-conteneur toast-container position-fixed top-0 end-0 p-3" aria-live="polite" aria-atomic="false">
+  {%- for f in flashs %}
+  <div class="toast notif notif-{{ f.categorie }} show" role="{{ 'alert' if f.categorie in ('danger', 'warning') else 'status' }}" data-bs-autohide="true" data-bs-delay="5000" data-notification>
+    <div class="toast-body">
+      <i class="bi {{ icones.get(f.categorie, 'bi-info-circle-fill') }} notif-icone" aria-hidden="true"></i>
+      <div class="notif-texte">{{ f.message }}</div>
+      <button type="button" class="btn-close notif-fermer" data-bs-dismiss="toast" aria-label="Fermer la notification"></button>
+    </div>
+    <div class="notif-barre" aria-hidden="true"></div>
+  </div>
+  {%- endfor %}
+</div>
+{%- endif %}

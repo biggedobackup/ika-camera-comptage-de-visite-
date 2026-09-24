@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% import "composants/liste.html" as l with context %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}Historique des passages{% endblock %}
+
+{% block contenu %}
+{% call entete_page("Historique des passages", "Données de comptage minute par minute issues des caméras 3D HX-CCD21.", "bi-graph-up") %}
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
+      <i class="bi bi-broadcast"></i> <span>En direct</span>
+    </span>
+    {{ l.boutons_export(passages, "/cameras/export/pdf", "/cameras/export/excel") }}
+    <a class="btn btn-outline-secondary" href="/cameras"><i class="bi bi-camera-video" aria-hidden="true"></i><span>Voir les caméras</span></a>
+  </div>
+{% endcall %}
+
+<div class="card carte-filtres mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label for="filtre-camera" class="form-label small fw-medium">Caméra / Entrée</label>
+        <select class="form-select" id="filtre-camera" name="camera_sn">
+          <option value="">Toutes les caméras</option>
+          {% for c in cameras %}
+          <option value="{{ c.sn }}" {% if parametres.camera_sn == c.sn %}selected{% endif %}>
+            {{ c.libelle_affiche }} ({{ c.sn }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label for="filtre-date" class="form-label small fw-medium">Date</label>
+        <input type="date" class="form-control" id="filtre-date" name="date_jour" value="{{ parametres.date_jour or '' }}">
+      </div>
+
+      <div class="col-md-4">
+        <label for="filtre-recherche" class="form-label small fw-medium">Recherche</label>
+        <input type="search" class="form-control" id="filtre-recherche" name="q" placeholder="SN ou date…" value="{{ parametres.recherche or '' }}">
+      </div>
+
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-filter"></i> Filtrer</button>
+        {% if parametres.camera_sn or parametres.date_jour or parametres.recherche %}
+        <a href="/cameras/passages" class="btn btn-outline-secondary" title="Réinitialiser"><i class="bi bi-x-lg"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="conteneur-tableau">
+  <div class="cadre-tableau">
+    <table class="table table-hover table-liste table-empilable">
+      <caption class="visually-hidden">Historique des passages</caption>
+      <thead>
+        <tr>
+          {{ l.entete_numero() }}
+          <th scope="col">Date & Heure (UTC)</th>
+          <th scope="col">Caméra</th>
+          <th scope="col" class="text-center text-primary">Entrées</th>
+          <th scope="col" class="text-center text-secondary">Sorties</th>
+          <th scope="col" class="text-center text-success">Clients uniques</th>
+          <th scope="col" class="text-center text-warning">Récidives</th>
+          <th scope="col" class="text-center text-muted">Personnel exclu</th>
+          <th scope="col" class="text-center">Passants</th>
+        </tr>
+      </thead>
+      <tbody data-tableau-passages>
+        {% for p in passages.elements %}
+        <tr>
+          <td class="col-numero">{{ passages.numero(loop.index) }}</td>
+          <td class="fw-medium">{{ p.horodatage_debut | date_heure }}</td>
+          <td>
+            <div class="fw-semibold">{{ p.camera.libelle_affiche if p.camera else p.master_sn }}</div>
+            <code class="small text-muted">{{ p.master_sn }}</code>
+          </td>
+          <td class="text-center fw-bold text-primary">{{ p.entrees }}</td>
+          <td class="text-center fw-medium text-secondary">{{ p.sorties }}</td>
+          <td class="text-center fw-bold text-success">{{ p.visiteurs_uniques }}</td>
+          <td class="text-center text-warning">{{ p.visiteurs_recidives }}</td>
+          <td class="text-center text-muted">{{ p.personnel_exclu }}</td>
+          <td class="text-center">{{ p.passants }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9" class="text-center py-4 text-muted">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+            Aucun passage enregistré pour le moment.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ l.pagination(passages) }}
+</div>
+{% endblock %}

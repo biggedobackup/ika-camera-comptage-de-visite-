@@ -1,0 +1,250 @@
+Stack technique
+
+Backend
+
+FastAPI (Python 3.12+)
+SQLAlchemy 2.0 (ORM async)
+Alembic (migrations)
+Pydantic v2 (schémas / validation)
+Pydantic Settings (configuration)
+PostgreSQL + asyncpg (driver async) + psycopg2-binary (driver sync pour Alembic)
+Uvicorn
+python-jose + bcrypt (JWT, hachage mots de passe)
+python-multipart (formulaires)
+itsdangerous (sessions signées)
+python-dotenv
+email-validator (validation des emails)
+pyotp + qrcode[pil] (authentification à deux facteurs / OTP)
+reportlab (export PDF)
+openpyxl (export Excel)
+Swagger UI / OpenAPI (documentation API auto-générée par FastAPI, /docs et /redoc)
+pytest + pytest-asyncio + httpx (tests) — à ajouter dans requirements.txt
+
+Frontend
+
+Jinja2 (templates)
+Bootstrap 5.3
+Couleurs : bleu #1270b8 / rouge #e51b35 / fond blanc
+
+Regle de design 
+
+- Pas de dégrader , pas de gardien dans le design
+- Tous les éléments doivent etre bien aligner , les boutons , les formulaires, les alignements
+- Tous les champs mot de passe doivent avoir oeil pour cacher ou voir le mot de passe
+- Sur les pages liste.html les tableau doivent avoir numero d'ordre , une pagination , le nombre d'element total et par page , il dois avoir une pagination chaque 20 éléments
+- Sur les pages liste.html les tableau doivent avoir un export PDF et un export Excel
+- Sur les pages liste.html les tableau doivent avoir une recherche/filtre et un tri des colonnes
+- ne pas mettre le css et js dans le html pour éviter aux maximum les unsafe inline et unsafe aval (interdis d'utiliser du unsafe inline et unsafe evale)
+- Protection CSRF sur tous les formulaires
+- Rate limiting sur la connexion et la verification OTP (anti brute-force)
+- Tous les messages d'erreur et de succes doivent etre clairs et bien expliques
+- Bouton desactive + indicateur de chargement pendant la soumission d'un formulaire (eviter le double envoi)
+- Confirmation (modal) avant toute action destructive (suppression)
+- Design responsive (mobile/tablette)
+- Accessibilite : labels associes aux champs, contraste suffisant
+- le design dois etre design moderne et professionel 
+
+Priorités
+
+- Securite et performance sont prioritaires sur le reste (avant les fonctionnalites secondaires).
+
+Sécurité
+
+API / Endpoints :
+- Protection IDOR : chaque permissions.py doit verifier que la ressource appartient bien a l'utilisateur, pas seulement son role
+- Validation stricte des fichiers uploades (type MIME reel, taille max)
+- Limitation de taille globale des requetes
+- Ne jamais exposer les stack traces en production (erreurs generiques cote client, detail en log serveur)
+- Protection contre le path traversal et l'injection de commandes (notamment sur les noms de fichiers des exports)
+
+Headers / transport :
+- CSP (Content-Security-Policy) explicite
+- HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- Cookies session/JWT en Secure + HttpOnly + SameSite
+- CORS restreint explicitement
+- TrustedHostMiddleware (anti Host header attack)
+
+Authentification / session :
+- Politique de mot de passe (longueur, complexité)
+- Verrouillage de compte après N tentatives échouées (au-delà du rate limiting)
+- Révocation/blacklist des tokens JWT à la déconnexion
+- Régénération de session après connexion (anti session fixation)
+- Vérification d'email à l'inscription si c'est demandé
+
+Données / exports :
+- Secret OTP chiffré en base (pas en clair)
+- Protection contre l'injection de formules Excel dans export_excel.py
+
+Audit :
+- Module historique : journal de toutes les actions CRUD + connexion/deconnexion
+- Chaque module doit appeler ce service de journalisation pour ses actions CRUD
+- Historique consultable dans le frontend (liste + detail), avec export PDF/Excel
+- Le module historique est en lecture seule : aucune creation/modification manuelle sur la page historique, les entrees sont generees automatiquement par les autres modules
+
+Autre :
+- .env exclu du .gitignore
+- Pages d'erreur personnalisees (400, 401, 403, 404, 429, 500, 503) + gestion globale des exceptions
+
+Performance
+
+Backend :
+- Eviter les requetes N+1 avec SQLAlchemy async (selectinload/joinedload)
+- Connection pooling explicite sur asyncpg
+- Compression Gzip/Brotli des reponses API
+- Cache (Redis) pour les requetes lourdes ou repetees, avec invalidation correcte
+
+Base de donnees :
+- Backups automatiques + test de restauration regulier
+- Compte DB dedie avec permissions limitees (pas de superuser)
+- Index composites sur les colonnes filtrees/triees des liste.html
+- Contraintes FK et unicite explicites
+
+Frontend :
+- Cache navigateur (Cache-Control, ETag) sur /static
+- Minification CSS/JS en production
+
+
+Équipe d'agents
+Vous mettrez en place une équipe d'agents composée de :
+
+- Un chef d'équipe : chargé de déléguer les tâches aux sous-agents
+- Des agents de développement : dédiés au codage
+- Des agents de vérification : chargés de la validation du code 
+- Des agents de test : responsables des parcours fonctionnels dans le navigateur
+
+les gens agents doivent travailler en boucle /goal jusqua la fin du projet 100% fonctionnels pret pour la production
+
+Convention module
+
+Chaque module (dossier sous app/) doit contenir :
+- __init__.py
+- model.py
+- schemas.py
+- services.py
+- permissions.py
+- export_pdf.py
+- export_excel.py
+- routes.py
+- templates/<module>/ : ajoute.html, liste.html, detail.html
+
+Si je demande un nouveau module (ex: "ajoute employé"), créer
+automatiquement toute cette structure pour ce module.
+
+Ordre de développement : CRUD d'abord (create, read, update, delete),
+puis permissions, puis export PDF/Excel.
+
+
+structure du projet
+
+├── .env
+├── .env.example
+├── .gitignore
+├── requirements.txt
+├── alembic.ini
+├── README.md
+│
+├── alembic/
+│   ├── versions/
+│   ├── env.py
+│   └── script.py.mako
+│
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   │
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   ├── security.py
+│   │   ├── mail.py
+│   │   └── exceptions.py
+│   │
+│   ├── auth/
+│   │   ├── __init__.py
+│   │   ├── model.py
+│   │   ├── schemas.py
+│   │   ├── services.py
+│   │   ├── otp.py
+│   │   ├── permissions.py
+│   │   └── routes.py
+│   │
+│   ├── utilisateurs/ ( c'est un module ) 
+│   │   ├── __init__.py
+│   │   ├── model.py
+│   │   ├── schemas.py
+│   │   ├── services.py
+│   │   ├── permissions.py
+│   │   ├── export_pdf.py
+│   │   ├── export_excel.py
+│   │   └── routes.py
+│   ├── autres modules/ ( c'est un module si je le définis tu dois cree avec tous les éléments ) 
+│   │   ├── __init__.py
+│   │   ├── model.py
+│   │   ├── schemas.py
+│   │   ├── services.py
+│   │   ├── permissions.py
+│   │   ├── export_pdf.py
+│   │   ├── export_excel.py
+│   │   └── routes.py
+│   │
+│   ├── historiques/ ( journal des actions : crud, connexion, deconnexion — lecture seule, pas de creation/modification manuelle )
+│   │   ├── __init__.py
+│   │   ├── model.py
+│   │   ├── schemas.py
+│   │   ├── services.py
+│   │   ├── permissions.py
+│   │   ├── export_pdf.py
+│   │   ├── export_excel.py
+│   │   └── routes.py
+│   │
+│   ├── tableau_de_bord/
+│   │   ├── __init__.py
+│   │   ├── schemas.py
+│   │   ├── services.py
+│   │   └── routes.py
+│   │
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── composants/
+│   │   │   ├── header.html (doit etre en haut en haut a droite le rond avec icone user et quand on clique dessus le dropdow profil et deconnexion affiche)
+│   │   │   └── menu.html (le menu aligner a gauche avec page active quand on est sur la page)
+│   │   ├── auth/
+│   │   │   ├── connexion.html
+│   │   │   ├── inscription.html
+│   │   │   ├── mot_de_passe_oublie.html
+│   │   │   ├── mot_de_passe_reinitialiser.html
+│   │   │   ├── otp_verification.html
+│   │   │   ├── otp_configuration.html
+│   │   │   └── profil.html
+│   │   ├── utilisateurs/
+│   │   │   ├── ajoute.html
+│   │   │   ├── liste.html
+│   │   │   └── detail.html
+│   │   ├── tableau_de_bord/
+│   │   │   └── index.html
+│   │   ├── historiques/
+│   │   │   ├── liste.html
+│   │   │   └── detail.html
+│   │   └── erreurs/
+│   │       ├── 400.html
+│   │       ├── 401.html
+│   │       ├── 403.html
+│   │       ├── 404.html
+│   │       ├── 429.html
+│   │       ├── 500.html
+│   │       └── 503.html
+│   │
+│   └── static/
+│       ├── css/
+│       │   └── style.css
+│       ├── js/
+│       │   └── app.js
+│       └── img/
+│           └── logo.png
+│
+├── scripts/
+│   └── creer_premier_admin.py
+│
+└── tests/
+    └── conftest.py

@@ -1,0 +1,144 @@
+{#-
+  Macros de formulaire.
+  Import : {% import "composants/formulaires.html" as form with context %}
+  (« with context » est nécessaire pour accéder au jeton CSRF de la requête.)
+-#}
+
+{#- Champ caché CSRF : obligatoire dans TOUS les formulaires POST. -#}
+{% macro champ_csrf() -%}
+<input type="hidden" name="{{ NOM_CHAMP_CSRF }}" value="{{ csrf_token }}">
+{%- endmacro %}
+
+{#- Identifiants des aides/erreurs pour aria-describedby. -#}
+{% macro _decrit_par(identifiant, aide, erreur) -%}
+{%- set ids = [] -%}
+{%- if aide %}{% set _ = ids.append(identifiant ~ "-aide") %}{% endif -%}
+{%- if erreur %}{% set _ = ids.append(identifiant ~ "-erreur") %}{% endif -%}
+{%- if ids %} aria-describedby="{{ ids | join(' ') }}"{% endif -%}
+{%- if erreur %} aria-invalid="true"{% endif -%}
+{%- endmacro %}
+
+{% macro _libelle(identifiant, libelle, requis) -%}
+<label class="form-label" for="{{ identifiant }}">{{ libelle }}{% if requis %} <span class="champ-requis" aria-hidden="true">*</span>{% endif %}</label>
+{%- endmacro %}
+
+{#- Champ texte générique (text, email, tel, number, date…). -#}
+{% macro champ(nom, libelle, valeur="", type="text", erreur=None, requis=False, autocomplete=None, aide=None, placeholder=None, maxlength=None, id=None, autofocus=False) -%}
+{%- set identifiant = id or "champ-" ~ nom -%}
+<div class="mb-3">
+  {{ _libelle(identifiant, libelle, requis) }}
+  <input type="{{ type }}" class="form-control{% if erreur %} is-invalid{% endif %}" id="{{ identifiant }}" name="{{ nom }}" value="{{ valeur if valeur is not none else '' }}"
+    {%- if requis %} required{% endif %}
+    {%- if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}
+    {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+    {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
+    {%- if autofocus %} autofocus{% endif %}
+    {{- _decrit_par(identifiant, aide, erreur) }}>
+  {%- if erreur %}
+  <div class="invalid-feedback" id="{{ identifiant }}-erreur">{{ erreur }}</div>
+  {%- endif %}
+  {%- if aide %}
+  <div class="form-text" id="{{ identifiant }}-aide">{{ aide }}</div>
+  {%- endif %}
+</div>
+{%- endmacro %}
+
+{#- Liste déroulante. `options` : liste de couples (valeur, libellé). -#}
+{% macro champ_select(nom, libelle, options, valeur="", erreur=None, requis=False, vide=None, aide=None, id=None) -%}
+{%- set identifiant = id or "champ-" ~ nom -%}
+<div class="mb-3">
+  {{ _libelle(identifiant, libelle, requis) }}
+  <select class="form-select{% if erreur %} is-invalid{% endif %}" id="{{ identifiant }}" name="{{ nom }}"{% if requis %} required{% endif %}{{ _decrit_par(identifiant, aide, erreur) }}>
+    {%- if vide is not none %}
+    <option value="">{{ vide }}</option>
+    {%- endif %}
+    {%- for cle, texte in options %}
+    <option value="{{ cle }}"{% if cle | string == valeur | string %} selected{% endif %}>{{ texte }}</option>
+    {%- endfor %}
+  </select>
+  {%- if erreur %}
+  <div class="invalid-feedback" id="{{ identifiant }}-erreur">{{ erreur }}</div>
+  {%- endif %}
+  {%- if aide %}
+  <div class="form-text" id="{{ identifiant }}-aide">{{ aide }}</div>
+  {%- endif %}
+</div>
+{%- endmacro %}
+
+{#- Règles de mot de passe affichées sous le champ. -#}
+{% macro regles_mot_de_passe(id="regles-mot-de-passe") -%}
+<div class="regles-mot-de-passe" id="{{ id }}">
+  <p class="regles-mot-de-passe-titre">Le mot de passe doit respecter les règles suivantes :</p>
+  <ul>
+    {%- for regle in REGLES_MOT_DE_PASSE %}
+    <li><i class="bi bi-check2" aria-hidden="true"></i><span>{{ regle }}</span></li>
+    {%- endfor %}
+  </ul>
+</div>
+{%- endmacro %}
+
+{#- Champ mot de passe avec bouton œil (afficher / masquer). La valeur n'est jamais pré-remplie. -#}
+{% macro champ_mot_de_passe(nom, libelle, erreur=None, autocomplete="current-password", requis=True, id=None, afficher_regles=False, autofocus=False) -%}
+{%- set identifiant = id or "champ-" ~ nom -%}
+{%- set decrit_par = [] -%}
+{%- if afficher_regles %}{% set _ = decrit_par.append(identifiant ~ "-regles") %}{% endif -%}
+{%- if erreur %}{% set _ = decrit_par.append(identifiant ~ "-erreur") %}{% endif -%}
+<div class="mb-3">
+  {{ _libelle(identifiant, libelle, requis) }}
+  <div class="input-group{% if erreur %} has-validation{% endif %}">
+    <input type="password" class="form-control{% if erreur %} is-invalid{% endif %}" id="{{ identifiant }}" name="{{ nom }}" autocomplete="{{ autocomplete }}"
+      {%- if requis %} required{% endif %}
+      {%- if autofocus %} autofocus{% endif %}
+      {%- if decrit_par %} aria-describedby="{{ decrit_par | join(' ') }}"{% endif %}
+      {%- if erreur %} aria-invalid="true"{% endif %}>
+    <button type="button" class="btn btn-oeil" data-basculer-mot-de-passe aria-controls="{{ identifiant }}" aria-pressed="false" aria-label="Afficher le mot de passe">
+      <i class="bi bi-eye" aria-hidden="true"></i>
+    </button>
+    {%- if erreur %}
+    <div class="invalid-feedback" id="{{ identifiant }}-erreur">{{ erreur }}</div>
+    {%- endif %}
+  </div>
+  {%- if afficher_regles %}
+  {{ regles_mot_de_passe(identifiant ~ "-regles") }}
+  {%- endif %}
+</div>
+{%- endmacro %}
+
+{#- Case à cocher (booléen). -#}
+{% macro case_a_cocher(nom, libelle, coche=False, aide=None, id=None, valeur="true") -%}
+{%- set identifiant = id or "champ-" ~ nom -%}
+<div class="mb-3 form-check form-switch">
+  <input class="form-check-input" type="checkbox" role="switch" id="{{ identifiant }}" name="{{ nom }}" value="{{ valeur }}"{% if coche %} checked{% endif %}{{ _decrit_par(identifiant, aide, None) }}>
+  <label class="form-check-label" for="{{ identifiant }}">{{ libelle }}</label>
+  {%- if aide %}
+  <div class="form-text" id="{{ identifiant }}-aide">{{ aide }}</div>
+  {%- endif %}
+</div>
+{%- endmacro %}
+
+{#- Résumé des erreurs en tête de formulaire (+ erreur générale « _general »). -#}
+{% macro resume_erreurs(erreurs) -%}
+{%- if erreurs %}
+<div class="alert alert-danger alerte" role="alert">
+  <i class="bi bi-x-octagon-fill alerte-icone" aria-hidden="true"></i>
+  <div class="alerte-texte">
+    {%- if erreurs._general %}{{ erreurs._general }}{% else %}Le formulaire contient des erreurs. Corrigez les champs signalés en rouge puis réessayez.{% endif %}
+  </div>
+</div>
+{%- endif %}
+{%- endmacro %}
+
+{#- Bouton de soumission (désactivé + indicateur de chargement pendant l'envoi, géré par app.js). -#}
+{% macro bouton_envoyer(libelle, icone=None, classe="btn-primary", pleine_largeur=False) -%}
+<button type="submit" class="btn {{ classe }}{% if pleine_largeur %} w-100{% endif %}">
+  {%- if icone %}<i class="bi {{ icone }}" aria-hidden="true"></i>{% endif %}<span>{{ libelle }}</span>
+</button>
+{%- endmacro %}
+
+{#- Bouton de suppression : ouvre la modal de confirmation (POST + CSRF vers `url`). -#}
+{% macro bouton_suppression(url, message, libelle="Supprimer", classe="btn-outline-danger", icone_seule=False) -%}
+<button type="button" class="btn {{ classe }}" data-confirmer-suppression data-url="{{ url }}" data-message="{{ message }}"
+  {%- if icone_seule %} aria-label="{{ libelle }}" title="{{ libelle }}"{% endif %}>
+  <i class="bi bi-trash" aria-hidden="true"></i>{% if not icone_seule %}<span>{{ libelle }}</span>{% endif %}
+</button>
+{%- endmacro %}

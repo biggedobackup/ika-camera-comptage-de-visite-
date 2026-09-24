@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}Rapport d'analyse de fréquentation{% endblock %}
+
+{% block contenu %}
+{% call entete_page("Rapport d'analyse de flux", "Synthèse de la fréquentation, des passages et de la performance des entrées.", "bi-bar-chart-line") %}
+  <a class="btn btn-outline-primary" href="/cameras/export/excel?date_jour={{ rapport.date_debut }}"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
+  <a class="btn btn-outline-danger" href="/cameras/export/pdf?date_jour={{ rapport.date_debut }}"><i class="bi bi-file-earmark-pdf"></i> Export PDF</a>
+{% endcall %}
+
+<!-- Filtres de période et de caméra -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" action="/cameras/rapport/statistiques" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label for="date_debut" class="form-label small fw-medium">Date de début</label>
+        <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ rapport.date_debut }}">
+      </div>
+      <div class="col-md-3">
+        <label for="date_fin" class="form-label small fw-medium">Date de fin</label>
+        <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ rapport.date_fin }}">
+      </div>
+      <div class="col-md-4">
+        <label for="camera_sn" class="form-label small fw-medium">Filtrer par entrée</label>
+        <select class="form-select" id="camera_sn" name="camera_sn">
+          <option value="">Toutes les entrées (Global)</option>
+          {% for c in cameras %}
+          <option value="{{ c.sn }}" {% if camera_sn_actif == c.sn %}selected{% endif %}>
+            {{ c.libelle_affiche }} ({{ c.sn }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Appliquer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cartes d'indicateurs clés -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Total Entrées</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur">{{ rapport.entrees }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Passages physiques</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Clients uniques (IA)</p>
+        <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-success">{{ rapport.visiteurs_uniques }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Visiteurs réels dédoublés</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Taux de revisite</p>
+        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-warning-emphasis">{{ rapport.taux_revisite_pct }}%</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-clock-history"></i> {{ rapport.visiteurs_recidives }} revisite{{ "s" if rapport.visiteurs_recidives > 1 else "" }} identifiée{{ "s" if rapport.visiteurs_recidives > 1 else "" }}</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="carte-indicateur">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Personnel filtré</p>
+        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-secondary">{{ rapport.personnel_exclu }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-badge"></i> Badges / livreurs exclus</p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Répartition par Caméra / Porte -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0 fw-bold">Performance par entrée / caméra</h5>
+        <span class="badge bg-light text-dark border">{{ rapport.repartition_cameras | length }} entrées actives</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Entrée</th>
+              <th scope="col" class="text-center text-primary">Entrées</th>
+              <th scope="col" class="text-center text-success">Uniques</th>
+              <th scope="col" class="text-center text-secondary">Personnel</th>
+              <th scope="col" class="text-center">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in rapport.repartition_cameras %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ c.nom }}</div>
+                <code class="small text-muted">{{ c.sn }}</code>
+              </td>
+              <td class="text-center fw-bold text-primary">{{ c.entrees }}</td>
+              <td class="text-center fw-bold text-success">{{ c.uniques }}</td>
+              <td class="text-center text-muted">{{ c.personnel }}</td>
+              <td class="text-center">
+                {% if c.statut_en_ligne %}
+                <span class="badge bg-success-subtle text-success">En ligne</span>
+                {% else %}
+                <span class="badge bg-danger-subtle text-danger">Hors ligne</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">Aucune donnée sur cette période.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Répartition horaire de fréquentation -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="card-title mb-0 fw-bold">Affluence par tranche horaire</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-column gap-3">
+          {% set max_entrees = 1 %}
+          {% for h in rapport.repartition_heures %}
+            {% if h.entrees > max_entrees %}
+              {% set max_entrees = h.entrees %}
+            {% endif %}
+          {% endfor %}
+
+          {% for h in rapport.repartition_heures %}
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="fw-medium text-dark">{{ h.heure }}</span>
+              <span class="text-muted"><strong class="text-primary">{{ h.entrees }}</strong> entrées ({{ h.uniques }} clients réels)</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+              {% set pct = (h.entrees / max_entrees * 100) if max_entrees > 0 else 0 %}
+              <div class="progress-bar bg-primary" role="progressbar" style="width: {{ pct }}%;" aria-valuenow="{{ h.entrees }}" aria-valuemin="0" aria-valuemax="{{ max_entrees }}"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

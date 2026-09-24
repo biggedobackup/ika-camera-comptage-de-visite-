@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% from "composants/erreur.html" import page_erreur with context %}
+{% block titre %}{{ titre }}{% endblock %}
+{% block contenu %}
+{{ page_erreur(code, titre, message, "bi-exclamation-circle") }}
+{% endblock %}

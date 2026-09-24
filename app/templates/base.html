@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}{% endblock %} — {{ app_name }}</title>
+  <link rel="icon" type="image/png" href="{{ static('img/logo.png') }}">
+  <link rel="stylesheet" href="{{ static('vendor/bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ static('vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ static('css/style.css') }}?v=notif-1">
+</head>
+<body>
+  <a class="visually-hidden-focusable lien-evitement" href="#contenu-principal">Aller au contenu principal</a>
+
+  {% if utilisateur %}
+  <div class="app">
+    {% include "composants/menu.html" %}
+    <div class="app-principal">
+      {% include "composants/header.html" %}
+      <main id="contenu-principal" class="app-contenu" tabindex="-1">
+        {% include "composants/flash.html" %}
+        {% block contenu %}{% endblock %}
+      </main>
+      <footer class="app-pied">&copy; {{ annee }} {{ app_name }}</footer>
+    </div>
+  </div>
+  {% include "composants/modal_suppression.html" %}
+  {% else %}
+  <main id="contenu-principal" class="page-simple" tabindex="-1">
+    <div class="page-simple-conteneur {% block classe_carte %}{% endblock %}">
+      <div class="page-simple-marque">
+        <img src="{{ static('img/logo.png') }}" alt="" width="44" height="44">
+        <span class="page-simple-nom">{{ app_name }}</span>
+      </div>
+      {% include "composants/flash.html" %}
+      <div class="page-simple-carte">
+        {{ self.contenu() }}
+      </div>
+      <p class="page-simple-pied">&copy; {{ annee }} {{ app_name }}</p>
+    </div>
+  </main>
+  {% endif %}
+
+  <script src="{{ static('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ static('js/app.js') }}?v=notif-1"></script>
+</body>
+</html>

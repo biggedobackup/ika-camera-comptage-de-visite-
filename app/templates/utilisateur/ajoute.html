@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}{% if modification %}Modifier {{ compte.nom_complet }}{% else %}Ajouter un utilisateur{% endif %}{% endblock %}
+
+{% block contenu %}
+{%- if modification %}
+{%- set url_action = "/utilisateurs/" ~ compte.id ~ "/modifier" %}
+{%- set url_annuler = "/utilisateurs/" ~ compte.id %}
+{% call entete_page("Modifier l'utilisateur", compte.nom_complet ~ " — " ~ compte.email, "bi-pencil-square") %}
+  <a class="btn btn-outline-secondary" href="{{ url_annuler }}"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la fiche</span></a>
+{% endcall %}
+{%- else %}
+{%- set url_action = "/utilisateurs/ajouter" %}
+{%- set url_annuler = "/utilisateurs" %}
+{% call entete_page("Ajouter un utilisateur", "Créez un compte, attribuez-lui un rôle et un mot de passe initial.", "bi-person-plus") %}
+  <a class="btn btn-outline-secondary" href="{{ url_annuler }}"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Retour à la liste</span></a>
+{% endcall %}
+{%- endif %}
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" action="{{ url_action }}">
+      {{ form.champ_csrf() }}
+      {{ form.resume_erreurs(erreurs) }}
+
+      <fieldset class="section-formulaire">
+        <legend class="section-formulaire-titre">Informations du compte</legend>
+        <p class="section-formulaire-aide">Les champs marqués d'un astérisque (<span class="champ-requis">*</span>) sont obligatoires.</p>
+        <div class="row gx-4">
+          <div class="col-12 col-md-6">
+            {{ form.champ("nom_complet", "Nom complet", valeurs.nom_complet, erreur=erreurs.nom_complet, requis=True, autocomplete="off", maxlength=150, autofocus=not modification) }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ("email", "Adresse e-mail", valeurs.email, type="email", erreur=erreurs.email, requis=True, autocomplete="off", maxlength=255, aide="Sert d'identifiant de connexion ; elle doit être unique.") }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ("telephone", "Téléphone", valeurs.telephone, type="tel", erreur=erreurs.telephone, autocomplete="off", maxlength=30, aide="Facultatif. Exemple : +226 70 00 00 00") }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ_select("role", "Rôle", options_roles, valeurs.role, erreur=erreurs.role, requis=True, aide="Administrateur : accès complet. Manager : consultation des utilisateurs et de l'historique, exports. Utilisateur : tableau de bord et profil.") }}
+          </div>
+        </div>
+        {{ form.case_a_cocher("est_actif", "Compte actif", coche=valeurs.est_actif, aide="Un compte inactif ne peut plus se connecter à l'application.") }}
+      </fieldset>
+
+      {%- if not modification %}
+      <fieldset class="section-formulaire">
+        <legend class="section-formulaire-titre">Mot de passe initial</legend>
+        <div class="row gx-4">
+          <div class="col-12 col-md-6">
+            {{ form.champ_mot_de_passe("mot_de_passe", "Mot de passe initial", erreur=erreurs.mot_de_passe, autocomplete="new-password", afficher_regles=True) }}
+          </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ_mot_de_passe("confirmation_mot_de_passe", "Confirmation du mot de passe", erreur=erreurs.confirmation_mot_de_passe, autocomplete="new-password") }}
+          </div>
+        </div>
+      </fieldset>
+      {%- endif %}
+
+      <div class="actions-formulaire">
+        <a class="btn btn-outline-secondary" href="{{ url_annuler }}">Annuler</a>
+        {%- if modification %}
+        {{ form.bouton_envoyer("Enregistrer les modifications", "bi-check-lg") }}
+        {%- else %}
+        {{ form.bouton_envoyer("Créer le compte", "bi-person-plus") }}
+        {%- endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

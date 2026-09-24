@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% import "composants/liste.html" as l with context %}
+{% import "composants/formulaires.html" as form with context %}
+{% import "composants/badges.html" as b %}
+{% from "composants/page.html" import entete_page %}
+
+{% block titre %}Utilisateurs{% endblock %}
+
+{% block contenu %}
+{% call entete_page("Utilisateurs", "Comptes ayant accès à l'application, avec leur rôle et leur statut.", "bi-people") %}
+  {{ l.boutons_export(liste, "/utilisateurs/export/pdf", "/utilisateurs/export/excel") }}
+  {%- if peut_gerer %}
+  <a class="btn btn-primary" href="/utilisateurs/ajouter"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Ajouter un utilisateur</span></a>
+  {%- endif %}
+{% endcall %}
+
+<div class="card carte-filtres">
+  <div class="card-body">
+    {% call l.barre_recherche(liste, placeholder="Nom, e-mail ou téléphone…") %}
+      {{ l.filtre_select(liste, "role", "Rôle", options_roles) }}
+      {{ l.filtre_select(liste, "statut", "Statut", options_statuts) }}
+    {% endcall %}
+  </div>
+</div>
+
+<div class="conteneur-tableau">
+  <div class="cadre-tableau">
+    <table class="table table-hover table-liste table-empilable">
+      <caption class="visually-hidden">Liste des utilisateurs</caption>
+      <thead>
+        <tr>
+          {{ l.entete_numero() }}
+          {{ l.entete_triable(liste, "nom_complet", "Utilisateur") }}
+          {{ l.entete_triable(liste, "role", "Rôle") }}
+          {{ l.entete_triable(liste, "est_actif", "Statut") }}
+          {{ l.entete_triable(liste, "derniere_connexion", "Dernière connexion") }}
+          {{ l.entete_triable(liste, "created_at", "Créé le") }}
+          <th scope="col" class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for compte in liste.elements %}
+        <tr>
+          <td class="col-numero">{{ liste.numero(loop.index) }}</td>
+          <td class="cellule-principale">
+            <div class="cellule-compte">
+              {{ b.avatar(compte.nom_complet) }}
+              <div class="cellule-compte-textes">
+                <div class="cellule-compte-nom">
+                  <a class="fw-medium" href="/utilisateurs/{{ compte.id }}">{{ compte.nom_complet }}</a>
+                  {%- if compte.id == utilisateur.id %}<span class="badge-ika badge-vous">Vous</span>{% endif %}
+                </div>
+                <div class="cellule-compte-email">{{ compte.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="cellule-nowrap" data-label="Rôle">{{ b.badge_role(compte.role) }}</td>
+          <td class="cellule-nowrap" data-label="Statut">{{ b.badge_statut(statut_compte(compte)) }}</td>
+          <td class="cellule-date" data-label="Dernière connexion">{{ compte.derniere_connexion | date_heure or "Jamais" }}</td>
+          <td class="cellule-date" data-label="Créé le">{{ compte.created_at | date_heure }}</td>
+          <td class="col-actions">
+            <div class="actions-ligne">
+              <a class="btn btn-sm btn-outline-secondary btn-icone" href="/utilisateurs/{{ compte.id }}" aria-label="Voir la fiche de {{ compte.nom_complet }}" title="Voir la fiche"><i class="bi bi-eye" aria-hidden="true"></i></a>
+              {%- if peut_gerer %}
+              <a class="btn btn-sm btn-outline-primary btn-icone" href="/utilisateurs/{{ compte.id }}/modifier" aria-label="Modifier {{ compte.nom_complet }}" title="Modifier"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+              {%- if compte.id != utilisateur.id %}
+              {{ form.bouton_suppression("/utilisateurs/" ~ compte.id ~ "/supprimer", "Voulez-vous vraiment supprimer le compte de " ~ compte.nom_complet ~ " (" ~ compte.email ~ ") ?", libelle="Supprimer " ~ compte.nom_complet, classe="btn-sm btn-outline-danger btn-icone", icone_seule=True) }}
+              {%- endif %}
+              {%- endif %}
+            </div>
+          </td>
+        </tr>
+        {%- else %}
+        {{ l.ligne_vide(7, "Aucun utilisateur ne correspond à votre recherche ou aux filtres choisis.") }}
+        {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{{ l.pied_liste(liste) }}
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% import "composants/liste.html" as l with context %}
+{% from "composants/page.html" import entete_page %}
+{% block titre %}Historique{% endblock %}
+{% block contenu %}
+{% call entete_page("Historique", "Journal des actions effectuées dans l'application. Les entrées sont enregistrées automatiquement et ne peuvent pas être modifiées.", "bi-clock-history") %}
+  {{ l.boutons_export(liste, "/historique/export/pdf", "/historique/export/excel") }}
+{% endcall %}
+
+{%- if erreurs_filtres %}
+<div class="alert alert-warning alerte" role="alert">
+  <i class="bi bi-exclamation-triangle-fill alerte-icone" aria-hidden="true"></i>
+  <div class="alerte-texte">
+    <p class="mb-1">Certains filtres sont invalides et n'ont pas été appliqués :</p>
+    <ul class="mb-0">
+      {%- for message in erreurs_filtres %}
+      <li>{{ message }}</li>
+      {%- endfor %}
+    </ul>
+  </div>
+</div>
+{%- endif %}
+
+<div class="card carte-filtres">
+  <div class="card-body">
+    {% call l.barre_recherche(liste, placeholder="Nom, e-mail de l'utilisateur ou description…") %}
+      <div class="barre-recherche-champ">
+        <label class="form-label" for="filtre-du">Du</label>
+        <input type="date" class="form-control" id="filtre-du" name="du" value="{{ liste.parametres.filtres.get('du', '') }}">
+      </div>
+      <div class="barre-recherche-champ">
+        <label class="form-label" for="filtre-au">Au</label>
+        <input type="date" class="form-control" id="filtre-au" name="au" value="{{ liste.parametres.filtres.get('au', '') }}">
+      </div>
+      {{ l.filtre_select(liste, "action", "Action", options_actions, tous="Toutes") }}
+      {{ l.filtre_select(liste, "module", "Module", options_modules) }}
+    {% endcall %}
+  </div>
+</div>
+
+<div class="conteneur-tableau">
+  <div class="cadre-tableau">
+    <table class="table table-hover table-liste table-empilable">
+      <caption class="visually-hidden">Historique des actions, page {{ liste.page }} sur {{ liste.nb_pages }}</caption>
+      <thead>
+        <tr>
+          {{ l.entete_numero() }}
+          {{ l.entete_triable(liste, "created_at", "Date") }}
+          {{ l.entete_triable(liste, "utilisateur", "Utilisateur") }}
+          {{ l.entete_triable(liste, "action", "Action") }}
+          {{ l.entete_triable(liste, "module", "Module", "col-repliable") }}
+          {{ l.entete_triable(liste, "description", "Description") }}
+          {{ l.entete_triable(liste, "adresse_ip", "Adresse IP", "col-repliable") }}
+          <th scope="col" class="col-actions"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for entree in liste.elements %}
+        {%- set numero = liste.numero(loop.index) %}
+        <tr>
+          <td class="col-numero">{{ numero }}</td>
+          <td class="cellule-date" data-label="Date">
+            {{- entree.created_at | date_heure -}}
+            <span class="info-repliee texte-secondaire-cellule">{% if entree.adresse_ip %}<span class="texte-tronque texte-tronque-court" title="{{ entree.adresse_ip }}">{{ entree.adresse_ip }}</span>{% else %}Adresse IP non renseignée{% endif %}</span>
+          </td>
+          <td data-label="Utilisateur">
+            {%- if entree.utilisateur_email %}<span class="texte-tronque" title="{{ entree.utilisateur_email }}">{{ entree.utilisateur_email }}</span>{% else %}<span class="texte-discret">Non renseigné</span>{% endif -%}
+          </td>
+          <td class="cellule-principale">
+            <span class="badge-action{% if entree.action in actions_alerte %} badge-action-alerte{% endif %}">{{ entree.action.libelle }}</span>
+            <span class="info-repliee texte-secondaire-cellule">{{ libelle_module(entree.module) }}</span>
+          </td>
+          <td class="cellule-nowrap col-repliable" data-label="Module">{{ libelle_module(entree.module) }}</td>
+          <td class="cellule-tronquee" data-label="Description" title="{{ entree.description }}">{{ entree.description }}</td>
+          <td class="cellule-nowrap col-repliable" data-label="Adresse IP">{% if entree.adresse_ip %}<span class="texte-tronque texte-tronque-court" title="{{ entree.adresse_ip }}">{{ entree.adresse_ip }}</span>{% else %}<span class="texte-discret">—</span>{% endif %}</td>
+          <td class="col-actions">
+            <a class="btn btn-sm btn-outline-secondary btn-icone" href="/historique/{{ entree.id }}" aria-label="Voir le détail de l'entrée n° {{ numero }}" title="Voir le détail">
+              <i class="bi bi-eye" aria-hidden="true"></i><span class="texte-mode-carte">Voir le détail</span>
+            </a>
+          </td>
+        </tr>
+        {%- else %}
+        {{ l.ligne_vide(8, "Aucune entrée de l'historique ne correspond à votre recherche ou à vos filtres.") }}
+        {%- endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{{ l.pied_liste(liste) }}
+{% endblock %}

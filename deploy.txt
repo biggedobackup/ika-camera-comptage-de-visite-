@@ -1,0 +1,50 @@
+Déploiement — Debian + Nginx
+
+Étapes
+
+1. Installer les dependances systeme : Python, PostgreSQL, Nginx, Certbot
+2. Cloner le projet, creer l'environnement virtuel, installer requirements.txt
+3. Configurer .env avec un compte PostgreSQL dedie (pas de superuser)
+4. Executer les migrations Alembic et creer le premier admin
+5. Lancer l'application via un service systemd (Gunicorn + workers Uvicorn)
+6. Generer le certificat SSL avec Certbot et activer la redirection HTTP vers HTTPS
+7. Configurer Nginx en reverse proxy vers l'application, en appliquant les regles ci-dessous
+8. Verifier le deploiement (voir verifications ci-dessous)
+
+Règles de sécurité (Nginx)
+
+- HTTPS obligatoire, redirection HTTP -> HTTPS
+- TLS 1.2/1.3 uniquement, TLS 1.0/1.1 desactives
+- Suites cryptographiques modernes
+- Certificat valide avec renouvellement automatique verifie
+- Suppression des headers Server et X-Powered-By
+- Headers de securite : HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- Protection contre le Host Header Injection : default_server qui rejette les Host inconnus
+- Desactivation du directory listing
+- Blocage de l'acces aux fichiers caches et de configuration (.env, .git, etc.)
+- Limitation de la taille des requetes (uploads)
+- Timeouts stricts contre les attaques lentes (slowloris)
+- Proxy headers correctement configures (X-Real-IP, X-Forwarded-For, X-Forwarded-Proto)
+- Rate limiting niveau proxy, plus strict sur la connexion et l'OTP
+- Logs d'acces et d'erreur actifs, avec rotation
+
+Règles de performance (Nginx)
+
+- Compression Gzip/Brotli des reponses (CSS, JS, JSON, SVG)
+- HTTP/2 active, HTTP/3 si disponible
+- Sendfile active pour servir les fichiers statiques
+- Cache navigateur sur les fichiers statiques (Cache-Control, ETag, expires longue duree)
+- Keep-alive et timeouts proxy adaptes
+- Optimisation des workers et des connexions Nginx
+- Proxy buffering active pour les reponses de l'application
+- Logs d'acces desactives sur les statiques pour reduire la charge disque
+
+Vérifications post-déploiement
+
+- Redirection HTTP -> HTTPS fonctionnelle
+- Header Server absent de la reponse
+- Acces aux fichiers .env et .git bloque (404)
+- Cache-Control present sur les fichiers statiques
+- Rate limiting declenche au-dela du seuil sur la connexion
+- Service applicatif actif (systemctl status)
+- Logs Nginx sans erreur

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import "composants/formulaires.html" as form with context %}
+{% block titre %}Connexion{% endblock %}
+{% block contenu %}
+<div class="entete-formulaire">
+  <h1 class="titre-formulaire">Connexion</h1>
+  <p class="sous-titre-formulaire">Connectez-vous pour accéder à votre espace.</p>
+</div>
+
+{{ form.resume_erreurs(erreurs) }}
+
+<form method="post" action="/connexion">
+  {{ form.champ_csrf() }}
+  {%- if suivant %}
+  <input type="hidden" name="suivant" value="{{ suivant }}">
+  {%- endif %}
+  {{ form.champ("email", "Adresse e-mail", valeurs.email, type="email", erreur=erreurs.email, requis=True, autocomplete="email", maxlength=255, placeholder="nom@exemple.com", autofocus=not valeurs.email) }}
+  {{ form.champ_mot_de_passe("mot_de_passe", "Mot de passe", erreur=erreurs.mot_de_passe, autocomplete="current-password", autofocus=valeurs.email) }}
+  <div class="lien-mot-de-passe-oublie">
+    <a href="/mot-de-passe-oublie">Mot de passe oublié ?</a>
+  </div>
+  {{ form.bouton_envoyer("Se connecter", "bi-box-arrow-in-right", pleine_largeur=True) }}
+</form>
+
+<p class="bas-formulaire">
+  <span>Pas encore de compte ?</span>
+  <a href="/inscription">Créer un compte</a>
+</p>
+{% endblock %}
