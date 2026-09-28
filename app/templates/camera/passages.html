@@ -15,6 +15,36 @@
   </div>
 {% endcall %}
 
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm py-2 px-3 d-flex flex-row align-items-center justify-content-between">
+      <div>
+        <span class="text-muted small">Total Entrées</span>
+        <h4 class="mb-0 fw-bold text-primary" data-comptage-entrees>{{ indicateurs.entrees_jour }}</h4>
+      </div>
+      <i class="bi bi-box-arrow-in-right fs-2 text-primary opacity-50"></i>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm py-2 px-3 d-flex flex-row align-items-center justify-content-between">
+      <div>
+        <span class="text-muted small">Total Sorties</span>
+        <h4 class="mb-0 fw-bold text-secondary" data-comptage-sorties>{{ indicateurs.sorties_jour }}</h4>
+      </div>
+      <i class="bi bi-box-arrow-right fs-2 text-secondary opacity-50"></i>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm py-2 px-3 d-flex flex-row align-items-center justify-content-between">
+      <div>
+        <span class="text-muted small">Clients uniques</span>
+        <h4 class="mb-0 fw-bold text-success" data-comptage-uniques>{{ indicateurs.visiteurs_uniques_jour }}</h4>
+      </div>
+      <i class="bi bi-people-fill fs-2 text-success opacity-50"></i>
+    </div>
+  </div>
+</div>
+
 <div class="card carte-filtres mb-4">
   <div class="card-body">
     <form method="get" class="row g-3 align-items-end">

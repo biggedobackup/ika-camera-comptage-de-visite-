@@ -168,6 +168,7 @@ async def liste_passages(request: Request, db: DbSession, utilisateur: LecteurCa
     requete = services.requete_passages(parametres)
     passages_pagines = await paginer(db, requete, parametres)
     cameras = await services.obtenir_cameras(db)
+    indicateurs = await services.calculer_indicateurs_comptage(db)
 
     return rendre(
         request,
@@ -176,6 +177,7 @@ async def liste_passages(request: Request, db: DbSession, utilisateur: LecteurCa
             "passages": passages_pagines,
             "parametres": parametres,
             "cameras": cameras,
+            "indicateurs": indicateurs,
             "colonnes_tri": services.COLONNES_TRI_PASSAGES,
             "peut_gerer": peut_gerer_cameras(utilisateur),
         },

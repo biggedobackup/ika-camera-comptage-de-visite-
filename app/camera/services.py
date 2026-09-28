@@ -330,7 +330,9 @@ async def enregistrer_v2_data_upload(
 
     camera = await obtenir_ou_creer_camera(db, sn, ip_address=client_ip)
 
-    horodatage = datetime.fromtimestamp(start_time, UTC)
+    # Agrégation à la minute exacte
+    minute_ts = (start_time // 60) * 60
+    horodatage = datetime.fromtimestamp(minute_ts, UTC)
     batch_date = horodatage.strftime("%Y-%m-%d")
 
     entrees = int(data.get("in", 0))
@@ -339,41 +341,53 @@ async def enregistrer_v2_data_upload(
     turnback = int(data.get("turnback", 0))
     avg_stay = int(data.get("avgStayTime", 0))
 
-    # Recherche si déjà existant
+    # Recherche si un enregistrement existe déjà pour cette caméra et cette minute
     requete = select(PassageComptage).where(
         PassageComptage.master_sn == sn,
         PassageComptage.batch_date == batch_date,
-        PassageComptage.start_ts_s == start_time,
+        PassageComptage.start_ts_s == minute_ts,
     )
     existant = (await db.execute(requete)).scalar_one_or_none()
 
     if existant is None:
-        passage = PassageComptage(
-            camera_id=camera.id,
-            master_sn=sn,
-            batch_date=batch_date,
-            stat_basis="enter",
-            revision=time_val,
-            interval_s=60,
-            start_ts_s=start_time,
-            end_ts_s=end_time,
-            horodatage_debut=horodatage,
-            entrees=entrees,
-            sorties=sorties,
-            passants=passby,
-            demi_tours=turnback,
-            visiteurs_uniques=entrees,
-            visiteurs_recidives=0,
-            personnel_exclu=0,
-            duree_sejour_moyenne_sec=avg_stay // 1000 if avg_stay > 1000 else avg_stay,
-            donnees_brutes=data,
-        )
-        db.add(passage)
+        # On insère une nouvelle ligne si au moins une activité est détectée
+        if entrees > 0 or sorties > 0 or passby > 0 or turnback > 0:
+            passage = PassageComptage(
+                camera_id=camera.id,
+                master_sn=sn,
+                batch_date=batch_date,
+                stat_basis="enter",
+                revision=time_val,
+                interval_s=60,
+                start_ts_s=minute_ts,
+                end_ts_s=minute_ts + 60,
+                horodatage_debut=horodatage,
+                entrees=entrees,
+                sorties=sorties,
+                passants=passby,
+                demi_tours=turnback,
+                visiteurs_uniques=entrees,
+                visiteurs_recidives=0,
+                personnel_exclu=0,
+                duree_sejour_moyenne_sec=avg_stay // 1000 if avg_stay > 1000 else avg_stay,
+                donnees_brutes=data,
+            )
+            db.add(passage)
     else:
-        existant.entrees = entrees
-        existant.sorties = sorties
-        existant.passants = passby
-        existant.demi_tours = turnback
+        # Cumul incrémental sur le créneau de la minute courante
+        existant.entrees += entrees
+        existant.sorties += sorties
+        existant.passants += passby
+        existant.demi_tours += turnback
+        existant.visiteurs_uniques += entrees
+        existant.revision = max(existant.revision, time_val)
+        if avg_stay > 0:
+            stay_sec = avg_stay // 1000 if avg_stay > 1000 else avg_stay
+            existant.duree_sejour_moyenne_sec = (
+                (existant.duree_sejour_moyenne_sec + stay_sec) // 2
+                if existant.duree_sejour_moyenne_sec > 0
+                else stay_sec
+            )
         existant.donnees_brutes = data
 
     await db.commit()
