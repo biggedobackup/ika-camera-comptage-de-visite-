@@ -1381,7 +1381,8 @@ main:focus {
   align-items: center;
   justify-content: space-between;
   gap: .75rem 1rem;
-  margin-top: 1.25rem;
+  margin-top: 2rem;
+  padding-top: 0.5rem;
 }
 
 .resume-liste {

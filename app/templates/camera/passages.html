@@ -53,15 +53,15 @@
 <div class="conteneur-tableau">
   <div class="cadre-tableau">
     <table class="table table-hover table-liste table-empilable">
-      <caption class="visually-hidden">Historique des passages</caption>
+      <caption class="visually-hidden">Historique des passages, page {{ passages.page }} sur {{ passages.nb_pages }}</caption>
       <thead>
         <tr>
           {{ l.entete_numero() }}
-          <th scope="col">Date & Heure (UTC)</th>
+          {{ l.entete_triable(passages, "horodatage", "Date & Heure (UTC)") }}
           <th scope="col">Caméra</th>
-          <th scope="col" class="text-center text-primary">Entrées</th>
-          <th scope="col" class="text-center text-secondary">Sorties</th>
-          <th scope="col" class="text-center text-success">Clients uniques</th>
+          {{ l.entete_triable(passages, "entrees", "Entrées", "text-center text-primary") }}
+          {{ l.entete_triable(passages, "sorties", "Sorties", "text-center text-secondary") }}
+          {{ l.entete_triable(passages, "uniques", "Clients uniques", "text-center text-success") }}
           <th scope="col" class="text-center text-warning">Récidives</th>
           <th scope="col" class="text-center text-muted">Personnel exclu</th>
           <th scope="col" class="text-center">Passants</th>
@@ -83,17 +83,13 @@
           <td class="text-center text-muted">{{ p.personnel_exclu }}</td>
           <td class="text-center">{{ p.passants }}</td>
         </tr>
-        {% else %}
-        <tr>
-          <td colspan="9" class="text-center py-4 text-muted">
-            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-            Aucun passage enregistré pour le moment.
-          </td>
-        </tr>
-        {% endfor %}
+        {%- else %}
+        {{ l.ligne_vide(9, "Aucun passage enregistré pour le moment.") }}
+        {%- endfor %}
       </tbody>
     </table>
   </div>
-  {{ l.pagination(passages) }}
 </div>
+
+{{ l.pied_liste(passages) }}
 {% endblock %}

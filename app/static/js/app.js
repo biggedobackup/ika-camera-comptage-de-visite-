@@ -270,7 +270,6 @@
       animerChiffre(conteneurRapport.querySelector("[data-rapport-entrees]"), rep.entrees);
       animerChiffre(conteneurRapport.querySelector("[data-rapport-uniques]"), rep.visiteurs_uniques);
       animerChiffre(conteneurRapport.querySelector("[data-rapport-revisite-pct]"), rep.taux_revisite_pct + "%");
-      animerChiffre(conteneurRapport.querySelector("[data-rapport-revisites]"), rep.visiteurs_recidives);
       animerChiffre(conteneurRapport.querySelector("[data-rapport-personnel]"), rep.personnel_exclu);
 
       // 2. Tableau de performance par caméra

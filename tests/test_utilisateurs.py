@@ -240,8 +240,9 @@ async def test_menu_selon_le_role(
     client_admin: httpx.AsyncClient, client_manager: httpx.AsyncClient, client_utilisateur: httpx.AsyncClient
 ) -> None:
     page_admin = (await client_admin.get("/tableau-de-bord")).text
-    for lien in ('href="/utilisateurs"', 'href="/utilisateurs/ajouter"', 'href="/historique"', 'href="/profil"'):
+    for lien in ('href="/utilisateurs"', 'href="/historique"', 'href="/profil"'):
         assert lien in page_admin
+    assert 'href="/utilisateurs/ajouter"' not in page_admin
 
     page_manager = (await client_manager.get("/tableau-de-bord")).text
     assert 'href="/utilisateurs"' in page_manager and 'href="/historique"' in page_manager
@@ -254,7 +255,7 @@ async def test_menu_selon_le_role(
 @pytest.mark.parametrize(
     ("chemin", "lien_actif"),
     [("/tableau-de-bord", "/tableau-de-bord"), ("/utilisateurs", "/utilisateurs"),
-     ("/utilisateurs/ajouter", "/utilisateurs/ajouter"), ("/historique", "/historique"), ("/profil", "/profil")],
+     ("/historique", "/historique"), ("/profil", "/profil")],
 )
 async def test_lien_actif_du_menu(client_admin: httpx.AsyncClient, chemin: str, lien_actif: str) -> None:
     page = (await client_admin.get(chemin)).text
