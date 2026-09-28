@@ -2379,3 +2379,36 @@ main:focus {
     animation: none;
   }
 }
+
+/* --- Tableau de bord - Analyse de Flux (sans dégradé) --- */
+.zone-graphique-trend {
+  height: 280px;
+  position: relative;
+}
+
+.zone-graphique-donut {
+  height: 200px;
+  position: relative;
+}
+
+.hauteur-barre-8 {
+  height: 8px;
+}
+
+.carte-indicateur-icone.cyan {
+  background-color: #ecfeff;
+  color: #0891b2;
+}
+
+.texte-violet {
+  color: #7c3aed;
+}
+
+.texte-rose {
+  color: #ec4899;
+}
+
+.texte-tronque-audit {
+  max-width: 160px;
+}
+

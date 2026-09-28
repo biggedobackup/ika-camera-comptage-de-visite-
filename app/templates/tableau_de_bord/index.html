@@ -1,83 +1,376 @@
 {% extends "base.html" %}
 {% import "composants/badges.html" as b %}
 {% from "composants/page.html" import entete_page %}
-{% block titre %}Tableau de bord{% endblock %}
+
+{% block titre %}Tableau de bord - Analyse de Flux{% endblock %}
+
 {% block contenu %}
-{{ entete_page("Tableau de bord", "Bienvenue, " ~ utilisateur.nom_complet ~ ".", "bi-speedometer2") }}
-
 {%- if vue_gestion %}
-{%- set i = gestion.indicateurs %}
-{%- set cartes = [
-  {"valeur": i.utilisateurs_total, "libelle": "Utilisateurs inscrits", "icone": "bi-people", "accent": False},
-  {"valeur": i.utilisateurs_actifs, "libelle": "Comptes actifs", "icone": "bi-person-check", "accent": False},
-  {"valeur": i.utilisateurs_verrouilles, "libelle": "Comptes verrouillés", "icone": "bi-person-lock", "accent": True},
-  {"valeur": i.connexions_du_jour, "libelle": "Connexions aujourd'hui", "icone": "bi-box-arrow-in-right", "accent": False},
-  {"valeur": i.actions_7_jours, "libelle": "Actions sur 7 jours", "icone": "bi-activity", "accent": False},
-] %}
-<section class="section-page" aria-labelledby="titre-indicateurs">
-  <h2 class="visually-hidden" id="titre-indicateurs">Indicateurs</h2>
-  <div class="grille-indicateurs">
-    {%- for carte in cartes %}
-    <div class="carte-indicateur">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">{{ carte.libelle }}</p>
-        <span class="carte-indicateur-icone{% if carte.accent %} accent{% endif %}" aria-hidden="true"><i class="bi {{ carte.icone }}"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur">{{ carte.valeur }}</p>
-    </div>
-    {%- endfor %}
+{%- set g = gestion %}
+{%- set f = g.flux %}
+
+{% call entete_page("Tableau de bord", "Analyse en temps réel de l'affluence et des performances de vos points de vente.", "bi-speedometer2") %}
+  <div class="d-flex align-items-center gap-2">
+    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
+      <i class="bi bi-broadcast"></i> <span>En direct</span>
+    </span>
+    <a class="btn btn-primary" href="/cameras/passages"><i class="bi bi-graph-up"></i><span>Flux & Passages</span></a>
+    <a class="btn btn-outline-secondary" href="/cameras/rapport/statistiques"><i class="bi bi-bar-chart-line"></i><span>Rapport d'analyse</span></a>
   </div>
-  <p class="petite-note">Connexions du jour comptées depuis minuit (UTC) ; actions sur les 7 derniers jours glissants.</p>
+{% endcall %}
+
+<!-- 1. Bandeau supérieur : KPIs Commerciaux Majeurs (Style Foorir) -->
+<section class="section-page mb-4" aria-labelledby="titre-kpis-flux">
+  <h2 class="visually-hidden" id="titre-kpis-flux">Indicateurs clés de flux</h2>
+  <div class="row g-3">
+    <!-- Total Visiteurs (Passages physiques) -->
+    <div class="col-sm-6 col-xl-2">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Visiteurs (Total)</p>
+          <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-person-walking"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur">{{ f.visiteurs_total }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><span class="text-primary fw-semibold" data-comptage-entrees>{{ f.entrees_jour }}</span> in &bull; <span class="text-secondary fw-semibold" data-comptage-sorties>{{ f.sorties_jour }}</span> out</p>
+      </div>
+    </div>
+
+    <!-- Clients réels (IA) -->
+    <div class="col-sm-6 col-xl-2">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Clients réels (IA)</p>
+          <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur text-success" data-comptage-uniques>{{ f.clients_uniques }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-fingerprint"></i> Visiteurs dédoublés</p>
+      </div>
+    </div>
+
+    <!-- Taux de capture / entrée magasin -->
+    <div class="col-sm-6 col-xl-2">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Taux de capture</p>
+          <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-funnel-fill"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur text-warning-emphasis">{{ f.taux_capture_pct }}%</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-arrow-right-short"></i> Entrées / Passants</p>
+      </div>
+    </div>
+
+    <!-- Personnel & Agents filtrés -->
+    <div class="col-sm-6 col-xl-2">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Personnel exclu</p>
+          <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur text-secondary" data-comptage-personnel>{{ f.personnel_filtre }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-badge"></i> Badges / livreurs</p>
+      </div>
+    </div>
+
+    <!-- Temps moyen de séjour (Dwell Time) -->
+    <div class="col-sm-6 col-xl-2">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Séjour moyen</p>
+          <span class="carte-indicateur-icone violet" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur texte-violet">{{ f.sejour_moyen_texte }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps en boutique</p>
+      </div>
+    </div>
+
+    <!-- Clients fidèles / revisites -->
+    <div class="col-sm-6 col-xl-2">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Revisites (Fidélité)</p>
+          <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur text-info">{{ f.clients_recidives }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small">Taux : {{ f.taux_revisite_pct }}%</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="section-page" aria-labelledby="titre-activites">
-  <div class="section-entete">
-    <div>
-      <h2 class="section-titre" id="titre-activites"><i class="bi bi-clock-history" aria-hidden="true"></i>Dernières activités</h2>
-      <p class="section-sous-titre">Les actions les plus récentes enregistrées dans l'historique.</p>
+<!-- 2. Courbe d'affluence (Flow Trend) & Segmentation du temps de séjour -->
+<section class="section-page mb-4">
+  <div class="row g-4">
+    <!-- Graphique Flow Trend -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-graph-up text-primary me-2"></i>Courbe d'affluence heure par heure (Flow Trend)</h5>
+            <span class="text-muted small">Fréquentation et franchissements physiques au cours de la journée</span>
+          </div>
+          <span class="badge bg-light text-dark border">24 Heures</span>
+        </div>
+        <div class="card-body">
+          <div class="zone-graphique-trend">
+            <canvas id="graphique-flow-trend"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
-    <a class="btn btn-outline-secondary btn-sm" href="/historique"><span>Voir tout l'historique</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-  </div>
-  <div class="conteneur-tableau">
-    <div class="cadre-tableau">
-      <table class="table table-hover table-liste table-empilable">
-        <caption class="visually-hidden">Dernières actions enregistrées dans l'historique</caption>
-        <thead>
-          <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Utilisateur</th>
-            <th scope="col">Action</th>
-            <th scope="col">Description</th>
-            <th scope="col" class="col-actions"><span class="visually-hidden">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          {%- for activite in gestion.dernieres_activites %}
-          <tr>
-            <td class="cellule-date" data-label="Date">{{ activite.created_at | date_heure }}</td>
-            <td data-label="Utilisateur">
-              {%- if activite.utilisateur_email %}<span class="texte-tronque" title="{{ activite.utilisateur_email }}">{{ activite.utilisateur_email }}</span>{% else %}<span class="texte-discret">Non renseigné</span>{% endif -%}
-            </td>
-            <td class="cellule-principale"><span class="badge-action{% if activite.action in actions_alerte %} badge-action-alerte{% endif %}">{{ activite.action.libelle }}</span></td>
-            <td class="cellule-tronquee" data-label="Description" title="{{ activite.description }}">{{ activite.description }}</td>
-            <td class="col-actions">
-              <a class="btn btn-sm btn-outline-secondary btn-icone" href="/historique/{{ activite.id }}" aria-label="Voir le détail : {{ activite.action.libelle }} du {{ activite.created_at | date_heure }}" title="Voir le détail">
-                <i class="bi bi-eye" aria-hidden="true"></i><span class="texte-mode-carte">Voir le détail</span>
-              </a>
-            </td>
-          </tr>
-          {%- else %}
-          <tr>
-            <td colspan="5" class="ligne-vide"><i class="bi bi-inbox" aria-hidden="true"></i><span>Aucune activité n'a encore été enregistrée.</span></td>
-          </tr>
-          {%- endfor %}
-        </tbody>
-      </table>
+
+    <!-- Dwell Time Segmentation -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3">
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history texte-violet me-2"></i>Temps de présence magasin</h5>
+          <span class="text-muted small">Distribution du temps de parcours client</span>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-around">
+          {% set dw = g.dwell_time %}
+          <div>
+            <div class="d-flex justify-content-between small fw-medium mb-1">
+              <span>Passants rapides (&lt; 1 min)</span>
+              <span class="text-muted">{{ dw.moins_1min }}</span>
+            </div>
+            <div class="progress hauteur-barre-8">
+              <div class="progress-bar bg-info" data-dwell-barre="{{ dw.pct_moins_1min }}"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between small fw-medium mb-1">
+              <span>Consultation courte (1 - 5 min)</span>
+              <span class="text-muted">{{ dw.entre_1_5min }}</span>
+            </div>
+            <div class="progress hauteur-barre-8">
+              <div class="progress-bar bg-primary" data-dwell-barre="60"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between small fw-medium mb-1">
+              <span>Visite active (5 - 15 min)</span>
+              <span class="text-muted">{{ dw.entre_5_15min }}</span>
+            </div>
+            <div class="progress hauteur-barre-8">
+              <div class="progress-bar bg-success" data-dwell-barre="25"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="d-flex justify-content-between small fw-medium mb-1">
+              <span>Immersion longue (&gt; 15 min)</span>
+              <span class="text-muted">{{ dw.entre_15_30min + dw.plus_30min }}</span>
+            </div>
+            <div class="progress hauteur-barre-8">
+              <div class="progress-bar bg-warning" data-dwell-barre="{{ dw.pct_plus_30min if dw.pct_plus_30min > 0 else 10 }}"></div>
+            </div>
+          </div>
+
+          <div class="alert alert-light border small mb-0 py-2 mt-2">
+            <i class="bi bi-info-circle text-primary me-1"></i> <strong>{{ dw.pct_plus_30min }}%</strong> des visiteurs passent plus de 15 minutes en rayon.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- 3. Profil Démographique IA & Comparatifs Temporels -->
+<section class="section-page mb-4">
+  <div class="row g-4">
+    <!-- Genre (Hommes / Femmes) -->
+    <div class="col-md-6 col-xl-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3">
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-gender-ambiguous text-primary me-2"></i>Répartition par genre</h5>
+          <span class="text-muted small">Identification IA à l'entrée</span>
+        </div>
+        <div class="card-body">
+          <div class="zone-graphique-donut">
+            <canvas id="graphique-gender-ratio"></canvas>
+          </div>
+          <div class="d-flex justify-content-around text-center mt-3 pt-2 border-top">
+            <div>
+              <span class="text-muted small d-block">Hommes</span>
+              <strong class="text-primary fs-5">{{ g.demographie.hommes_pct }}%</strong>
+            </div>
+            <div>
+              <span class="text-muted small d-block">Femmes</span>
+              <strong class="fs-5 texte-rose">{{ g.demographie.femmes_pct }}%</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pyramide des âges -->
+    <div class="col-md-6 col-xl-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3">
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-pie-chart text-warning me-2"></i>Tranches d'âge</h5>
+          <span class="text-muted small">Segmentation démographique</span>
+        </div>
+        <div class="card-body">
+          <div class="zone-graphique-donut">
+            <canvas id="graphique-age-dist"></canvas>
+          </div>
+          <div class="d-flex justify-content-around text-center mt-3 pt-2 border-top small">
+            <div>
+              <span class="text-muted d-block">Youth (17-30)</span>
+              <strong>{{ g.demographie.youth_pct }}%</strong>
+            </div>
+            <div>
+              <span class="text-muted d-block">Prime (31-45)</span>
+              <strong class="text-primary">{{ g.demographie.prime_pct }}%</strong>
+            </div>
+            <div>
+              <span class="text-muted d-block">Middle (46-60)</span>
+              <strong>{{ g.demographie.middle_pct }}%</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparatifs Temporels (Flow KPI) -->
+    <div class="col-md-12 col-xl-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3">
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-calendar3 text-success me-2"></i>Historique comparatif</h5>
+          <span class="text-muted small">Volumes de fréquentation cumulés</span>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light mb-2">
+            <div>
+              <span class="fw-medium text-dark d-block">Aujourd'hui</span>
+              <span class="text-muted small">Passages en cours</span>
+            </div>
+            <span class="fs-5 fw-bold text-primary">{{ f.entrees_jour }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light mb-2">
+            <div>
+              <span class="fw-medium text-dark d-block">Hier</span>
+              <span class="text-muted small">Journée précédente</span>
+            </div>
+            <span class="fs-5 fw-bold text-secondary">{{ g.comparatifs.hier }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light mb-2">
+            <div>
+              <span class="fw-medium text-dark d-block">7 derniers jours</span>
+              <span class="text-muted small">Semaine glissante</span>
+            </div>
+            <span class="fs-5 fw-bold text-dark">{{ g.comparatifs.semaine_derniere }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+            <div>
+              <span class="fw-medium text-dark d-block">Mois en cours</span>
+              <span class="text-muted small">Cumul mensuel</span>
+            </div>
+            <span class="fs-5 fw-bold text-success">{{ g.comparatifs.mois_dernier }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Caméras du magasin & Activités récentes -->
+<section class="section-page mb-4">
+  <div class="row g-4">
+    <!-- Statut des Caméras -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-camera-video text-primary me-2"></i>État des caméras ({{ f.cameras_en_ligne }} / {{ f.cameras_total }})</h5>
+          <a class="btn btn-sm btn-outline-secondary" href="/cameras">Gérer les caméras</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Entrée / Caméra</th>
+                <th class="text-center text-primary">Entrées</th>
+                <th class="text-center text-secondary">Sorties</th>
+                <th class="text-center">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in g.cameras %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ c.nom }}</div>
+                  <code class="small text-muted">{{ c.sn }}</code>
+                </td>
+                <td class="text-center fw-bold text-primary">{{ c.entrees }}</td>
+                <td class="text-center fw-bold text-secondary">{{ c.sorties }}</td>
+                <td class="text-center">
+                  {% if c.statut_en_ligne %}
+                  <span class="badge bg-success-subtle text-success">En ligne</span>
+                  {% else %}
+                  <span class="badge bg-danger-subtle text-danger">Hors ligne</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" class="text-center py-3 text-muted">Aucune caméra enregistrée.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dernières activités système -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history text-secondary me-2"></i>Dernières activités système</h5>
+          <a class="btn btn-sm btn-outline-secondary" href="/historique">Tout voir</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Utilisateur</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in g.dernieres_activites %}
+              <tr>
+                <td class="small">{{ a.created_at | date_heure }}</td>
+                <td class="small texte-tronque-audit" title="{{ a.utilisateur_email }}">{{ a.utilisateur_email or 'Système' }}</td>
+                <td><span class="badge-action{% if a.action in actions_alerte %} badge-action-alerte{% endif %}">{{ a.action.libelle }}</span></td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="3" class="text-center py-3 text-muted">Aucune activité récente.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Données sérialisées dans un conteneur data pour éviter les scripts ou styles inline -->
+<div id="data-dashboard" class="d-none"
+  data-heures='[{% for h in g.heures %}{"heure": "{{ h.heure }}", "entrees": {{ h.entrees }}, "sorties": {{ h.sorties }}, "uniques": {{ h.uniques }}}{% if not loop.last %},{% endif %}{% endfor %}]'
+  data-demographie='{"hommes": {{ g.demographie.hommes }}, "femmes": {{ g.demographie.femmes }}, "inconnu": {{ g.demographie.inconnu }}, "kids": {{ g.demographie.kids }}, "youth": {{ g.demographie.youth }}, "prime": {{ g.demographie.prime }}, "middle": {{ g.demographie.middle }}, "seniors": {{ g.demographie.seniors }}}'
+  data-dwell='{"moins_1min": {{ g.dwell_time.moins_1min }}, "pct_moins_1min": {{ g.dwell_time.pct_moins_1min }}, "pct_plus_30min": {{ g.dwell_time.pct_plus_30min }}}'>
+</div>
 
 {%- else %}
+<!-- Vue simple pour utilisateur non-gestionnaire -->
 <section class="section-page" aria-labelledby="titre-compte">
   <h2 class="visually-hidden" id="titre-compte">Mon compte</h2>
   <div class="grille-indicateurs">
@@ -103,23 +396,12 @@
     </div>
   </div>
 </section>
-
-<section class="section-page card" aria-labelledby="titre-securite">
-  <div class="card-header">
-    <h2 class="titre-carte" id="titre-securite"><i class="bi bi-shield-lock" aria-hidden="true"></i>Sécurité de mon compte</h2>
-    {{ b.badge_otp(utilisateur.otp_active) }}
-  </div>
-  <div class="card-body">
-    {%- if utilisateur.otp_active %}
-    <p>La double authentification protège votre compte : un code de votre application d'authentification vous est demandé à chaque connexion.</p>
-    {%- else %}
-    <p>Protégez votre compte en activant la double authentification : en plus du mot de passe, un code à usage unique vous sera demandé à chaque connexion.</p>
-    {%- endif %}
-    <div class="actions-carte">
-      <a class="btn btn-primary" href="/otp/configuration"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>{% if utilisateur.otp_active %}Gérer la double authentification{% else %}Activer la double authentification{% endif %}</span></a>
-      <a class="btn btn-outline-secondary" href="/profil"><i class="bi bi-person-circle" aria-hidden="true"></i><span>Mon profil</span></a>
-    </div>
-  </div>
-</section>
 {%- endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if vue_gestion %}
+<script src="{{ static('vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ static('js/dashboard.js') }}?v=live-v4"></script>
+{% endif %}
 {% endblock %}
