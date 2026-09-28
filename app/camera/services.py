@@ -781,7 +781,7 @@ async def generer_rapport_comptage(
             }
         )
 
-    # Répartition par tranche horaire (8h -> 21h)
+    # Répartition par tranche horaire complète (00:00 -> 23:00)
     requete_heures = (
         select(
             func.extract("hour", PassageComptage.horodatage_debut).label("heure"),
@@ -796,12 +796,12 @@ async def generer_rapport_comptage(
     heures_dict = {int(h): {"entrees": e, "sorties": s, "uniques": u} for h, e, s, u in lignes_heures}
     repartition_heures = [
         {
-            "heure": f"{h:02d}h",
+            "heure": f"{h:02d}:00",
             "entrees": heures_dict.get(h, {}).get("entrees", 0),
             "sorties": heures_dict.get(h, {}).get("sorties", 0),
             "uniques": heures_dict.get(h, {}).get("uniques", 0),
         }
-        for h in range(8, 22)
+        for h in range(0, 24)
     ]
 
     total_cams = len(cameras)

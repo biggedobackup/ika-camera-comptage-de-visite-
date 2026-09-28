@@ -48,10 +48,11 @@
   </div>
 </div>
 
-<!-- Cartes d'indicateurs clés consolidés -->
+<!-- Cartes d'indicateurs clés consolidés : 3 en haut et 3 en bas (col-12 col-md-4) -->
 <div class="row g-3 mb-4">
-  <div class="col-sm-6 col-xl-2">
-    <div class="carte-indicateur">
+  <!-- Ligne 1 : Les 3 du haut -->
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Total Entrées</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
@@ -61,8 +62,8 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-2">
-    <div class="carte-indicateur">
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Total Sorties</p>
         <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-box-arrow-left"></i></span>
@@ -72,8 +73,8 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-2">
-    <div class="carte-indicateur">
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Clients réels (IA)</p>
         <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
@@ -83,8 +84,9 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-2">
-    <div class="carte-indicateur">
+  <!-- Ligne 2 : Les 3 du bas -->
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Taux de revisite</p>
         <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
@@ -94,8 +96,8 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-2">
-    <div class="carte-indicateur">
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Personnel exclu</p>
         <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
@@ -105,13 +107,13 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-2">
-    <div class="carte-indicateur">
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Période analysée</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-calendar-event"></i></span>
       </div>
-      <p class="carte-indicateur-valeur fs-6 text-dark mt-2">{{ date_debut }}</p>
+      <p class="carte-indicateur-valeur fs-5 text-dark">{{ date_debut }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-arrow-right-short"></i> au {{ date_fin }}</p>
     </div>
   </div>
@@ -151,9 +153,25 @@
 </div>
 {% endif %}
 
+<!-- Graphique comparatif heure par heure (00:00 à 23:00) -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i>Courbe comparative heure par heure (00:00 à 23:00)</h5>
+      <span class="text-muted small">Comparaison des entrées physiques, départs constatés et clients réels qualifiés (IA)</span>
+    </div>
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">24 Heures</span>
+  </div>
+  <div class="card-body">
+    <div class="zone-graphique-trend">
+      <canvas id="graphique-rapport-horaire"></canvas>
+    </div>
+  </div>
+</div>
+
 <div class="row g-4">
   <!-- Répartition par Caméra / Porte d'accès -->
-  <div class="col-lg-6">
+  <div class="col-lg-5">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0 fw-bold">Performance par entrée / caméra</h5>
@@ -199,50 +217,60 @@
     </div>
   </div>
 
-  <!-- Répartition horaire de fréquentation -->
-  <div class="col-lg-6">
+  <!-- Tableau complet des données horaires de 00:00 jusqu'à 23:00 -->
+  <div class="col-lg-7">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0 fw-bold">Affluence par tranche horaire</h5>
-        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">24 Heures</span>
+        <h5 class="card-title mb-0 fw-bold">Détail des 24 tranches horaires (00:00 - 23:00)</h5>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">24 tranches</span>
       </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-sm table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">Créneau</th>
-                <th scope="col" class="text-center text-primary">Passages</th>
-                <th scope="col" class="text-center text-success">Clients dédoublés</th>
-                <th scope="col" class="text-end">Part</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for h in rapport.repartition_heures %}
-              {% if h.entrees > 0 or h.uniques > 0 %}
-              <tr>
-                <td class="fw-medium">{{ h.heure }}</td>
-                <td class="text-center fw-bold text-primary">{{ h.entrees }}</td>
-                <td class="text-center fw-semibold text-success">{{ h.uniques }}</td>
-                <td class="text-end text-muted small">
-                  {% if rapport.entrees > 0 %}
-                    {{ "%.1f" | format(h.entrees / rapport.entrees * 100) }}%
-                  {% else %}
-                    0%
-                  {% endif %}
-                </td>
-              </tr>
-              {% endif %}
-              {% else %}
-              <tr>
-                <td colspan="4" class="text-center py-3 text-muted">Aucun passage enregistré pour ces dates.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Heure</th>
+              <th scope="col" class="text-center text-primary">Entrées</th>
+              <th scope="col" class="text-center text-danger">Sorties</th>
+              <th scope="col" class="text-center text-success">Clients IA</th>
+              <th scope="col" class="text-end">Part journalière</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in rapport.repartition_heures %}
+            <tr {% if h.entrees > 0 %}class="table-active"{% endif %}>
+              <td class="fw-semibold">
+                <i class="bi bi-clock text-muted me-1"></i>{{ h.heure }}
+              </td>
+              <td class="text-center fw-bold text-primary">{{ h.entrees }}</td>
+              <td class="text-center fw-bold text-danger">{{ h.sorties }}</td>
+              <td class="text-center fw-semibold text-success">{{ h.uniques }}</td>
+              <td class="text-end text-muted small">
+                {% if rapport.entrees > 0 %}
+                  {{ "%.1f" | format(h.entrees / rapport.entrees * 100) }}%
+                {% else %}
+                  0.0%
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center py-3 text-muted">Aucun passage enregistré pour ces dates.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Stockage des données pour le rendu JS sans injection inline (CSP strict) -->
+<div id="data-rapport-horaire" class="d-none"
+  data-heures='[{% for h in rapport.repartition_heures %}{"heure": "{{ h.heure }}", "entrees": {{ h.entrees }}, "sorties": {{ h.sorties }}, "uniques": {{ h.uniques }}}{% if not loop.last %},{% endif %}{% endfor %}]'>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static('vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ static('js/rapports.js') }}?v=live-v4"></script>
 {% endblock %}
