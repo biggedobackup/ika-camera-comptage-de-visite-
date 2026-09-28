@@ -247,4 +247,108 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  // 4. Flow Query Foorir (Requête de flux personnalisée par granularité)
+  var ctxFlowQuery = document.getElementById("graphique-flow-query");
+  var flowQuery = null;
+  try {
+    flowQuery = JSON.parse(dataEl.getAttribute("data-flow-query") || "null");
+  } catch (e) {
+    console.error("Erreur de parsing data-flow-query", e);
+  }
+
+  if (ctxFlowQuery && flowQuery && Array.isArray(flowQuery.chart_labels)) {
+    var chartFQ = new Chart(ctxFlowQuery, {
+      type: "line",
+      data: {
+        labels: flowQuery.chart_labels,
+        datasets: [
+          {
+            label: (flowQuery.nom_entite || "ikasolution") + "(" + (flowQuery.metric_label || "In") + ")",
+            data: flowQuery.chart_data || [],
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37, 99, 235, 0.05)",
+            borderWidth: 2,
+            fill: true,
+            tension: 0.25,
+            pointRadius: 2.5,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "#2563eb"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              boxWidth: 12,
+              usePointStyle: true,
+              padding: 12
+            }
+          },
+          tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.9)",
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(241, 245, 249, 0.6)" },
+            ticks: {
+              maxTicksLimit: 24
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: "rgba(226, 232, 240, 0.6)" }
+          }
+        }
+      }
+    });
+
+    // Bouton Export Image
+    var btnExportImg = document.getElementById("btn-export-image");
+    if (btnExportImg) {
+      btnExportImg.addEventListener("click", function (e) {
+        e.preventDefault();
+        var lien = document.createElement("a");
+        lien.download = "flow_query_" + (flowQuery.metric_label || "data") + ".png";
+        lien.href = ctxFlowQuery.toDataURL("image/png");
+        lien.click();
+      });
+    }
+
+    // Bouton Export Table
+    var btnExportTbl = document.getElementById("btn-export-table");
+    if (btnExportTbl) {
+      btnExportTbl.addEventListener("click", function (e) {
+        e.preventDefault();
+        var table = document.getElementById("table-flow-query");
+        if (!table) return;
+        var csv = [];
+        var rows = table.querySelectorAll("tr");
+        for (var i = 0; i < rows.length; i++) {
+          var row = [], cols = rows[i].querySelectorAll("td, th");
+          for (var j = 0; j < cols.length; j++) {
+            row.push('"' + cols[j].innerText.trim().replace(/"/g, '""') + '"');
+          }
+          csv.push(row.join(","));
+        }
+        var blob = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+        var lienCsv = document.createElement("a");
+        lienCsv.download = "flow_query_table.csv";
+        lienCsv.href = URL.createObjectURL(blob);
+        lienCsv.click();
+      });
+    }
+  }
 });

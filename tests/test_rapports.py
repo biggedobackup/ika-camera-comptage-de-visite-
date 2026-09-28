@@ -63,6 +63,10 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Store Entry Rate" in texte
         assert "Flow Trend" in texte
         assert "Entity Flow Trend" in texte
+    elif cle_rapport == "flux":
+        assert "Metric" in texte
+        assert "Dimension" in texte
+        assert "Export Table" in texte
     else:
         assert "Total Entrées" in texte
         assert "Clients réels (IA)" in texte

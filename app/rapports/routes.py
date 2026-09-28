@@ -142,7 +142,31 @@ async def detail_rapport(
 
     camera_sn = (request.query_params.get("camera_sn") or "").strip() or None
 
-    from app.rapports.services import calculer_rapport_complet
+    from app.rapports.services import calculer_flow_query, calculer_rapport_complet
+
+    metric = (request.query_params.get("metric") or "in").strip()
+    dimension = (request.query_params.get("dimension") or "5min").strip()
+    try:
+        page = max(1, int(request.query_params.get("page") or 1))
+    except ValueError:
+        page = 1
+    try:
+        per_page = max(5, min(100, int(request.query_params.get("per_page") or 10)))
+    except ValueError:
+        per_page = 10
+
+    flow_query = None
+    if type_rapport == "flux":
+        flow_query = await calculer_flow_query(
+            db,
+            camera_sn=camera_sn,
+            metric=metric,
+            dimension=dimension,
+            date_debut=date_debut,
+            date_fin=date_fin,
+            page=page,
+            per_page=per_page,
+        )
 
     rapport = await calculer_rapport_complet(
         db, type_rapport=type_rapport, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
@@ -162,6 +186,7 @@ async def detail_rapport(
             "config": config,
             "rapports_config": CONFIG_RAPPORTS,
             "rapport": rapport,
+            "flow_query": flow_query,
             "cameras": cameras,
             "camera_sn_actif": camera_sn,
             "date_debut": date_debut,
