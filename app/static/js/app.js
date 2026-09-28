@@ -361,6 +361,8 @@
       }
     }
 
+    var pingInterval = null;
+
     function connecter() {
       try {
         ws = new WebSocket(wsUrl);
@@ -370,12 +372,23 @@
 
       ws.onopen = function () {
         var badge = document.getElementById("badge-temps-reel");
+        var texte = document.getElementById("texte-temps-reel");
         if (badge) {
           badge.className = "badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6";
+        }
+        if (texte) {
+          texte.textContent = "En direct";
         }
         if (conteneurRapport) {
           demanderDonneesRapport();
         }
+        // Ping de maintien de connexion toutes les 25s
+        if (pingInterval) clearInterval(pingInterval);
+        pingInterval = setInterval(function () {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            try { ws.send(JSON.stringify({ type: "ping" })); } catch (err) {}
+          }
+        }, 25000);
       };
 
       ws.onmessage = function (event) {
@@ -403,6 +416,21 @@
             // Si on est sur la page rapport, rafraîchir le rapport complet en direct
             if (conteneurRapport) {
               demanderDonneesRapport();
+            }
+
+            // Mettre à jour l'état de la caméra dans la liste
+            if (tableauCameras && msg.camera_sn) {
+              var camRowActive = tableauCameras.querySelector('[data-camera-sn="' + msg.camera_sn + '"]');
+              if (camRowActive) {
+                var statutColActive = camRowActive.querySelector("[data-colonne-statut]");
+                if (statutColActive) {
+                  statutColActive.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-circle-fill me-1 small"></i>En ligne</span>';
+                }
+                var hbColActive = camRowActive.querySelector("[data-colonne-heartbeat]");
+                if (hbColActive && msg.horodatage) {
+                  hbColActive.textContent = msg.horodatage;
+                }
+              }
             }
 
             if (tableauPassages) {
@@ -449,9 +477,17 @@
       };
 
       ws.onclose = function () {
+        if (pingInterval) {
+          clearInterval(pingInterval);
+          pingInterval = null;
+        }
         var badge = document.getElementById("badge-temps-reel");
+        var texte = document.getElementById("texte-temps-reel");
         if (badge) {
           badge.className = "badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 fs-6";
+        }
+        if (texte) {
+          texte.textContent = "En attente...";
         }
         setTimeout(connecter, delaiReconnexion);
       };

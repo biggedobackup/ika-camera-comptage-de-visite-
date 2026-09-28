@@ -6,7 +6,7 @@
 {% block contenu %}
 {% call entete_page("Rapport d'analyse de flux", "Synthèse de la fréquentation, des passages et de la performance des entrées.", "bi-bar-chart-line") %}
   <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
-    <i class="bi bi-broadcast"></i> <span id="texte-temps-reel">En direct (WebSocket)</span>
+    <i class="bi bi-broadcast"></i> <span id="texte-temps-reel">En direct</span>
   </span>
   <a class="btn btn-outline-primary" href="/cameras/export/excel?date_jour={{ rapport.date_debut }}"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
   <a class="btn btn-outline-danger" href="/cameras/export/pdf?date_jour={{ rapport.date_debut }}"><i class="bi bi-file-earmark-pdf"></i> Export PDF</a>

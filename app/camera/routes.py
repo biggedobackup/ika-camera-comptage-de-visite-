@@ -91,18 +91,21 @@ async def recevoir_v2_heartbeat(payload: dict[str, Any], request: Request, db: D
     return await services.enregistrer_v2_heartbeat(db, payload, client_ip=client_ip)
 
 
+from app.core.database import SessionLocal
+
 # ---------------------------------------------------------------------------
 # WebSocket Temps Réel (Diffusion vers le navigateur)
 # ---------------------------------------------------------------------------
 
 
 @api_router.websocket("/ws/comptage")
-async def websocket_flux_comptage(websocket: WebSocket, db: DbSession) -> None:
+async def websocket_flux_comptage(websocket: WebSocket) -> None:
     """Canal WebSocket temps réel pour recevoir les passages, l'état des appareils et les rapports de flux."""
     await services.gestionnaire_ws.connecter(websocket)
     try:
-        # Envoi de l'état initial des indicateurs dès la connexion
-        indicateurs = await services.calculer_indicateurs_comptage(db)
+        # Envoi de l'état initial des indicateurs dès la connexion (session courte fermée immédiatement)
+        async with SessionLocal() as db:
+            indicateurs = await services.calculer_indicateurs_comptage(db)
         await websocket.send_json(
             {
                 "type": "connexion_initiale",
@@ -113,13 +116,19 @@ async def websocket_flux_comptage(websocket: WebSocket, db: DbSession) -> None:
             texte = await websocket.receive_text()
             try:
                 donnees_recues = json.loads(texte)
-                if donnees_recues.get("action") == "rafraichir_rapport":
+                msg_type = donnees_recues.get("type")
+                action = donnees_recues.get("action")
+
+                if msg_type == "ping":
+                    await websocket.send_json({"type": "pong"})
+                elif action == "rafraichir_rapport":
                     cam_sn = (donnees_recues.get("camera_sn") or "").strip() or None
                     d_debut = (donnees_recues.get("date_debut") or "").strip() or None
                     d_fin = (donnees_recues.get("date_fin") or "").strip() or None
-                    rep = await services.generer_rapport_comptage(
-                        db, camera_sn=cam_sn, date_debut=d_debut, date_fin=d_fin
-                    )
+                    async with SessionLocal() as db:
+                        rep = await services.generer_rapport_comptage(
+                            db, camera_sn=cam_sn, date_debut=d_debut, date_fin=d_fin
+                        )
                     await websocket.send_json({"type": "donnees_rapport", "rapport": rep})
             except Exception:
                 pass
