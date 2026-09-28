@@ -1,23 +1,5 @@
-{#- Menu latéral : liens visibles selon le rôle, lien de la page active mis en évidence. -#}
-{%- set sections = [
-  {"titre": None, "liens": [
-    {"url": "/tableau-de-bord", "libelle": "Tableau de bord", "icone": "bi-speedometer2", "roles": None},
-  ]},
-  {"titre": "Administration", "liens": [
-    {"url": "/cameras", "libelle": "Caméras 3D", "icone": "bi-camera-video", "roles": [Role.ADMIN, Role.MANAGER]},
-    {"url": "/cameras/passages", "libelle": "Flux & Passages", "icone": "bi-graph-up", "roles": [Role.ADMIN, Role.MANAGER]},
-    {"url": "/cameras/rapport/statistiques", "libelle": "Rapport d'analyse", "icone": "bi-bar-chart-line", "roles": [Role.ADMIN, Role.MANAGER]},
-    {"url": "/utilisateurs", "libelle": "Utilisateurs", "icone": "bi-people", "roles": [Role.ADMIN, Role.MANAGER]},
-    {"url": "/historique", "libelle": "Historique", "icone": "bi-clock-history", "roles": [Role.ADMIN, Role.MANAGER]},
-  ]},
-  {"titre": "Mon compte", "liens": [
-    {"url": "/profil", "libelle": "Mon profil", "icone": "bi-person-circle", "roles": None},
-    {"url": "/otp/configuration", "libelle": "Double auth", "icone": "bi-shield-lock", "roles": None},
-  ]},
-] -%}
-{%- set urls = [] -%}
-{%- for section in sections -%}{%- for lien in section.liens -%}{%- set _ = urls.append(lien.url) -%}{%- endfor -%}{%- endfor -%}
-{%- set actif = page_active or lien_menu_actif(request.url.path, urls) -%}
+{#- Menu latéral : bascule automatique vers le menu Rapports lorsqu'on consulte les rapports analytiques -#}
+{%- set est_menu_rapport = request.url.path.startswith("/rapports") or request.url.path.startswith("/cameras/rapport") -%}
 
 <aside class="offcanvas-lg offcanvas-start app-menu" tabindex="-1" id="menu-lateral" aria-labelledby="menu-lateral-titre">
   <div class="offcanvas-header">
@@ -32,6 +14,146 @@
       <img src="{{ static('img/logo.png') }}" alt="" width="36" height="36">
       <span class="app-marque-nom">{{ app_name }}</span>
     </a>
+
+    {%- if est_menu_rapport and utilisateur.role in [Role.ADMIN, Role.MANAGER] %}
+    {# ========================================================================= #}
+    {# SOUS-MENU SPÉCIALISÉ : RAPPORTS D'ANALYSE DE FLUX (STYLE FOORIR)           #}
+    {# ========================================================================= #}
+    <nav class="app-menu-nav" aria-label="Navigation des rapports" data-menu-rapports>
+      <!-- Haut : Accès Tableau de bord et retour menu principal -->
+      <ul class="menu-liste mb-2">
+        <li>
+          <a class="menu-lien" href="/tableau-de-bord">
+            <i class="bi bi-speedometer2" aria-hidden="true"></i><span>Tableau de bord</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien text-muted" href="/cameras">
+            <i class="bi bi-arrow-left-circle" aria-hidden="true"></i><span>Menu principal</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports' %} active{% endif %}" href="/rapports"{% if request.url.path == '/rapports' %} aria-current="page"{% endif %}>
+            <i class="bi bi-grid" aria-hidden="true"></i><span>Tous les rapports</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- 1. Flux & Fréquentation -->
+      <p class="menu-section">Flux & Fréquentation</p>
+      <ul class="menu-liste mb-2">
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/flux' %} active{% endif %}" href="/rapports/flux"{% if request.url.path == '/rapports/flux' %} aria-current="page"{% endif %}>
+            <i class="bi bi-search" aria-hidden="true"></i><span>Requête de flux</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/horaire' %} active{% endif %}" href="/rapports/horaire"{% if request.url.path == '/rapports/horaire' %} aria-current="page"{% endif %}>
+            <i class="bi bi-clock" aria-hidden="true"></i><span>Données horaires</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/combinaison' %} active{% endif %}" href="/rapports/combinaison"{% if request.url.path == '/rapports/combinaison' %} aria-current="page"{% endif %}>
+            <i class="bi bi-intersect" aria-hidden="true"></i><span>Analyse combinée</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- 2. Clients & Visiteurs -->
+      <p class="menu-section">Clients & Visiteurs</p>
+      <ul class="menu-liste mb-2">
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/clients' %} active{% endif %}" href="/rapports/clients"{% if request.url.path == '/rapports/clients' %} aria-current="page"{% endif %}>
+            <i class="bi bi-person-badge" aria-hidden="true"></i><span>Requête clients</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/visiteurs' %} active{% endif %}" href="/rapports/visiteurs"{% if request.url.path == '/rapports/visiteurs' %} aria-current="page"{% endif %}>
+            <i class="bi bi-people" aria-hidden="true"></i><span>Analyse visiteurs</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/employes' %} active{% endif %}" href="/rapports/employes"{% if request.url.path == '/rapports/employes' %} aria-current="page"{% endif %}>
+            <i class="bi bi-shield-check" aria-hidden="true"></i><span>Personnel & Employés</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/profil' %} active{% endif %}" href="/rapports/profil"{% if request.url.path == '/rapports/profil' %} aria-current="page"{% endif %}>
+            <i class="bi bi-person-bounding-box" aria-hidden="true"></i><span>Profil des clients</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- 3. Entrées & Périodes -->
+      <p class="menu-section">Entrées & Périodes</p>
+      <ul class="menu-liste mb-2">
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/entites' %} active{% endif %}" href="/rapports/entites"{% if request.url.path == '/rapports/entites' %} aria-current="page"{% endif %}>
+            <i class="bi bi-building" aria-hidden="true"></i><span>Analyse des entités</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/classement' %} active{% endif %}" href="/rapports/classement"{% if request.url.path == '/rapports/classement' %} aria-current="page"{% endif %}>
+            <i class="bi bi-trophy" aria-hidden="true"></i><span>Classement des entrées</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/journalier' %} active{% endif %}" href="/rapports/journalier"{% if request.url.path == '/rapports/journalier' %} aria-current="page"{% endif %}>
+            <i class="bi bi-calendar-date" aria-hidden="true"></i><span>Rapport journalier</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/hebdomadaire' %} active{% endif %}" href="/rapports/hebdomadaire"{% if request.url.path == '/rapports/hebdomadaire' %} aria-current="page"{% endif %}>
+            <i class="bi bi-calendar-week" aria-hidden="true"></i><span>Rapport hebdomadaire</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/rapports/mensuel' %} active{% endif %}" href="/rapports/mensuel"{% if request.url.path == '/rapports/mensuel' %} aria-current="page"{% endif %}>
+            <i class="bi bi-calendar-month" aria-hidden="true"></i><span>Rapport mensuel</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Bas : Mon compte (profil accessible) -->
+      <p class="menu-section">Mon compte</p>
+      <ul class="menu-liste">
+        <li>
+          <a class="menu-lien{% if request.url.path == '/profil' %} active{% endif %}" href="/profil"{% if request.url.path == '/profil' %} aria-current="page"{% endif %}>
+            <i class="bi bi-person-circle" aria-hidden="true"></i><span>Mon profil</span>
+          </a>
+        </li>
+        <li>
+          <a class="menu-lien{% if request.url.path == '/otp/configuration' %} active{% endif %}" href="/otp/configuration"{% if request.url.path == '/otp/configuration' %} aria-current="page"{% endif %}>
+            <i class="bi bi-shield-lock" aria-hidden="true"></i><span>Double auth</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    {%- else %}
+    {# ========================================================================= #}
+    {# MENU PRINCIPAL STANDARD                                                  #}
+    {# ========================================================================= #}
+    {%- set sections = [
+      {"titre": None, "liens": [
+        {"url": "/tableau-de-bord", "libelle": "Tableau de bord", "icone": "bi-speedometer2", "roles": None},
+      ]},
+      {"titre": "Administration", "liens": [
+        {"url": "/cameras", "libelle": "Caméras 3D", "icone": "bi-camera-video", "roles": [Role.ADMIN, Role.MANAGER]},
+        {"url": "/cameras/passages", "libelle": "Flux & Passages", "icone": "bi-graph-up", "roles": [Role.ADMIN, Role.MANAGER]},
+        {"url": "/rapports", "libelle": "Rapports d'analyse", "icone": "bi-bar-chart-line", "roles": [Role.ADMIN, Role.MANAGER]},
+        {"url": "/utilisateurs", "libelle": "Utilisateurs", "icone": "bi-people", "roles": [Role.ADMIN, Role.MANAGER]},
+        {"url": "/historique", "libelle": "Historique", "icone": "bi-clock-history", "roles": [Role.ADMIN, Role.MANAGER]},
+      ]},
+      {"titre": "Mon compte", "liens": [
+        {"url": "/profil", "libelle": "Mon profil", "icone": "bi-person-circle", "roles": None},
+        {"url": "/otp/configuration", "libelle": "Double auth", "icone": "bi-shield-lock", "roles": None},
+      ]},
+    ] -%}
+    {%- set urls = [] -%}
+    {%- for section in sections -%}{%- for lien in section.liens -%}{%- set _ = urls.append(lien.url) -%}{%- endfor -%}{%- endfor -%}
+    {%- set actif = page_active or lien_menu_actif(request.url.path, urls) -%}
+
     <nav class="app-menu-nav" aria-label="Navigation principale" data-menu-principal>
       {%- for section in sections %}
       {%- set visibles = [] %}
@@ -52,5 +174,6 @@
       {%- endif %}
       {%- endfor %}
     </nav>
+    {%- endif %}
   </div>
 </aside>

@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
     new Chart(ctxAge, {
       type: "doughnut",
       data: {
-        labels: ["Kids (<17)", "Youth (17-30)", "Prime (31-45)", "Middle (46-60)", "Seniors (60+)"],
+        labels: ["Enfants (< 17 ans)", "Jeunes (17-30 ans)", "Actifs (31-45 ans)", "Adultes (46-60 ans)", "Seniors (60+ ans)"],
         datasets: [
           {
             data: [

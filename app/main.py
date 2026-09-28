@@ -18,6 +18,7 @@ from app.core.exceptions import enregistrer_gestionnaires
 from app.core.security import EN_TETE_CSRF, NOM_COOKIE_SESSION, EntetesSecuriteMiddleware, verifier_csrf
 from app.camera.routes import api_router as camera_api_router, router as camera_ui_router
 from app.historique.routes import router as historique_router
+from app.rapports.routes import router as rapports_router
 from app.tableau_de_bord.routes import router as tableau_de_bord_router
 from app.utilisateur.routes import router as utilisateur_router
 
@@ -87,6 +88,7 @@ app.include_router(tableau_de_bord_router, dependencies=protection_csrf)
 app.include_router(utilisateur_router, dependencies=protection_csrf)
 app.include_router(historique_router, dependencies=protection_csrf)
 app.include_router(camera_ui_router, dependencies=protection_csrf)
+app.include_router(rapports_router, dependencies=protection_csrf)
 
 
 @app.get("/", include_in_schema=False)
