@@ -52,10 +52,44 @@ class Camera(UUIDPKMixin, HorodatageMixin, Base):
 
     @property
     def est_en_ligne(self) -> bool:
-        """Indique si la caméra a émis un signal dans les 3 dernières minutes (180s)."""
+        """Indique si la caméra a émis un signal dans les 3 dernières minutes (180s) ou statut forcé."""
         if not self.dernier_heartbeat:
-            return False
-        return (maintenant() - self.dernier_heartbeat).total_seconds() <= 180
+            return self.statut_en_ligne
+        return (maintenant() - self.dernier_heartbeat).total_seconds() <= 180 or self.statut_en_ligne
+
+    @property
+    def hauteur_installation(self) -> int | None:
+        """Hauteur d'installation en centimètres (ex. 280 cm)."""
+        return (self.configuration or {}).get("hauteur_installation")
+
+    @property
+    def hauteur_filtrage(self) -> int | None:
+        """Hauteur de filtrage en centimètres (ex. 110 cm)."""
+        return (self.configuration or {}).get("hauteur_filtrage")
+
+    @property
+    def mode_enfant(self) -> bool:
+        """Indique si le mode détection d'enfants est activé."""
+        return bool((self.configuration or {}).get("mode_enfant", False))
+
+    @property
+    def sens_comptage(self) -> str:
+        """Sens de circulation configuré (normal ou inverse)."""
+        return (self.configuration or {}).get("sens_comptage", "normal")
+
+    @property
+    def intervalle_envoi(self) -> int:
+        """Intervalle d'agrégation et transmission en secondes (par défaut 60s)."""
+        val = (self.configuration or {}).get("intervalle_envoi")
+        try:
+            return int(val) if val is not None else 60
+        except (ValueError, TypeError):
+            return 60
+
+    @property
+    def notes(self) -> str | None:
+        """Notes techniques et remarques d'installation."""
+        return (self.configuration or {}).get("notes")
 
 
 class PassageComptage(UUIDPKMixin, Base):

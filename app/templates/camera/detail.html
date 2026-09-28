@@ -63,12 +63,48 @@
         </dl>
       </div>
     </div>
+
+    <!-- Carte Paramètres Techniques HX-CCD21 -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="card-title mb-0 fw-bold">Paramètres d'étalonnage</h5>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-6 text-muted">Hauteur installation</dt>
+          <dd class="col-sm-6 fw-semibold">{{ camera.hauteur_installation ~ " cm" if camera.hauteur_installation else "Non définie" }}</dd>
+
+          <dt class="col-sm-6 text-muted">Hauteur filtrage</dt>
+          <dd class="col-sm-6 fw-semibold">{{ camera.hauteur_filtrage ~ " cm" if camera.hauteur_filtrage else "Non définie" }}</dd>
+
+          <dt class="col-sm-6 text-muted">Mode Enfant (IA)</dt>
+          <dd class="col-sm-6">
+            {% if camera.mode_enfant %}
+              <span class="badge bg-success-subtle text-success">Activé</span>
+            {% else %}
+              <span class="badge bg-light text-muted border">Désactivé</span>
+            {% endif %}
+          </dd>
+
+          <dt class="col-sm-6 text-muted">Sens de circulation</dt>
+          <dd class="col-sm-6">{{ "Sens inversé" if camera.sens_comptage == "inverse" else "Standard (flèche)" }}</dd>
+
+          <dt class="col-sm-6 text-muted">Intervalle de flux</dt>
+          <dd class="col-sm-6">{{ camera.intervalle_envoi }} secondes</dd>
+
+          {% if camera.notes %}
+          <dt class="col-sm-12 text-muted mt-2">Notes techniques</dt>
+          <dd class="col-sm-12 small text-secondary mt-1 p-2 bg-light rounded">{{ camera.notes }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
   </div>
 
   <div class="col-lg-7">
     <div class="card border-0 shadow-sm">
       <div class="card-header bg-transparent py-3">
-        <h5 class="card-title mb-0 fw-bold">Modifier les paramètres de la caméra</h5>
+        <h5 class="card-title mb-0 fw-bold">Modifier tous les paramètres de la caméra</h5>
       </div>
       <div class="card-body p-4">
         {% if peut_gerer %}
@@ -76,38 +112,86 @@
           {{ form.champ_csrf() }}
           {{ form.resume_erreurs(erreurs) }}
 
-          <div class="row gx-3">
-            <div class="col-12 col-md-6">
-              {{ form.champ("nom", "Nom de l'entrée", valeurs.nom, erreur=erreurs.nom, placeholder="Ex. Main entrance, Porte 1…", aide="Nom affiché dans les rapports.") }}
+          <fieldset class="section-formulaire mb-4">
+            <legend class="section-formulaire-titre">Identification du matériel</legend>
+            <div class="row gx-3">
+              <div class="col-12 col-md-6">
+                {{ form.champ("sn", "Numéro de série (SN)", valeurs.sn, erreur=erreurs.sn, requis=True, placeholder="Ex. 211000002604280145", aide="Identifiant matériel unique. L'historique des comptages reste lié.") }}
+              </div>
+              <div class="col-12 col-md-6">
+                {{ form.champ("modele", "Modèle de caméra", valeurs.modele, erreur=erreurs.modele, requis=True, placeholder="HX-CCD21") }}
+              </div>
             </div>
-            <div class="col-12 col-md-6">
-              {{ form.champ("emplacement", "Emplacement physique", valeurs.emplacement, erreur=erreurs.emplacement, placeholder="Ex. Rez-de-chaussée, Aile Ouest…") }}
-            </div>
-          </div>
+          </fieldset>
 
-          <div class="row gx-3">
-            <div class="col-12 col-md-6">
-              {{ form.champ("ip_address", "Adresse IP locale", valeurs.ip_address, erreur=erreurs.ip_address, placeholder="Ex. 192.168.1.50") }}
+          <fieldset class="section-formulaire mb-4">
+            <legend class="section-formulaire-titre">Emplacement et affectation</legend>
+            <div class="row gx-3">
+              <div class="col-12 col-md-6">
+                {{ form.champ("nom", "Nom de l'entrée", valeurs.nom, erreur=erreurs.nom, placeholder="Ex. Main entrance, Porte 1…", aide="Nom affiché dans les rapports.") }}
+              </div>
+              <div class="col-12 col-md-6">
+                {{ form.champ("emplacement", "Emplacement physique", valeurs.emplacement, erreur=erreurs.emplacement, placeholder="Ex. Rez-de-chaussée, Aile Ouest…") }}
+              </div>
             </div>
-            <div class="col-12 col-md-6">
-              {{ form.champ("mac_address", "Adresse MAC", valeurs.mac_address, erreur=erreurs.mac_address, placeholder="Ex. 00:1A:2B:3C:4D:5E") }}
-            </div>
-          </div>
+          </fieldset>
 
-          <div class="row gx-3">
-            <div class="col-12 col-md-4">
-              {{ form.champ("modele", "Modèle", valeurs.modele, erreur=erreurs.modele, requis=True) }}
+          <fieldset class="section-formulaire mb-4">
+            <legend class="section-formulaire-titre">Réseau & Communication</legend>
+            <div class="row gx-3">
+              <div class="col-12 col-md-6">
+                {{ form.champ("ip_address", "Adresse IP locale", valeurs.ip_address, erreur=erreurs.ip_address, placeholder="Ex. 192.168.1.50") }}
+              </div>
+              <div class="col-12 col-md-6">
+                {{ form.champ("mac_address", "Adresse MAC", valeurs.mac_address, erreur=erreurs.mac_address, placeholder="Ex. 00:1A:2B:3C:4D:5E") }}
+              </div>
+              <div class="col-12 col-md-4">
+                {{ form.champ_select("role_reseau", "Rôle réseau", options_roles, valeurs.role_reseau, erreur=erreurs.role_reseau, requis=True) }}
+              </div>
+              <div class="col-12 col-md-4">
+                {{ form.champ("version_logiciel", "Version Firmware", valeurs.version_logiciel, erreur=erreurs.version_logiciel, placeholder="Ex. V1.2.0") }}
+              </div>
+              <div class="col-12 col-md-4">
+                {{ form.champ_select("statut_en_ligne", "Statut réseau", options_statuts, "true" if (valeurs.statut_en_ligne == 'true' or valeurs.statut_en_ligne is sameas true) else "false", erreur=erreurs.statut_en_ligne, requis=True) }}
+              </div>
             </div>
-            <div class="col-12 col-md-4">
-              {{ form.champ_select("role_reseau", "Rôle réseau", options_roles, valeurs.role_reseau, erreur=erreurs.role_reseau, requis=True) }}
-            </div>
-            <div class="col-12 col-md-4">
-              {{ form.champ("version_logiciel", "Version Firmware", valeurs.version_logiciel, erreur=erreurs.version_logiciel) }}
-            </div>
-          </div>
+          </fieldset>
 
-          <div class="pt-3 border-top d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Enregistrer les modifications</button>
+          <fieldset class="section-formulaire mb-4">
+            <legend class="section-formulaire-titre">Configuration d'installation & Étalonnage 3D</legend>
+            <div class="row gx-3">
+              <div class="col-12 col-md-4">
+                {{ form.champ("hauteur_installation", "Hauteur installation (cm)", valeurs.hauteur_installation, type="number", erreur=erreurs.hauteur_installation, placeholder="280", aide="Hauteur plafond du capteur.") }}
+              </div>
+              <div class="col-12 col-md-4">
+                {{ form.champ("hauteur_filtrage", "Hauteur filtrage (cm)", valeurs.hauteur_filtrage, type="number", erreur=erreurs.hauteur_filtrage, placeholder="110", aide="Seuil minimal des personnes.") }}
+              </div>
+              <div class="col-12 col-md-4">
+                {{ form.champ("intervalle_envoi", "Intervalle de flux (sec)", valeurs.intervalle_envoi, type="number", erreur=erreurs.intervalle_envoi, placeholder="60", aide="Cadence minute d'envoi.") }}
+              </div>
+              <div class="col-12 col-md-6">
+                {{ form.champ_select("sens_comptage", "Sens de circulation", options_sens, valeurs.sens_comptage, erreur=erreurs.sens_comptage, requis=True) }}
+              </div>
+              <div class="col-12 col-md-6 d-flex align-items-center pt-3">
+                {{ form.case_a_cocher("mode_enfant", "Activer la détection spécifique des enfants", coche=(valeurs.mode_enfant == 'true' or valeurs.mode_enfant is sameas true or valeurs.mode_enfant == 'on'), aide="Distingue les flux enfants / adultes.") }}
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="section-formulaire mb-4">
+            <legend class="section-formulaire-titre">Notes & Instructions techniques</legend>
+            <div class="row gx-3">
+              <div class="col-12">
+                <label class="form-label" for="champ-notes">Remarques ou instructions d'installation</label>
+                <textarea class="form-control{% if erreurs.notes %} is-invalid{% endif %}" id="champ-notes" name="notes" rows="2" maxlength="500" placeholder="Informations techniques, raccordement POE, emplacement switch…">{{ valeurs.notes or '' }}</textarea>
+                {% if erreurs.notes %}<div class="invalid-feedback">{{ erreurs.notes }}</div>{% endif %}
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+            <a class="btn btn-outline-secondary" href="/cameras">Annuler</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Enregistrer toutes les modifications</button>
           </div>
         </form>
         {% else %}

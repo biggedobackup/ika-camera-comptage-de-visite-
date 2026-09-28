@@ -476,4 +476,134 @@ async def test_statut_en_ligne_veridique(client_admin: httpx.AsyncClient) -> Non
         await db.commit()
 
 
+async def test_ajout_et_modification_tous_les_champs(client_admin: httpx.AsyncClient) -> None:
+    """Vérifie que l'on peut ajouter et modifier absolument tous les champs de la caméra (SN inclus)."""
+    from tests.conftest import extraire_csrf
+
+    # 1. Ajout complet avec tous les champs
+    page_ajout = (await client_admin.get("/cameras/ajouter")).text
+    csrf1 = extraire_csrf(page_ajout)
+    rep_ajout = await client_admin.post(
+        "/cameras/ajouter",
+        data={
+            "csrf_token": csrf1,
+            "sn": "SN-FULL-CONFIG-001",
+            "modele": "HX-CCD21-PRO",
+            "nom": "Entrée Principale Nord",
+            "emplacement": "Bâtiment A, RDC",
+            "ip_address": "192.168.1.180",
+            "mac_address": "AA:BB:CC:DD:EE:FF",
+            "role_reseau": "master",
+            "version_logiciel": "V2.1.0",
+            "statut_en_ligne": "true",
+            "hauteur_installation": "310",
+            "hauteur_filtrage": "115",
+            "mode_enfant": "true",
+            "sens_comptage": "inverse",
+            "intervalle_envoi": "60",
+            "notes": "Caméra calibrée avec détection IA enfants activée.",
+        },
+        follow_redirects=True,
+    )
+    assert rep_ajout.status_code == 200
+
+    async with SessionLocal() as db:
+        cam = (await db.execute(select(Camera).where(Camera.sn == "SN-FULL-CONFIG-001"))).scalar_one_or_none()
+        assert cam is not None
+        assert cam.nom == "Entrée Principale Nord"
+        assert cam.modele == "HX-CCD21-PRO"
+        assert cam.ip_address == "192.168.1.180"
+        assert cam.mac_address == "AA:BB:CC:DD:EE:FF"
+        assert cam.role_reseau == "master"
+        assert cam.version_logiciel == "V2.1.0"
+        assert cam.statut_en_ligne is True
+        assert cam.hauteur_installation == 310
+        assert cam.hauteur_filtrage == 115
+        assert cam.mode_enfant is True
+        assert cam.sens_comptage == "inverse"
+        assert cam.intervalle_envoi == 60
+        assert "calibrée" in (cam.notes or "")
+        cam_id = cam.id
+
+    # 2. Modification de l'intégralité des champs (y compris le SN !)
+    page_detail = (await client_admin.get(f"/cameras/{cam_id}")).text
+    assert "Modifier tous les paramètres de la caméra" in page_detail
+    assert "SN-FULL-CONFIG-001" in page_detail
+    assert "310 cm" in page_detail
+    csrf2 = extraire_csrf(page_detail)
+
+    rep_modif = await client_admin.post(
+        f"/cameras/{cam_id}",
+        data={
+            "csrf_token": csrf2,
+            "sn": "SN-FULL-CONFIG-002",  # Modification du numéro de série
+            "modele": "HX-CCD21-V2",
+            "nom": "Entrée VIP Rénovée",
+            "emplacement": "Bâtiment B, Étage 1",
+            "ip_address": "192.168.1.199",
+            "mac_address": "11:22:33:44:55:66",
+            "role_reseau": "slave",
+            "version_logiciel": "V2.5.0",
+            "statut_en_ligne": "false",
+            "hauteur_installation": "290",
+            "hauteur_filtrage": "100",
+            "mode_enfant": "false",
+            "sens_comptage": "normal",
+            "intervalle_envoi": "120",
+            "notes": "Mise à jour suite au changement de porte.",
+        },
+        follow_redirects=True,
+    )
+    assert rep_modif.status_code == 200
+
+    async with SessionLocal() as db:
+        # L'ancien SN ne doit plus exister
+        ancien = (await db.execute(select(Camera).where(Camera.sn == "SN-FULL-CONFIG-001"))).scalar_one_or_none()
+        assert ancien is None
+
+        # Le nouveau SN doit exister avec tous les champs mis à jour
+        maj = (await db.execute(select(Camera).where(Camera.sn == "SN-FULL-CONFIG-002"))).scalar_one()
+        assert maj.id == cam_id
+        assert maj.nom == "Entrée VIP Rénovée"
+        assert maj.emplacement == "Bâtiment B, Étage 1"
+        assert maj.ip_address == "192.168.1.199"
+        assert maj.mac_address == "11:22:33:44:55:66"
+        assert maj.modele == "HX-CCD21-V2"
+        assert maj.role_reseau == "slave"
+        assert maj.version_logiciel == "V2.5.0"
+        assert maj.hauteur_installation == 290
+        assert maj.hauteur_filtrage == 100
+        assert maj.mode_enfant is False
+        assert maj.sens_comptage == "normal"
+        assert maj.intervalle_envoi == 120
+        assert "changement de porte" in (maj.notes or "")
+
+        # Nettoyage
+        await db.delete(maj)
+        await db.commit()
+
+
+async def test_rapport_donnees_json_et_websocket_refresh(
+    client_admin: httpx.AsyncClient, payload_interval_aggregate_v1: dict[str, Any]
+) -> None:
+    """Vérifie l'endpoint JSON du rapport et l'affichage temps réel."""
+    await client_admin.post("/api/passenger-flow/interval-aggregate", json=payload_interval_aggregate_v1)
+
+    # 1. Vérification de la page HTML avec indicateur WebSocket et conteneur de données
+    rep_html = await client_admin.get("/cameras/rapport/statistiques")
+    assert rep_html.status_code == 200
+    assert "data-page-rapport" in rep_html.text
+    assert "badge-temps-reel" in rep_html.text
+    assert "data-rapport-entrees" in rep_html.text
+
+    # 2. Vérification de l'API JSON temps réel
+    rep_json = await client_admin.get("/cameras/rapport/donnees?date_debut=2026-09-24&date_fin=2026-09-24")
+    assert rep_json.status_code == 200
+    donnees = rep_json.json()
+    assert "entrees" in donnees
+    assert "visiteurs_uniques" in donnees
+    assert "repartition_cameras" in donnees
+    assert "repartition_heures" in donnees
+
+
 

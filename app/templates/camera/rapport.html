@@ -5,9 +5,14 @@
 
 {% block contenu %}
 {% call entete_page("Rapport d'analyse de flux", "Synthèse de la fréquentation, des passages et de la performance des entrées.", "bi-bar-chart-line") %}
+  <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
+    <i class="bi bi-broadcast"></i> <span id="texte-temps-reel">En direct (WebSocket)</span>
+  </span>
   <a class="btn btn-outline-primary" href="/cameras/export/excel?date_jour={{ rapport.date_debut }}"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
   <a class="btn btn-outline-danger" href="/cameras/export/pdf?date_jour={{ rapport.date_debut }}"><i class="bi bi-file-earmark-pdf"></i> Export PDF</a>
 {% endcall %}
+
+<div id="conteneur-rapport-flux" data-page-rapport="true" data-date-debut="{{ rapport.date_debut }}" data-date-fin="{{ rapport.date_fin }}" data-camera-sn="{{ camera_sn_actif or '' }}">
 
 <!-- Filtres de période et de caméra -->
 <div class="card border-0 shadow-sm mb-4">
@@ -47,7 +52,7 @@
         <p class="carte-indicateur-libelle">Total Entrées</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
-      <p class="carte-indicateur-valeur">{{ rapport.entrees }}</p>
+      <p class="carte-indicateur-valeur" data-rapport-entrees>{{ rapport.entrees }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Passages physiques</p>
     </div>
   </div>
@@ -58,7 +63,7 @@
         <p class="carte-indicateur-libelle">Clients uniques (IA)</p>
         <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-success">{{ rapport.visiteurs_uniques }}</p>
+      <p class="carte-indicateur-valeur text-success" data-rapport-uniques>{{ rapport.visiteurs_uniques }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Visiteurs réels dédoublés</p>
     </div>
   </div>
@@ -69,8 +74,8 @@
         <p class="carte-indicateur-libelle">Taux de revisite</p>
         <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-warning-emphasis">{{ rapport.taux_revisite_pct }}%</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-clock-history"></i> {{ rapport.visiteurs_recidives }} revisite{{ "s" if rapport.visiteurs_recidives > 1 else "" }} identifiée{{ "s" if rapport.visiteurs_recidives > 1 else "" }}</p>
+      <p class="carte-indicateur-valeur text-warning-emphasis" data-rapport-revisite-pct>{{ rapport.taux_revisite_pct }}%</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-clock-history"></i> <span data-rapport-revisites>{{ rapport.visiteurs_recidives }}</span> revisite{{ "s" if rapport.visiteurs_recidives > 1 else "" }} identifiée{{ "s" if rapport.visiteurs_recidives > 1 else "" }}</p>
     </div>
   </div>
 
@@ -80,7 +85,7 @@
         <p class="carte-indicateur-libelle">Personnel filtré</p>
         <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-secondary">{{ rapport.personnel_exclu }}</p>
+      <p class="carte-indicateur-valeur text-secondary" data-rapport-personnel>{{ rapport.personnel_exclu }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-person-badge"></i> Badges / livreurs exclus</p>
     </div>
   </div>
@@ -92,7 +97,7 @@
     <div class="card border-0 shadow-sm h-100">
       <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
         <h5 class="card-title mb-0 fw-bold">Performance par entrée / caméra</h5>
-        <span class="badge bg-light text-dark border">{{ rapport.repartition_cameras | length }} entrées actives</span>
+        <span class="badge bg-light text-dark border" data-rapport-nb-entrees>{{ rapport.repartition_cameras | length }} entrée{{ "s" if rapport.repartition_cameras | length > 1 else "" }}</span>
       </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -105,17 +110,17 @@
               <th scope="col" class="text-center">Statut</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-rapport-table-cameras>
             {% for c in rapport.repartition_cameras %}
-            <tr>
+            <tr data-camera-sn="{{ c.sn }}">
               <td>
-                <div class="fw-semibold">{{ c.nom }}</div>
+                <div class="fw-semibold" data-col-nom>{{ c.nom }}</div>
                 <code class="small text-muted">{{ c.sn }}</code>
               </td>
-              <td class="text-center fw-bold text-primary">{{ c.entrees }}</td>
-              <td class="text-center fw-bold text-success">{{ c.uniques }}</td>
-              <td class="text-center text-muted">{{ c.personnel }}</td>
-              <td class="text-center">
+              <td class="text-center fw-bold text-primary" data-col-entrees>{{ c.entrees }}</td>
+              <td class="text-center fw-bold text-success" data-col-uniques>{{ c.uniques }}</td>
+              <td class="text-center text-muted" data-col-personnel>{{ c.personnel }}</td>
+              <td class="text-center" data-col-statut>
                 {% if c.statut_en_ligne %}
                 <span class="badge bg-success-subtle text-success">En ligne</span>
                 {% else %}
@@ -124,7 +129,7 @@
               </td>
             </tr>
             {% else %}
-            <tr>
+            <tr data-ligne-vide>
               <td colspan="5" class="text-center py-4 text-muted">Aucune donnée sur cette période.</td>
             </tr>
             {% endfor %}
@@ -141,7 +146,7 @@
         <h5 class="card-title mb-0 fw-bold">Affluence par tranche horaire</h5>
       </div>
       <div class="card-body">
-        <div class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column gap-3" data-rapport-heures>
           {% set max_entrees = 1 %}
           {% for h in rapport.repartition_heures %}
             {% if h.entrees > max_entrees %}
@@ -150,14 +155,14 @@
           {% endfor %}
 
           {% for h in rapport.repartition_heures %}
-          <div>
+          <div data-tranche-heure="{{ h.heure }}">
             <div class="d-flex justify-content-between small mb-1">
               <span class="fw-medium text-dark">{{ h.heure }}</span>
-              <span class="text-muted"><strong class="text-primary">{{ h.entrees }}</strong> entrées ({{ h.uniques }} clients réels)</span>
+              <span class="text-muted"><strong class="text-primary" data-heure-entrees>{{ h.entrees }}</strong> entrées (<span data-heure-uniques>{{ h.uniques }}</span> clients réels)</span>
             </div>
             <div class="progress" style="height: 10px;">
               {% set pct = (h.entrees / max_entrees * 100) if max_entrees > 0 else 0 %}
-              <div class="progress-bar bg-primary" role="progressbar" style="width: {{ pct }}%;" aria-valuenow="{{ h.entrees }}" aria-valuemin="0" aria-valuemax="{{ max_entrees }}"></div>
+              <div class="progress-bar bg-primary" role="progressbar" data-heure-barre style="width: {{ pct }}%;" aria-valuenow="{{ h.entrees }}" aria-valuemin="0" aria-valuemax="{{ max_entrees }}"></div>
             </div>
           </div>
           {% endfor %}
@@ -165,5 +170,6 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 {% endblock %}

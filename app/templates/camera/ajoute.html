@@ -56,6 +56,45 @@
           <div class="col-12 col-md-6">
             {{ form.champ("version_logiciel", "Version logicielle / Firmware", valeurs.version_logiciel, erreur=erreurs.version_logiciel, placeholder="Ex. V1.0.12 ou V2.5", aide="Numéro de version du micrologiciel caméra.") }}
           </div>
+          <div class="col-12 col-md-6">
+            {{ form.champ_select("statut_en_ligne", "Statut initial", options_statuts, "true" if (valeurs.statut_en_ligne == 'true' or valeurs.statut_en_ligne is sameas true) else "false", erreur=erreurs.statut_en_ligne, requis=True, aide="État de connexion initial de l'appareil.") }}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="section-formulaire mb-4">
+        <legend class="section-formulaire-titre">Configuration d'installation & Détection 3D (HX-CCD21)</legend>
+        <p class="section-formulaire-aide">Paramètres d'étalonnage pour la précision du comptage et le filtrage IA.</p>
+        <div class="row gx-4">
+          <div class="col-12 col-md-3">
+            {{ form.champ("hauteur_installation", "Hauteur installation (cm)", valeurs.hauteur_installation, type="number", erreur=erreurs.hauteur_installation, placeholder="280", aide="Hauteur plafond réelle du capteur (ex. 280 cm).") }}
+          </div>
+          <div class="col-12 col-md-3">
+            {{ form.champ("hauteur_filtrage", "Hauteur filtrage (cm)", valeurs.hauteur_filtrage, type="number", erreur=erreurs.hauteur_filtrage, placeholder="110", aide="Seuil en-dessous duquel les objets sont exclus (ex. 110 cm).") }}
+          </div>
+          <div class="col-12 col-md-3">
+            {{ form.champ("intervalle_envoi", "Intervalle de flux (sec)", valeurs.intervalle_envoi, type="number", erreur=erreurs.intervalle_envoi, placeholder="60", aide="Fréquence d'agrégation minute (défaut : 60s).") }}
+          </div>
+          <div class="col-12 col-md-3">
+            {{ form.champ_select("sens_comptage", "Sens de circulation", options_sens, valeurs.sens_comptage, erreur=erreurs.sens_comptage, requis=True, aide="Sens de franchissement entrant.") }}
+          </div>
+          <div class="col-12 mt-2">
+            {{ form.case_a_cocher("mode_enfant", "Activer la détection spécifique des enfants", coche=(valeurs.mode_enfant == 'true' or valeurs.mode_enfant is sameas true or valeurs.mode_enfant == 'on'), aide="Distingue les enfants mesurant entre la hauteur de filtrage et la taille adulte.") }}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="section-formulaire mb-4">
+        <legend class="section-formulaire-titre">Notes & Consignes techniques</legend>
+        <div class="row gx-4">
+          <div class="col-12">
+            <div class="mb-3">
+              <label class="form-label" for="champ-notes">Remarques ou instructions d'installation</label>
+              <textarea class="form-control{% if erreurs.notes %} is-invalid{% endif %}" id="champ-notes" name="notes" rows="2" maxlength="500" placeholder="Ex. Installée au-dessus de la porte automatique côté parking, câble RJ45 POE direct switch baie RDC…">{{ valeurs.notes or '' }}</textarea>
+              {% if erreurs.notes %}<div class="invalid-feedback">{{ erreurs.notes }}</div>{% endif %}
+              <div class="form-text">Informations libres utiles aux administrateurs réseau et techniciens.</div>
+            </div>
+          </div>
         </div>
       </fieldset>
 

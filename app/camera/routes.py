@@ -21,10 +21,22 @@ from app.core.security import adresse_ip_client
 from app.core.templating import flash, rendre
 from app.core.validation import valider
 
+import json
+
 OPTIONS_ROLES_RESEAU = [
     ("master", "Maître (Master — passerelle de flux)"),
     ("slave", "Esclave (Slave — capteur d'extension)"),
     ("client", "Client (Nœud autonome)"),
+]
+
+OPTIONS_STATUT_CONNEXION = [
+    ("false", "Hors ligne (Inactif / En attente de signal)"),
+    ("true", "En ligne (Actif)"),
+]
+
+OPTIONS_SENS_COMPTAGE = [
+    ("normal", "Sens standard (Entrée = flèche caméra)"),
+    ("inverse", "Sens inversé (Sortie = flèche caméra)"),
 ]
 
 # Router dédié aux endpoints montants (IoT / Webhooks caméras) - Pas de CSRF
@@ -86,7 +98,7 @@ async def recevoir_v2_heartbeat(payload: dict[str, Any], request: Request, db: D
 
 @api_router.websocket("/ws/comptage")
 async def websocket_flux_comptage(websocket: WebSocket, db: DbSession) -> None:
-    """Canal WebSocket temps réel pour recevoir les passages et l'état des appareils."""
+    """Canal WebSocket temps réel pour recevoir les passages, l'état des appareils et les rapports de flux."""
     await services.gestionnaire_ws.connecter(websocket)
     try:
         # Envoi de l'état initial des indicateurs dès la connexion
@@ -98,8 +110,19 @@ async def websocket_flux_comptage(websocket: WebSocket, db: DbSession) -> None:
             }
         )
         while True:
-            # Écoute passive pour garder la socket active
-            await websocket.receive_text()
+            texte = await websocket.receive_text()
+            try:
+                donnees_recues = json.loads(texte)
+                if donnees_recues.get("action") == "rafraichir_rapport":
+                    cam_sn = (donnees_recues.get("camera_sn") or "").strip() or None
+                    d_debut = (donnees_recues.get("date_debut") or "").strip() or None
+                    d_fin = (donnees_recues.get("date_fin") or "").strip() or None
+                    rep = await services.generer_rapport_comptage(
+                        db, camera_sn=cam_sn, date_debut=d_debut, date_fin=d_fin
+                    )
+                    await websocket.send_json({"type": "donnees_rapport", "rapport": rep})
+            except Exception:
+                pass
     except (WebSocketDisconnect, RuntimeError):
         pass
     finally:
@@ -172,6 +195,8 @@ async def ajouter_camera_get(
         {
             "modification": False,
             "options_roles": OPTIONS_ROLES_RESEAU,
+            "options_statuts": OPTIONS_STATUT_CONNEXION,
+            "options_sens": OPTIONS_SENS_COMPTAGE,
             "valeurs": {
                 "sn": "",
                 "nom": "",
@@ -181,6 +206,13 @@ async def ajouter_camera_get(
                 "modele": "HX-CCD21",
                 "role_reseau": "master",
                 "version_logiciel": "",
+                "statut_en_ligne": "false",
+                "hauteur_installation": "280",
+                "hauteur_filtrage": "110",
+                "mode_enfant": False,
+                "sens_comptage": "normal",
+                "intervalle_envoi": "60",
+                "notes": "",
             },
             "erreurs": {},
         },
@@ -204,6 +236,8 @@ async def ajouter_camera_post(
             {
                 "modification": False,
                 "options_roles": OPTIONS_ROLES_RESEAU,
+                "options_statuts": OPTIONS_STATUT_CONNEXION,
+                "options_sens": OPTIONS_SENS_COMPTAGE,
                 "valeurs": dict(formulaire),
                 "erreurs": erreurs,
             },
@@ -220,6 +254,8 @@ async def ajouter_camera_post(
             {
                 "modification": False,
                 "options_roles": OPTIONS_ROLES_RESEAU,
+                "options_statuts": OPTIONS_STATUT_CONNEXION,
+                "options_sens": OPTIONS_SENS_COMPTAGE,
                 "valeurs": dict(formulaire),
                 "erreurs": erreurs,
             },
@@ -262,8 +298,11 @@ async def fiche_camera(
         {
             "camera": camera,
             "options_roles": OPTIONS_ROLES_RESEAU,
+            "options_statuts": OPTIONS_STATUT_CONNEXION,
+            "options_sens": OPTIONS_SENS_COMPTAGE,
             "peut_gerer": peut_gerer_cameras(utilisateur),
             "valeurs": {
+                "sn": camera.sn,
                 "nom": camera.nom or "",
                 "emplacement": camera.emplacement or "",
                 "ip_address": camera.ip_address or "",
@@ -271,6 +310,13 @@ async def fiche_camera(
                 "modele": camera.modele or "HX-CCD21",
                 "role_reseau": camera.role_reseau or "master",
                 "version_logiciel": camera.version_logiciel or "",
+                "statut_en_ligne": "true" if camera.statut_en_ligne else "false",
+                "hauteur_installation": camera.hauteur_installation if camera.hauteur_installation is not None else "",
+                "hauteur_filtrage": camera.hauteur_filtrage if camera.hauteur_filtrage is not None else "",
+                "mode_enfant": camera.mode_enfant,
+                "sens_comptage": camera.sens_comptage,
+                "intervalle_envoi": camera.intervalle_envoi,
+                "notes": camera.notes or "",
             },
             "erreurs": {},
         },
@@ -295,6 +341,8 @@ async def modifier_camera_post(
             {
                 "camera": camera,
                 "options_roles": OPTIONS_ROLES_RESEAU,
+                "options_statuts": OPTIONS_STATUT_CONNEXION,
+                "options_sens": OPTIONS_SENS_COMPTAGE,
                 "peut_gerer": True,
                 "valeurs": dict(formulaire),
                 "erreurs": erreurs,
@@ -302,8 +350,26 @@ async def modifier_camera_post(
             statut=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
 
-    await services.modifier_camera(db, camera, donnees)
-    flash(request, f"La caméra « {camera.libelle_affiche} » a été modifiée avec succès.")
+    try:
+        await services.modifier_camera(db, camera, donnees)
+    except ValueError as e:
+        erreurs["sn"] = str(e)
+        return rendre(
+            request,
+            "camera/detail.html",
+            {
+                "camera": camera,
+                "options_roles": OPTIONS_ROLES_RESEAU,
+                "options_statuts": OPTIONS_STATUT_CONNEXION,
+                "options_sens": OPTIONS_SENS_COMPTAGE,
+                "peut_gerer": True,
+                "valeurs": dict(formulaire),
+                "erreurs": erreurs,
+            },
+            statut=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
+
+    flash(request, f"La caméra « {camera.libelle_affiche} » ({camera.sn}) a été modifiée avec succès.")
     return RedirectResponse(f"/cameras/{camera_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -332,5 +398,21 @@ async def rapport_statistiques(
             "camera_sn_actif": camera_sn,
             "peut_gerer": peut_gerer_cameras(utilisateur),
         },
+    )
+
+
+@router.get("/cameras/rapport/donnees", summary="Données JSON temps réel du rapport")
+async def rapport_donnees_json(
+    request: Request,
+    db: DbSession,
+    utilisateur: LecteurCameras,
+) -> dict[str, Any]:
+    """Fournit les statistiques du rapport en JSON pour rafraîchissement temps réel (WebSocket/AJAX)."""
+    camera_sn = (request.query_params.get("camera_sn") or "").strip() or None
+    date_debut = (request.query_params.get("date_debut") or "").strip() or None
+    date_fin = (request.query_params.get("date_fin") or "").strip() or None
+
+    return await services.generer_rapport_comptage(
+        db, camera_sn=camera_sn, date_debut=date_debut, date_fin=date_fin
     )
 

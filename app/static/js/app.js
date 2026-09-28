@@ -222,14 +222,15 @@
   }
 
   /* ---------------------------------------------------------------------
-   * 6. WebSocket temps réel pour les compteurs et passages caméras
+   * 6. WebSocket temps réel pour les compteurs, passages et rapport de flux
    * ------------------------------------------------------------------- */
   function initialiserWebSocketComptage() {
     var entreesEl = document.querySelector("[data-comptage-entrees]");
     var tableauPassages = document.querySelector("[data-tableau-passages]");
     var tableauCameras = document.querySelector("[data-tableau-cameras]");
+    var conteneurRapport = document.querySelector("[data-page-rapport]");
 
-    if (!entreesEl && !tableauPassages && !tableauCameras) {
+    if (!entreesEl && !tableauPassages && !tableauCameras && !conteneurRapport) {
       return;
     }
 
@@ -239,7 +240,7 @@
     var delaiReconnexion = 2500;
 
     function animerChiffre(element, nouvelleValeur) {
-      if (!element || nouvelleValeur === undefined) return;
+      if (!element || nouvelleValeur === undefined || nouvelleValeur === null) return;
       var ancienne = element.textContent.trim();
       if (ancienne !== String(nouvelleValeur)) {
         element.textContent = nouvelleValeur;
@@ -247,6 +248,116 @@
         setTimeout(function () {
           element.classList.remove("bg-warning-subtle", "rounded", "px-1");
         }, 1200);
+      }
+    }
+
+    function rafraichirRapportViaHttp() {
+      if (!conteneurRapport) return;
+      var dDebut = conteneurRapport.getAttribute("data-date-debut") || "";
+      var dFin = conteneurRapport.getAttribute("data-date-fin") || "";
+      var cSn = conteneurRapport.getAttribute("data-camera-sn") || "";
+      var url = "/cameras/rapport/donnees?date_debut=" + encodeURIComponent(dDebut) + "&date_fin=" + encodeURIComponent(dFin) + "&camera_sn=" + encodeURIComponent(cSn);
+      fetch(url)
+        .then(function (r) { return r.json(); })
+        .then(function (donnees) { if (donnees) mettreAJourRapport(donnees); })
+        .catch(function () {});
+    }
+
+    function mettreAJourRapport(rep) {
+      if (!conteneurRapport || !rep) return;
+
+      // 1. Indicateurs clés (KPIs)
+      animerChiffre(conteneurRapport.querySelector("[data-rapport-entrees]"), rep.entrees);
+      animerChiffre(conteneurRapport.querySelector("[data-rapport-uniques]"), rep.visiteurs_uniques);
+      animerChiffre(conteneurRapport.querySelector("[data-rapport-revisite-pct]"), rep.taux_revisite_pct + "%");
+      animerChiffre(conteneurRapport.querySelector("[data-rapport-revisites]"), rep.visiteurs_recidives);
+      animerChiffre(conteneurRapport.querySelector("[data-rapport-personnel]"), rep.personnel_exclu);
+
+      // 2. Tableau de performance par caméra
+      var tbodyCams = conteneurRapport.querySelector("[data-rapport-table-cameras]");
+      if (tbodyCams && Array.isArray(rep.repartition_cameras)) {
+        var ligneVide = tbodyCams.querySelector("[data-ligne-vide]");
+        if (ligneVide && rep.repartition_cameras.length > 0) {
+          ligneVide.remove();
+        }
+
+        rep.repartition_cameras.forEach(function (cam) {
+          var row = tbodyCams.querySelector('[data-camera-sn="' + cam.sn + '"]');
+          if (row) {
+            animerChiffre(row.querySelector("[data-col-entrees]"), cam.entrees);
+            animerChiffre(row.querySelector("[data-col-uniques]"), cam.uniques);
+            animerChiffre(row.querySelector("[data-col-personnel]"), cam.personnel);
+            var statutCell = row.querySelector("[data-col-statut]");
+            if (statutCell) {
+              statutCell.innerHTML = cam.statut_en_ligne
+                ? '<span class="badge bg-success-subtle text-success">En ligne</span>'
+                : '<span class="badge bg-danger-subtle text-danger">Hors ligne</span>';
+            }
+          } else {
+            var tr = document.createElement("tr");
+            tr.setAttribute("data-camera-sn", cam.sn);
+            tr.className = "table-success";
+            tr.innerHTML =
+              '<td><div class="fw-semibold">' + (cam.nom || cam.sn) + '</div><code class="small text-muted">' + cam.sn + '</code></td>' +
+              '<td class="text-center fw-bold text-primary" data-col-entrees>' + (cam.entrees || 0) + '</td>' +
+              '<td class="text-center fw-bold text-success" data-col-uniques>' + (cam.uniques || 0) + '</td>' +
+              '<td class="text-center text-muted" data-col-personnel>' + (cam.personnel || 0) + '</td>' +
+              '<td class="text-center" data-col-statut>' +
+                (cam.statut_en_ligne
+                  ? '<span class="badge bg-success-subtle text-success">En ligne</span>'
+                  : '<span class="badge bg-danger-subtle text-danger">Hors ligne</span>') +
+              '</td>';
+            tbodyCams.appendChild(tr);
+            setTimeout(function () { tr.classList.remove("table-success"); }, 2000);
+          }
+        });
+
+        var badgeNb = conteneurRapport.querySelector("[data-rapport-nb-entrees]");
+        if (badgeNb) {
+          badgeNb.textContent = rep.repartition_cameras.length + " entrée" + (rep.repartition_cameras.length > 1 ? "s" : "");
+        }
+      }
+
+      // 3. Répartition horaire de fréquentation
+      var conteneurHeures = conteneurRapport.querySelector("[data-rapport-heures]");
+      if (conteneurHeures && Array.isArray(rep.repartition_heures)) {
+        var maxEntrees = 1;
+        rep.repartition_heures.forEach(function (h) {
+          if (h.entrees > maxEntrees) maxEntrees = h.entrees;
+        });
+
+        rep.repartition_heures.forEach(function (h) {
+          var blocHeure = conteneurHeures.querySelector('[data-tranche-heure="' + h.heure + '"]');
+          if (blocHeure) {
+            animerChiffre(blocHeure.querySelector("[data-heure-entrees]"), h.entrees);
+            animerChiffre(blocHeure.querySelector("[data-heure-uniques]"), h.uniques);
+            var barre = blocHeure.querySelector("[data-heure-barre]");
+            if (barre) {
+              var pct = maxEntrees > 0 ? (h.entrees / maxEntrees * 100) : 0;
+              barre.style.width = pct + "%";
+              barre.setAttribute("aria-valuenow", h.entrees);
+              barre.setAttribute("aria-valuemax", maxEntrees);
+            }
+          }
+        });
+      }
+    }
+
+    function demanderDonneesRapport() {
+      if (!conteneurRapport) return;
+      var dDebut = conteneurRapport.getAttribute("data-date-debut") || "";
+      var dFin = conteneurRapport.getAttribute("data-date-fin") || "";
+      var cSn = conteneurRapport.getAttribute("data-camera-sn") || "";
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          action: "rafraichir_rapport",
+          date_debut: dDebut,
+          date_fin: dFin,
+          camera_sn: cSn
+        }));
+      } else {
+        rafraichirRapportViaHttp();
       }
     }
 
@@ -262,11 +373,21 @@
         if (badge) {
           badge.className = "badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6";
         }
+        if (conteneurRapport) {
+          demanderDonneesRapport();
+        }
       };
 
       ws.onmessage = function (event) {
         try {
           var msg = JSON.parse(event.data);
+
+          // Réception de données complètes de rapport
+          if (msg.type === "donnees_rapport" && msg.rapport) {
+            mettreAJourRapport(msg.rapport);
+          }
+
+          // Indicateurs généraux pour le dashboard ou la liste
           if (msg.indicateurs) {
             animerChiffre(document.querySelector("[data-comptage-entrees]"), msg.indicateurs.entrees_jour);
             animerChiffre(document.querySelector("[data-comptage-uniques]"), msg.indicateurs.visiteurs_uniques_jour);
@@ -277,35 +398,50 @@
             }
           }
 
-          if (msg.type === "nouveau_passage" && tableauPassages) {
-            var tr = document.createElement("tr");
-            tr.className = "table-success";
-            tr.innerHTML =
-              '<td class="col-numero">⚡</td>' +
-              '<td class="fw-medium">' + (msg.horodatage || "À l'instant") + "</td>" +
-              '<td><div class="fw-semibold">' + (msg.camera_nom || msg.camera_sn) + '</div><code class="small text-muted">' + msg.camera_sn + "</code></td>" +
-              '<td class="text-center fw-bold text-primary">' + (msg.entrees || 0) + "</td>" +
-              '<td class="text-center fw-medium text-secondary">' + (msg.sorties || 0) + "</td>" +
-              '<td class="text-center fw-bold text-success">' + (msg.visiteurs_uniques || 0) + "</td>" +
-              '<td class="text-center text-warning">' + (msg.visiteurs_recidives || 0) + "</td>" +
-              '<td class="text-center text-muted">' + (msg.personnel_exclu || 0) + "</td>" +
-              '<td class="text-center">' + (msg.passants || 0) + "</td>";
-            tableauPassages.insertBefore(tr, tableauPassages.firstChild);
-            setTimeout(function () {
-              tr.classList.remove("table-success");
-            }, 3000);
+          // Nouveau passage physique ou IA reçu
+          if (msg.type === "nouveau_passage") {
+            // Si on est sur la page rapport, rafraîchir le rapport complet en direct
+            if (conteneurRapport) {
+              demanderDonneesRapport();
+            }
+
+            if (tableauPassages) {
+              var tr = document.createElement("tr");
+              tr.className = "table-success";
+              tr.innerHTML =
+                '<td class="col-numero">⚡</td>' +
+                '<td class="fw-medium">' + (msg.horodatage || "À l'instant") + "</td>" +
+                '<td><div class="fw-semibold">' + (msg.camera_nom || msg.camera_sn) + '</div><code class="small text-muted">' + msg.camera_sn + "</code></td>" +
+                '<td class="text-center fw-bold text-primary">' + (msg.entrees || 0) + "</td>" +
+                '<td class="text-center fw-medium text-secondary">' + (msg.sorties || 0) + "</td>" +
+                '<td class="text-center fw-bold text-success">' + (msg.visiteurs_uniques || 0) + "</td>" +
+                '<td class="text-center text-warning">' + (msg.visiteurs_recidives || 0) + "</td>" +
+                '<td class="text-center text-muted">' + (msg.personnel_exclu || 0) + "</td>" +
+                '<td class="text-center">' + (msg.passants || 0) + "</td>";
+              tableauPassages.insertBefore(tr, tableauPassages.firstChild);
+              setTimeout(function () {
+                tr.classList.remove("table-success");
+              }, 3000);
+            }
           }
 
-          if (msg.type === "heartbeat" && tableauCameras) {
-            var camRow = tableauCameras.querySelector('[data-camera-sn="' + msg.camera_sn + '"]');
-            if (camRow) {
-              var statutCol = camRow.querySelector("[data-colonne-statut]");
-              if (statutCol) {
-                statutCol.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle-fill me-1"></i>En ligne</span>';
-              }
-              var hbCol = camRow.querySelector("[data-colonne-heartbeat]");
-              if (hbCol && msg.dernier_heartbeat) {
-                hbCol.textContent = msg.dernier_heartbeat;
+          // Heartbeat de santé caméra
+          if (msg.type === "heartbeat") {
+            if (conteneurRapport) {
+              demanderDonneesRapport();
+            }
+
+            if (tableauCameras) {
+              var camRow = tableauCameras.querySelector('[data-camera-sn="' + msg.camera_sn + '"]');
+              if (camRow) {
+                var statutCol = camRow.querySelector("[data-colonne-statut]");
+                if (statutCol) {
+                  statutCol.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-circle-fill me-1 small"></i>En ligne</span>';
+                }
+                var hbCol = camRow.querySelector("[data-colonne-heartbeat]");
+                if (hbCol && msg.dernier_heartbeat) {
+                  hbCol.textContent = msg.dernier_heartbeat;
+                }
               }
             }
           }

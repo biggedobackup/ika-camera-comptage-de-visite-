@@ -91,6 +91,9 @@ class DeviceStatusPayload(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
 class CameraCreation(BaseModel):
     sn: str = Field(..., min_length=3, max_length=64, description="Numéro de série unique de la caméra")
     nom: str | None = Field(None, max_length=100, description="Nom convivial de l'entrée")
@@ -100,9 +103,48 @@ class CameraCreation(BaseModel):
     modele: str = Field("HX-CCD21", max_length=50, description="Modèle matériel")
     role_reseau: str = Field("master", max_length=20, description="Rôle réseau (master / slave / client)")
     version_logiciel: str | None = Field(None, max_length=50, description="Version de firmware")
+    statut_en_ligne: bool = Field(False, description="État en ligne ou actif")
+    hauteur_installation: int | None = Field(None, ge=50, le=800, description="Hauteur d'installation en cm")
+    hauteur_filtrage: int | None = Field(None, ge=30, le=400, description="Hauteur minimale de filtrage en cm")
+    mode_enfant: bool = Field(False, description="Activer la détection spécifique des enfants")
+    sens_comptage: str = Field("normal", max_length=20, description="Sens de circulation")
+    intervalle_envoi: int = Field(60, ge=10, le=3600, description="Intervalle d'agrégation en secondes")
+    notes: str | None = Field(None, max_length=500, description="Notes et consignes d'installation")
+
+    @field_validator("sn", "nom", "emplacement", "ip_address", "mac_address", "modele", "role_reseau", "version_logiciel", "sens_comptage", "notes", mode="before")
+    @classmethod
+    def vider_chaines_vides_creation(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v = v.strip()
+            return v if v else None
+        return v
+
+    @field_validator("hauteur_installation", "hauteur_filtrage", mode="before")
+    @classmethod
+    def convertir_entiers_creation(cls, v: Any) -> Any:
+        if v is None or v == "":
+            return None
+        return int(v)
+
+    @field_validator("intervalle_envoi", mode="before")
+    @classmethod
+    def convertir_intervalle_creation(cls, v: Any) -> Any:
+        if v is None or v == "":
+            return 60
+        return int(v)
+
+    @field_validator("statut_en_ligne", "mode_enfant", mode="before")
+    @classmethod
+    def convertir_booleens_creation(cls, v: Any) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            return v.strip().lower() in ("true", "1", "on", "yes", "oui")
+        return bool(v)
 
 
 class CameraModification(BaseModel):
+    sn: str | None = Field(None, min_length=3, max_length=64, description="Numéro de série unique")
     nom: str | None = Field(None, max_length=100)
     emplacement: str | None = Field(None, max_length=100)
     ip_address: str | None = Field(None, max_length=45)
@@ -110,6 +152,44 @@ class CameraModification(BaseModel):
     modele: str = Field("HX-CCD21", max_length=50)
     role_reseau: str = Field("master", max_length=20)
     version_logiciel: str | None = Field(None, max_length=50)
+    statut_en_ligne: bool = Field(False)
+    hauteur_installation: int | None = Field(None, ge=50, le=800)
+    hauteur_filtrage: int | None = Field(None, ge=30, le=400)
+    mode_enfant: bool = Field(False)
+    sens_comptage: str = Field("normal", max_length=20)
+    intervalle_envoi: int = Field(60, ge=10, le=3600)
+    notes: str | None = Field(None, max_length=500)
+
+    @field_validator("sn", "nom", "emplacement", "ip_address", "mac_address", "modele", "role_reseau", "version_logiciel", "sens_comptage", "notes", mode="before")
+    @classmethod
+    def vider_chaines_vides_modification(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v = v.strip()
+            return v if v else None
+        return v
+
+    @field_validator("hauteur_installation", "hauteur_filtrage", mode="before")
+    @classmethod
+    def convertir_entiers_modification(cls, v: Any) -> Any:
+        if v is None or v == "":
+            return None
+        return int(v)
+
+    @field_validator("intervalle_envoi", mode="before")
+    @classmethod
+    def convertir_intervalle_modification(cls, v: Any) -> Any:
+        if v is None or v == "":
+            return 60
+        return int(v)
+
+    @field_validator("statut_en_ligne", "mode_enfant", mode="before")
+    @classmethod
+    def convertir_booleens_modification(cls, v: Any) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            return v.strip().lower() in ("true", "1", "on", "yes", "oui")
+        return bool(v)
 
 
 class CameraReponse(BaseModel):

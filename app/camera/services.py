@@ -9,7 +9,7 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from fastapi import Request
-from sqlalchemy import BigInteger, ColumnElement, Select, and_, desc, func, or_, select
+from sqlalchemy import BigInteger, ColumnElement, Select, and_, desc, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.camera.model import Camera, CameraHeartbeat, PassageComptage
@@ -377,6 +377,28 @@ async def enregistrer_v2_data_upload(
         existant.donnees_brutes = data
 
     await db.commit()
+
+    try:
+        indicateurs = await calculer_indicateurs_comptage(db)
+        await gestionnaire_ws.diffuser(
+            {
+                "type": "nouveau_passage",
+                "camera_sn": sn,
+                "camera_nom": camera.libelle_affiche,
+                "horodatage": horodatage.strftime("%d/%m/%Y %H:%M"),
+                "heure": horodatage.strftime("%H:%M"),
+                "entrees": entrees,
+                "sorties": sorties,
+                "visiteurs_uniques": entrees,
+                "visiteurs_recidives": 0,
+                "personnel_exclu": 0,
+                "passants": passby,
+                "indicateurs": indicateurs.model_dump(),
+            }
+        )
+    except Exception:
+        logger.exception("Erreur lors de la diffusion WebSocket v2_data_upload")
+
     return {"code": 0, "msg": "Reportsubmittedsuccessfully", "data": {"sn": sn, "time": time_val}}
 
 
@@ -479,12 +501,21 @@ async def obtenir_camera_par_id(db: AsyncSession, camera_id: uuid.UUID) -> Camer
 
 
 async def creer_camera(db: AsyncSession, donnees: CameraCreation) -> Camera:
-    """Crée manuellement une nouvelle caméra de comptage."""
+    """Crée manuellement une nouvelle caméra de comptage avec tous les champs configurables."""
     sn_propre = donnees.sn.strip()
     requete_sn = select(Camera).where(Camera.sn == sn_propre)
     deja_present = (await db.execute(requete_sn)).scalar_one_or_none()
     if deja_present:
         raise ValueError(f"Une caméra avec le numéro de série « {sn_propre} » existe déjà.")
+
+    config = {
+        "hauteur_installation": donnees.hauteur_installation,
+        "hauteur_filtrage": donnees.hauteur_filtrage,
+        "mode_enfant": donnees.mode_enfant,
+        "sens_comptage": donnees.sens_comptage,
+        "intervalle_envoi": donnees.intervalle_envoi,
+        "notes": donnees.notes.strip() if donnees.notes else None,
+    }
 
     camera = Camera(
         sn=sn_propre,
@@ -495,8 +526,9 @@ async def creer_camera(db: AsyncSession, donnees: CameraCreation) -> Camera:
         modele=donnees.modele.strip() if donnees.modele else "HX-CCD21",
         role_reseau=donnees.role_reseau.strip() if donnees.role_reseau else "master",
         version_logiciel=donnees.version_logiciel.strip() if donnees.version_logiciel else None,
-        statut_en_ligne=False,
-        dernier_heartbeat=None,
+        statut_en_ligne=donnees.statut_en_ligne,
+        dernier_heartbeat=maintenant() if donnees.statut_en_ligne else None,
+        configuration=config,
     )
     db.add(camera)
     await db.commit()
@@ -505,11 +537,39 @@ async def creer_camera(db: AsyncSession, donnees: CameraCreation) -> Camera:
 
 
 async def modifier_camera(db: AsyncSession, camera: Camera, donnees: CameraModification) -> Camera:
-    """Met à jour l'ensemble des champs configurables de la caméra."""
+    """Met à jour l'ensemble de tous les champs configurables de la caméra."""
+    # 1. Numéro de série (SN) avec validation d'unicité et préservation de l'historique
+    if donnees.sn is not None and donnees.sn.strip():
+        nouveau_sn = donnees.sn.strip()
+        if nouveau_sn != camera.sn:
+            deja_pris = (
+                await db.execute(select(Camera).where(Camera.sn == nouveau_sn, Camera.id != camera.id))
+            ).scalar_one_or_none()
+            if deja_pris:
+                raise ValueError(f"Une caméra avec le numéro de série « {nouveau_sn} » existe déjà.")
+
+            ancien_sn = camera.sn
+            camera.sn = nouveau_sn
+
+            # Met à jour les liaisons par code SN dans les comptages et pings
+            await db.execute(
+                update(PassageComptage)
+                .where((PassageComptage.camera_id == camera.id) | (PassageComptage.master_sn == ancien_sn))
+                .values(master_sn=nouveau_sn)
+            )
+            await db.execute(
+                update(CameraHeartbeat)
+                .where((CameraHeartbeat.camera_id == camera.id) | (CameraHeartbeat.camera_sn == ancien_sn))
+                .values(camera_sn=nouveau_sn)
+            )
+
+    # 2. Identification & Emplacement
     if donnees.nom is not None:
         camera.nom = donnees.nom.strip() or None
     if donnees.emplacement is not None:
         camera.emplacement = donnees.emplacement.strip() or None
+
+    # 3. Paramètres réseau & Matériel
     if donnees.ip_address is not None:
         camera.ip_address = donnees.ip_address.strip() or None
     if donnees.mac_address is not None:
@@ -520,6 +580,38 @@ async def modifier_camera(db: AsyncSession, camera: Camera, donnees: CameraModif
         camera.role_reseau = donnees.role_reseau.strip()
     if donnees.version_logiciel is not None:
         camera.version_logiciel = donnees.version_logiciel.strip() or None
+
+    # 4. Statut réseau / En ligne
+    if donnees.statut_en_ligne is not None:
+        camera.statut_en_ligne = donnees.statut_en_ligne
+        if donnees.statut_en_ligne and not camera.dernier_heartbeat:
+            camera.dernier_heartbeat = maintenant()
+
+    # 5. Configuration technique HX-CCD21 (JSONB)
+    config = dict(camera.configuration or {})
+    if donnees.hauteur_installation is not None:
+        config["hauteur_installation"] = donnees.hauteur_installation
+    elif "hauteur_installation" in config and donnees.hauteur_installation is None:
+        config["hauteur_installation"] = None
+
+    if donnees.hauteur_filtrage is not None:
+        config["hauteur_filtrage"] = donnees.hauteur_filtrage
+    elif "hauteur_filtrage" in config and donnees.hauteur_filtrage is None:
+        config["hauteur_filtrage"] = None
+
+    if donnees.mode_enfant is not None:
+        config["mode_enfant"] = donnees.mode_enfant
+
+    if donnees.sens_comptage is not None:
+        config["sens_comptage"] = donnees.sens_comptage
+
+    if donnees.intervalle_envoi is not None:
+        config["intervalle_envoi"] = donnees.intervalle_envoi
+
+    if donnees.notes is not None:
+        config["notes"] = donnees.notes.strip() or None
+
+    camera.configuration = config
 
     await db.commit()
     await db.refresh(camera)
