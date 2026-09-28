@@ -2412,3 +2412,21 @@ main:focus {
   max-width: 160px;
 }
 
+.icone-silhouette-homme {
+  font-size: 4.5rem;
+  color: #2563eb;
+  line-height: 1;
+}
+
+.icone-silhouette-femme {
+  font-size: 4.5rem;
+  color: #10b981;
+  line-height: 1;
+}
+
+.badge-peak {
+  font-size: 0.775rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+

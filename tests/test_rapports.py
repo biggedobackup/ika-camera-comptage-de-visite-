@@ -58,7 +58,12 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     reponse = await client_admin.get(f"/rapports/{cle_rapport}")
     assert reponse.status_code == 200
     texte = reponse.text
-    assert "data-menu-rapports" in texte
-    assert "Total Entrées" in texte
-    assert "Clients réels (IA)" in texte
-    verifier_sans_inline(texte, f"/rapports/{cle_rapport}")
+    if cle_rapport in ["journalier", "hebdomadaire", "mensuel"]:
+        assert "Visitor" in texte
+        assert "Store Entry Rate" in texte
+        assert "Flow Trend" in texte
+        assert "Entity Flow Trend" in texte
+    else:
+        assert "Total Entrées" in texte
+        assert "Clients réels (IA)" in texte
+    verifier_sans_inline(reponse.text, f"/rapports/{cle_rapport}")

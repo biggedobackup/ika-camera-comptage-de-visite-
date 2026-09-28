@@ -142,9 +142,16 @@ async def detail_rapport(
 
     camera_sn = (request.query_params.get("camera_sn") or "").strip() or None
 
-    rapport = await camera_services.generer_rapport_comptage(
+    from app.rapports.services import calculer_rapport_complet
+
+    rapport = await calculer_rapport_complet(
+        db, type_rapport=type_rapport, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+    )
+    rapport_base = await camera_services.generer_rapport_comptage(
         db, camera_sn=camera_sn, date_debut=date_debut, date_fin=date_fin
     )
+    rapport["repartition_cameras"] = rapport_base.get("repartition_cameras", [])
+    rapport["repartition_heures"] = rapport_base.get("repartition_heures", [])
     cameras = await camera_services.obtenir_cameras(db)
 
     return rendre(

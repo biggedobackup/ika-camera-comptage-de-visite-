@@ -41,14 +41,207 @@
       </div>
       <div class="col-md-2">
         <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-funnel"></i> Actualiser
+          <i class="bi bi-funnel"></i> Filtrer
         </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Cartes d'indicateurs clés consolidés : 3 en haut et 3 en bas (col-12 col-md-4) -->
+{% if cle_rapport in ["journalier", "hebdomadaire", "mensuel"] %}
+{# ========================================================================= #}
+{# VUE ANALYTIQUE FOORIR : DAILY, WEEKLY, MONTHLY                            #}
+{# ========================================================================= #}
+
+<!-- 1. Six cartes d'indicateurs clés : 3 en haut et 3 en bas -->
+<div class="row g-3 mb-4">
+  <!-- Ligne 1 : Les 3 du haut -->
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Visitor (Visiteurs)</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-primary">{{ rapport.visitor }}</p>
+      <div class="badge-peak">
+        <span class="d-block"><strong>Peak :</strong> {{ rapport.visitor_peak }}</span>
+        <span class="d-block text-muted">Time Slot : {{ rapport.visitor_slot }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Pass (Passants)</p>
+        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-person-walking"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-warning-emphasis">{{ rapport.pass }}</p>
+      <div class="badge-peak">
+        <span class="d-block"><strong>Peak :</strong> {{ rapport.pass_peak }}</span>
+        <span class="d-block text-muted">Time Slot : {{ rapport.pass_slot }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Store Entry Rate</p>
+        <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-percent"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-success">{{ rapport.store_entry_rate }}%</p>
+      <div class="badge-peak">
+        <span class="d-block"><strong>Peak :</strong> {{ rapport.store_entry_rate_peak }}%</span>
+        <span class="d-block text-muted">Time Slot : {{ rapport.store_entry_rate_slot }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ligne 2 : Les 3 du bas -->
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Customer</p>
+        <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-info">{{ rapport.customer }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Clients uniques dédoublés (IA)</p>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Avg Stay Time</p>
+        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur fs-3 text-secondary">{{ rapport.avg_stay_time }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-clock"></i> Durée moyenne de séjour</p>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Total Stay Time</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur fs-3 text-dark">{{ rapport.total_stay_time }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-calendar-check"></i> Temps total cumulé en boutique</p>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Flow Trend (Courbe comparative Foorir : Courant vs Période comparative) -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-bold">Flow Trend</h5>
+      <span class="text-muted small">Évolution heure par heure et comparaison temporelle</span>
+    </div>
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">24 Heures</span>
+  </div>
+  <div class="card-body">
+    <div class="zone-graphique-trend">
+      <canvas id="graphique-flow-trend-foorir"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Entity Flow Trend (Matrice heure par heure par entrée/caméra) -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-bold">Entity Flow Trend</h5>
+      <span class="text-muted small">Fréquentation heure par heure par porte et caméra</span>
+    </div>
+    <span class="badge bg-light text-dark border">{{ rapport.entity_flow_trend | length }} accès</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" class="text-nowrap">Entity Name</th>
+          <th scope="col" class="text-center text-primary text-nowrap">Total Flow</th>
+          {% for h in rapport.labels_heures %}
+          <th scope="col" class="text-center text-muted small text-nowrap">{{ h }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for entity in rapport.entity_flow_trend %}
+        <tr>
+          <td class="fw-semibold text-nowrap">
+            <i class="bi bi-camera-video me-1 text-primary"></i>{{ entity.nom }}
+          </td>
+          <td class="text-center fw-bold text-primary">{{ entity.total }}</td>
+          {% for val in entity.heures %}
+          <td class="text-center small {% if val > 0 %}fw-bold text-dark table-light{% else %}text-muted{% endif %}">
+            {{ val }}
+          </td>
+          {% endfor %}
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="26" class="text-center py-4 text-muted">
+            <i class="bi bi-inbox fs-2 d-block mb-1"></i>No data
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 4. Customer Profile : Répartition par Genre et Tranches d'âge -->
+<div class="row g-4 mb-4">
+  <!-- Genre : Silhouettes Homme & Femme -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="card-title mb-0 fw-bold">Customer Profile - Genre</h5>
+      </div>
+      <div class="card-body d-flex justify-content-around align-items-center py-4">
+        <div class="text-center">
+          <div class="icone-silhouette-homme mb-2">
+            <i class="bi bi-person-standing"></i>
+          </div>
+          <span class="fw-bold text-primary fs-5 d-block">Male: {{ rapport.demographie.hommes }}</span>
+          <span class="text-muted small">({{ rapport.demographie.hommes_pct }}%)</span>
+        </div>
+        <div class="text-center">
+          <div class="icone-silhouette-femme mb-2">
+            <i class="bi bi-person-standing"></i>
+          </div>
+          <span class="fw-bold text-success fs-5 d-block">Female: {{ rapport.demographie.femmes }}</span>
+          <span class="text-muted small">({{ rapport.demographie.femmes_pct }}%)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tranches d'âge par genre -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="card-title mb-0 fw-bold">Customer Profile - Age Distribution</h5>
+      </div>
+      <div class="card-body">
+        <div class="zone-graphique-trend">
+          <canvas id="graphique-age-foorir"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+{# ========================================================================= #}
+{# VUE STANDARD POUR LES AUTRES RAPPORTS (FLUX, HORAIRE, ETC.)               #}
+{# ========================================================================= #}
+
+<!-- Cartes d'indicateurs clés consolidés : 3 en haut et 3 en bas -->
 <div class="row g-3 mb-4">
   <!-- Ligne 1 : Les 3 du haut -->
   <div class="col-12 col-md-4">
@@ -118,40 +311,6 @@
     </div>
   </div>
 </div>
-
-{% if cle_rapport == 'profil' %}
-<!-- Section spécifique profil démographique IA -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-header bg-transparent py-3">
-    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-person-bounding-box text-primary me-2"></i>Synthèse démographique et comportement d'achat (IA)</h5>
-  </div>
-  <div class="card-body">
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="p-3 rounded bg-light border text-center">
-          <span class="text-muted d-block small mb-1">Genre dominant</span>
-          <strong class="fs-4 text-primary">Hommes 97.4%</strong>
-          <p class="text-muted small mb-0 mt-1">Femmes 2.6%</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="p-3 rounded bg-light border text-center">
-          <span class="text-muted d-block small mb-1">Tranche d'âge dominante</span>
-          <strong class="fs-4 text-success">Actifs (31-45 ans)</strong>
-          <p class="text-muted small mb-0 mt-1">45.0% des visiteurs</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="p-3 rounded bg-light border text-center">
-          <span class="text-muted d-block small mb-1">Durée moyenne de séjour</span>
-          <strong class="fs-4 text-warning-emphasis">2 min 48s</strong>
-          <p class="text-muted small mb-0 mt-1">37.8% séjour prolongé (&gt;30 min)</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
 
 <!-- Graphique comparatif heure par heure (00:00 à 23:00) -->
 <div class="card border-0 shadow-sm mb-4">
@@ -236,8 +395,8 @@
             </tr>
           </thead>
           <tbody>
-            {% for h in rapport.repartition_heures %}
-            <tr {% if h.entrees > 0 %}class="table-active"{% endif %}>
+            {% for h in rapport.heures_24 %}
+            <tr {% if h.entrees > 0 or h.sorties > 0 %}class="table-active"{% endif %}>
               <td class="fw-semibold">
                 <i class="bi bi-clock text-muted me-1"></i>{{ h.heure }}
               </td>
@@ -263,10 +422,13 @@
     </div>
   </div>
 </div>
+{% endif %}
 
 <!-- Stockage des données pour le rendu JS sans injection inline (CSP strict) -->
 <div id="data-rapport-horaire" class="d-none"
-  data-heures='[{% for h in rapport.repartition_heures %}{"heure": "{{ h.heure }}", "entrees": {{ h.entrees }}, "sorties": {{ h.sorties }}, "uniques": {{ h.uniques }}}{% if not loop.last %},{% endif %}{% endfor %}]'>
+  data-heures='[{% for h in rapport.heures_24 %}{"heure": "{{ h.heure }}", "entrees": {{ h.entrees }}, "sorties": {{ h.sorties }}, "uniques": {{ h.uniques }}}{% if not loop.last %},{% endif %}{% endfor %}]'
+  data-flow-trend='{"labels": [{% for l in rapport.flow_trend.labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "label_courant": "{{ rapport.flow_trend.label_courant }}", "serie_courante": {{ rapport.flow_trend.serie_courante }}, "label_comparatif": "{{ rapport.flow_trend.label_comparatif }}", "serie_comparative": {{ rapport.flow_trend.serie_comparative }}}'
+  data-demographie='{"hommes": {{ rapport.demographie.hommes }}, "hommes_pct": {{ rapport.demographie.hommes_pct }}, "femmes": {{ rapport.demographie.femmes }}, "femmes_pct": {{ rapport.demographie.femmes_pct }}, "ages": [{% for a in rapport.demographie.ages %}{"nom": "{{ a.nom }}", "male": {{ a.male }}, "female": {{ a.female }}}{% if not loop.last %},{% endif %}{% endfor %}]}'>
 </div>
 {% endblock %}
 
