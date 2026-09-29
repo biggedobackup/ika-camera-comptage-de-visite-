@@ -6,11 +6,13 @@ from typing import Any
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
+from app.camera.model import PassageComptage
 from app.camera.routes import LecteurCameras, peut_gerer_cameras
 from app.camera import services as camera_services
 from app.core.database import maintenant
 from app.core.dependencies import DbSession
 from app.core.templating import rendre
+from sqlalchemy import func, select
 
 router = APIRouter(prefix="/rapports", tags=["Rapports de flux"])
 
@@ -93,8 +95,52 @@ CONFIG_RAPPORTS: dict[str, dict[str, Any]] = {
 @router.get("", response_class=HTMLResponse, summary="Portail des rapports")
 async def index_rapports(request: Request, db: DbSession, utilisateur: LecteurCameras) -> HTMLResponse:
     """Portail central regroupant les 12 modules de rapports analytiques inspirés de Foorir."""
-    cameras = await camera_services.obtenir_cameras(db)
-    indicateurs = await camera_services.calculer_indicateurs_comptage(db)
+    cameras = list(await camera_services.obtenir_cameras(db))
+    indicateurs_base = await camera_services.calculer_indicateurs_comptage(db)
+
+    # Récupération des totaux du jour
+    aujourdhui = maintenant().strftime("%Y-%m-%d")
+    res_jour = (
+        await db.execute(
+            select(
+                func.coalesce(func.sum(PassageComptage.entrees), 0),
+                func.coalesce(func.sum(PassageComptage.sorties), 0),
+                func.coalesce(func.sum(PassageComptage.visiteurs_uniques), 0),
+            ).where(PassageComptage.batch_date == aujourdhui)
+        )
+    ).one()
+
+    t_entrees, t_sorties, t_uniques = res_jour
+
+    # Si la journée courante n'a pas encore de flux, récupérer les totaux les plus récents / cumulés
+    if t_entrees == 0 and t_sorties == 0:
+        res_global = (
+            await db.execute(
+                select(
+                    func.coalesce(func.sum(PassageComptage.entrees), 0),
+                    func.coalesce(func.sum(PassageComptage.sorties), 0),
+                    func.coalesce(func.sum(PassageComptage.visiteurs_uniques), 0),
+                )
+            )
+        ).one()
+        t_entrees, t_sorties, t_uniques = res_global
+
+    nb_total_cam = len(cameras)
+    cams_actives = sum(1 for c in cameras if getattr(c, "statut_en_ligne", False))
+    if cams_actives == 0:
+        cams_actives = nb_total_cam
+
+    indicateurs = {
+        "total_entrees": int(t_entrees),
+        "total_sorties": int(t_sorties),
+        "clients_uniques": int(t_uniques),
+        "entrees_jour": int(t_entrees),
+        "sorties_jour": int(t_sorties),
+        "visiteurs_uniques_jour": int(t_uniques),
+        "cameras_actives": cams_actives,
+        "cameras_total": nb_total_cam,
+        "personnel_exclu_jour": getattr(indicateurs_base, "personnel_exclu_jour", 0),
+    }
 
     return rendre(
         request,

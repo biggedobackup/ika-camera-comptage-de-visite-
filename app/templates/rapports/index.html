@@ -21,7 +21,7 @@
         <p class="carte-indicateur-libelle">Total Entrées</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-primary">{{ indicateurs.total_entrees }}</p>
+      <p class="carte-indicateur-valeur text-primary">{{ indicateurs.total_entrees | default(0) }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Passages physiques</p>
     </div>
   </div>
@@ -32,7 +32,7 @@
         <p class="carte-indicateur-libelle">Total Sorties</p>
         <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-box-arrow-left"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-danger">{{ indicateurs.total_sorties }}</p>
+      <p class="carte-indicateur-valeur text-danger">{{ indicateurs.total_sorties | default(0) }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-arrow-left-right"></i> Départs constatés</p>
     </div>
   </div>
@@ -43,7 +43,7 @@
         <p class="carte-indicateur-libelle">Clients uniques (IA)</p>
         <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-success">{{ indicateurs.clients_uniques }}</p>
+      <p class="carte-indicateur-valeur text-success">{{ indicateurs.clients_uniques | default(0) }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Visiteurs réels qualifiés</p>
     </div>
   </div>
@@ -54,7 +54,7 @@
         <p class="carte-indicateur-libelle">Caméras actives</p>
         <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-camera-video"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-secondary">{{ cameras | length }}</p>
+      <p class="carte-indicateur-valeur text-secondary">{{ indicateurs.cameras_actives | default(cameras | length) }}</p>
       <p class="carte-indicateur-sous-titre"><i class="bi bi-broadcast"></i> Points de comptage 3D</p>
     </div>
   </div>

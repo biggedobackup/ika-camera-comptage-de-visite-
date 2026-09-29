@@ -30,6 +30,16 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
     assert "Rapport journalier" in texte
     assert "Rapport hebdomadaire" in texte
     assert "Rapport mensuel" in texte
+    # Vérification des 4 cartes d'indicateurs globaux
+    assert "Total Entrées" in texte
+    assert "Passages physiques" in texte
+    assert "Total Sorties" in texte
+    assert "Départs constatés" in texte
+    assert "Clients uniques (IA)" in texte
+    assert "Visiteurs réels qualifiés" in texte
+    assert "Caméras actives" in texte
+    assert "Points de comptage 3D" in texte
+
     # Vérification menu rapports
     assert "data-menu-rapports" in texte
     assert "Tableau de bord" in texte
