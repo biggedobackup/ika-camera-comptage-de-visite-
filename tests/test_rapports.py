@@ -77,6 +77,32 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Taux de capture vitrine" in texte
         assert "Trafic rue" in texte
         assert "Entrées boutique" in texte
+    elif cle_rapport == "combinaison":
+        assert "Passants devanture (Rue)" in texte
+        assert "Entrées réelles boutique" in texte
+        assert "Taux de capture vitrine" in texte
+    elif cle_rapport == "clients":
+        assert "Clients qualifiés (IA)" in texte
+        assert "Durée médiane en boutique" in texte
+        assert "Journal des sessions" in texte
+    elif cle_rapport == "visiteurs":
+        assert "Nouveaux visiteurs" in texte
+        assert "Visiteurs fidèles (Revisites)" in texte
+        assert "Durée moyenne de rétention" in texte
+    elif cle_rapport == "employes":
+        assert "Passages personnel exclus" in texte
+        assert "Impact sur le trafic brut" in texte
+        assert "Demi-tours constatés" in texte
+    elif cle_rapport == "profil":
+        assert "Profils analysés (IA)" in texte
+        assert "Hommes" in texte
+        assert "Femmes" in texte
+    elif cle_rapport == "entites":
+        assert "Performance comparée par point d'accès" in texte
+        assert "Caméras actives / réseau" in texte
+    elif cle_rapport == "classement":
+        assert "Palmarès et classement des accès" in texte
+        assert "Part de marché Top 1" in texte
     else:
         assert "Total Entrées" in texte
         assert "Clients réels (IA)" in texte

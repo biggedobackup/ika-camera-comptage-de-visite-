@@ -18,6 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // Application dynamique des largeurs de barre de progression (CSP strict sans style inline)
+  document.querySelectorAll("[data-largeur]").forEach(function (el) {
+    var val = el.getAttribute("data-largeur");
+    if (val) el.style.width = val + "%";
+  });
+
   // Configuration par défaut Chart.js
   Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
   Chart.defaults.font.size = 12;
@@ -366,4 +372,190 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   }
+
+  // 5. Graphique Analyse combinée (Barres Entrées/Passants + Courbe Taux de capture)
+  var ctxCombinaison = document.getElementById("graphique-combinaison");
+  var dataCombinaison = null;
+  try {
+    dataCombinaison = JSON.parse(dataEl.getAttribute("data-combinaison") || "null");
+  } catch (e) {}
+
+  if (ctxCombinaison && dataCombinaison && Array.isArray(dataCombinaison.labels)) {
+    new Chart(ctxCombinaison, {
+      type: "bar",
+      data: {
+        labels: dataCombinaison.labels,
+        datasets: [
+          {
+            type: "bar",
+            label: "Entrées réelles boutique",
+            data: dataCombinaison.entrees || [],
+            backgroundColor: "#2563eb",
+            borderRadius: 4,
+            yAxisID: "y"
+          },
+          {
+            type: "bar",
+            label: "Passants rue (Trafic extérieur)",
+            data: dataCombinaison.passants || [],
+            backgroundColor: "#e2e8f0",
+            borderRadius: 4,
+            yAxisID: "y"
+          },
+          {
+            type: "line",
+            label: "Taux de capture vitrine (%)",
+            data: dataCombinaison.taux || [],
+            borderColor: "#10b981",
+            backgroundColor: "#10b981",
+            borderWidth: 2.5,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            yAxisID: "y1"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "bottom", labels: { boxWidth: 12, usePointStyle: true, padding: 12 } },
+          tooltip: { backgroundColor: "rgba(15, 23, 42, 0.9)", padding: 10, cornerRadius: 8 }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            type: "linear",
+            position: "left",
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: "rgba(226, 232, 240, 0.6)" },
+            title: { display: true, text: "Nombre de passages", color: "#64748b" }
+          },
+          y1: {
+            type: "linear",
+            position: "right",
+            beginAtZero: true,
+            grid: { drawOnChartArea: false },
+            ticks: { callback: function(val) { return val + "%"; } },
+            title: { display: true, text: "Taux de capture (%)", color: "#10b981" }
+          }
+        }
+      }
+    });
+  }
+
+  // 6. Graphique Analyse Visiteurs (Distribution par tranches de rétention)
+  var ctxVisiteurs = document.getElementById("graphique-visiteurs-tranches");
+  var dataVisiteurs = null;
+  try {
+    dataVisiteurs = JSON.parse(dataEl.getAttribute("data-visiteurs") || "null");
+  } catch (e) {}
+
+  if (ctxVisiteurs && dataVisiteurs && Array.isArray(dataVisiteurs.labels)) {
+    new Chart(ctxVisiteurs, {
+      type: "bar",
+      data: {
+        labels: dataVisiteurs.labels,
+        datasets: [
+          {
+            label: "Clients par durée de présence",
+            data: dataVisiteurs.clients || [],
+            backgroundColor: dataVisiteurs.couleurs || "#2563eb",
+            borderRadius: 6,
+            maxBarThickness: 45
+          }
+        ]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.9)",
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) { return " " + context.parsed.x + " clients réels"; }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: "rgba(226, 232, 240, 0.6)" },
+            title: { display: true, text: "Volume de clients", color: "#64748b" }
+          },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // 7. Graphique Personnel & Employés (Clients vs Personnel exclu)
+  var ctxEmployes = document.getElementById("graphique-employes-flux");
+  var dataEmployes = null;
+  try {
+    dataEmployes = JSON.parse(dataEl.getAttribute("data-employes") || "null");
+  } catch (e) {}
+
+  if (ctxEmployes && dataEmployes && Array.isArray(dataEmployes.labels)) {
+    new Chart(ctxEmployes, {
+      type: "line",
+      data: {
+        labels: dataEmployes.labels,
+        datasets: [
+          {
+            label: "Clients réels en magasin",
+            data: dataEmployes.clients || [],
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37, 99, 235, 0.1)",
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "#2563eb"
+          },
+          {
+            label: "Passages personnel exclus (Badges/Allers-retours)",
+            data: dataEmployes.employes || [],
+            borderColor: "#94a3b8",
+            backgroundColor: "rgba(148, 163, 184, 0.08)",
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: true,
+            tension: 0.35,
+            pointRadius: 2.5,
+            pointHoverRadius: 5,
+            pointBackgroundColor: "#94a3b8"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "bottom", labels: { boxWidth: 12, usePointStyle: true, padding: 12 } },
+          tooltip: { backgroundColor: "rgba(15, 23, 42, 0.9)", padding: 10, cornerRadius: 8 }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: "rgba(226, 232, 240, 0.6)" },
+            title: { display: true, text: "Nombre de passages", color: "#64748b" }
+          }
+        }
+      }
+    });
+  }
 });
+

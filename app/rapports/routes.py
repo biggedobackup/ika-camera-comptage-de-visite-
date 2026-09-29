@@ -188,12 +188,24 @@ async def detail_rapport(
 
     camera_sn = (request.query_params.get("camera_sn") or "").strip() or None
 
-    from app.rapports.services import calculer_flow_query, calculer_rapport_complet
+    from app.rapports.services import (
+        calculer_donnees_analyse_entites,
+        calculer_donnees_classement_entrees,
+        calculer_donnees_combinaison,
+        calculer_donnees_employes,
+        calculer_donnees_profil_clients,
+        calculer_donnees_requete_clients,
+        calculer_donnees_visiteurs,
+        calculer_flow_query,
+        calculer_rapport_complet,
+    )
 
     dimension = (request.query_params.get("dimension") or "hour").strip()
     filtre_horaire = (request.query_params.get("filtre_horaire") or "ouverture").strip()
 
     flow_query = None
+    donnees_specifiques: dict[str, Any] | None = None
+
     if type_rapport == "flux":
         flow_query = await calculer_flow_query(
             db,
@@ -202,6 +214,34 @@ async def detail_rapport(
             filtre_horaire=filtre_horaire,
             date_debut=date_debut,
             date_fin=date_fin,
+        )
+    elif type_rapport == "combinaison":
+        donnees_specifiques = await calculer_donnees_combinaison(
+            db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+        )
+    elif type_rapport == "clients":
+        donnees_specifiques = await calculer_donnees_requete_clients(
+            db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+        )
+    elif type_rapport == "visiteurs":
+        donnees_specifiques = await calculer_donnees_visiteurs(
+            db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+        )
+    elif type_rapport == "employes":
+        donnees_specifiques = await calculer_donnees_employes(
+            db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+        )
+    elif type_rapport == "profil":
+        donnees_specifiques = await calculer_donnees_profil_clients(
+            db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+        )
+    elif type_rapport == "entites":
+        donnees_specifiques = await calculer_donnees_analyse_entites(
+            db, date_debut=date_debut, date_fin=date_fin
+        )
+    elif type_rapport == "classement":
+        donnees_specifiques = await calculer_donnees_classement_entrees(
+            db, date_debut=date_debut, date_fin=date_fin
         )
 
     rapport = await calculer_rapport_complet(
@@ -223,6 +263,7 @@ async def detail_rapport(
             "rapports_config": CONFIG_RAPPORTS,
             "rapport": rapport,
             "flow_query": flow_query,
+            "donnees_specifiques": donnees_specifiques,
             "cameras": cameras,
             "camera_sn_actif": camera_sn,
             "date_debut": date_debut,
