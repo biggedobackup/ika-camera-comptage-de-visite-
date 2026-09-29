@@ -343,39 +343,25 @@ async def calculer_rapport_complet(
 async def calculer_flow_query(
     db: AsyncSession,
     camera_sn: str | None = None,
-    metric: str = "in",
-    dimension: str = "5min",
+    dimension: str = "hour",
+    filtre_horaire: str = "ouverture",
     date_debut: str | None = None,
     date_fin: str | None = None,
     page: int = 1,
-    per_page: int = 10,
+    per_page: int = 25,
 ) -> dict[str, Any]:
-    """Calcul complet pour le module Requête de flux (Flow Query) fidèle à Foorir."""
+    """Calcul métier optimisé pour le module Requête de flux (Flow Query)."""
     instant = maintenant()
     aujourdhui = instant.strftime("%Y-%m-%d")
     debut = date_debut or aujourdhui
     fin = date_fin or debut
-    metric_cle = (metric or "in").strip().lower()
-    dimension_cle = (dimension or "5min").strip().lower()
+    dim_cle = (dimension or "hour").strip().lower()
+    filtre_h = (filtre_horaire or "ouverture").strip().lower()
 
-    LIBELLES_METRICS = {
-        "in": "In",
-        "out": "Out",
-        "pass": "Pass",
-        "turnback": "Turnback",
-        "net_flow": "Net Flow",
-        "batch": "Batch",
-        "adult_child": "Adult/Child",
-        "staff_customer": "Staff/Customer",
-        "visitor": "Visitor",
-        "conversion_rate": "Conversion Rate",
-    }
-    metric_label = LIBELLES_METRICS.get(metric_cle, "In")
-
-    # Résolution de l'entité
+    # Entités / Caméras
     cameras = list(await obtenir_cameras(db))
     cams_map = {c.sn: c for c in cameras}
-    nom_entite = "ikasolution"
+    nom_entite = "Toutes les entrées"
     if camera_sn and camera_sn in cams_map:
         nom_entite = cams_map[camera_sn].libelle_affiche or camera_sn
 
@@ -395,53 +381,55 @@ async def calculer_flow_query(
         )
     ).all()
 
-    # Découpage temporel selon la dimension
-    pas_minutes = 5
-    if dimension_cle == "15min":
+    # Pas en minutes
+    pas_minutes = 60
+    if dim_cle == "15min":
         pas_minutes = 15
-    elif dimension_cle == "30min":
+    elif dim_cle == "30min":
         pas_minutes = 30
-    elif dimension_cle in ["hour", "heure"]:
-        pas_minutes = 60
-    elif dimension_cle in ["day", "jour"]:
+    elif dim_cle in ["day", "jour"]:
         pas_minutes = 1440
 
-    # Création des créneaux temporels complets
-    # Si même jour, créneaux de 00:00 à 23:55 (ex: 288 slots pour 5min)
     dt_debut = datetime.strptime(debut, "%Y-%m-%d")
     dt_fin = datetime.strptime(fin, "%Y-%m-%d") + timedelta(days=1)
 
-    slots: dict[str, int] = {}
+    # Initialisation des créneaux
+    slots: dict[str, dict[str, Any]] = {}
     current = dt_debut
     while current < dt_fin:
-        if pas_minutes < 1440:
-            k = current.strftime("%Y-%m-%d %H:%M")
-        else:
-            k = current.strftime("%Y-%m-%d")
-        slots[k] = 0
+        h = current.hour
+        # Filtre heures d'ouverture : 08h00 à 20h00
+        inclure = True
+        if debut == fin and pas_minutes < 1440 and filtre_h == "ouverture":
+            if h < 8 or h >= 20:
+                inclure = False
+
+        if inclure:
+            if pas_minutes < 1440:
+                fin_creneau = current + timedelta(minutes=pas_minutes)
+                if debut == fin:
+                    label_creneau = f"{current.strftime('%H:%M')} - {fin_creneau.strftime('%H:%M')}"
+                    label_chart = current.strftime("%H:%M")
+                else:
+                    label_creneau = f"{current.strftime('%d/%m %H:%M')} - {fin_creneau.strftime('%H:%M')}"
+                    label_chart = current.strftime("%d/%m %H:%M")
+            else:
+                label_creneau = current.strftime("%d/%m/%Y")
+                label_chart = current.strftime("%d/%m")
+
+            k = current.strftime("%Y-%m-%d %H:%M") if pas_minutes < 1440 else current.strftime("%Y-%m-%d")
+            slots[k] = {
+                "label": label_creneau,
+                "label_chart": label_chart,
+                "entrees": 0,
+                "sorties": 0,
+                "passants": 0,
+            }
         current += timedelta(minutes=pas_minutes)
 
-    # Affectation des valeurs
-    total_metric = 0
+    # Affectation des données réelles
     for p in passages:
         t = p.horodatage_debut
-        # Extraction de la valeur selon la métrique demandée
-        if metric_cle == "out":
-            val = p.sorties
-        elif metric_cle == "pass":
-            val = p.passants
-        elif metric_cle == "turnback":
-            val = p.demi_tours
-        elif metric_cle == "net_flow":
-            val = p.entrees - p.sorties
-        elif metric_cle == "visitor":
-            val = p.sorties if p.sorties > 0 else p.entrees
-        else:  # "in" par défaut
-            val = p.entrees
-
-        total_metric += val
-
-        # Trouver la clé du créneau
         if pas_minutes < 1440:
             m_arrondi = (t.minute // pas_minutes) * pas_minutes
             t_slot = t.replace(minute=m_arrondi, second=0, microsecond=0)
@@ -450,35 +438,65 @@ async def calculer_flow_query(
             k_slot = t.strftime("%Y-%m-%d")
 
         if k_slot in slots:
-            slots[k_slot] += val
+            slots[k_slot]["entrees"] += p.entrees
+            slots[k_slot]["sorties"] += p.sorties
+            slots[k_slot]["passants"] += p.passants
 
-    # Si la base ne contient pas encore de passage, fournir une valeur de démo cohérente Foorir
-    if total_metric == 0 and metric_cle == "in" and debut == fin:
-        total_metric = 133
+    # Calcul des totaux et des taux de capture
+    total_entrees = 0
+    total_sorties = 0
+    total_passants = 0
+    pic_valeur = 0
+    pic_creneau = "Aucun pic"
 
-    # Construction des séries graphiques (labels horaires)
-    labels_chart = []
-    data_chart = []
-    for k, v in slots.items():
-        # Label raccourci pour l'axe X (ex: 00:00, 00:55, etc.)
-        if pas_minutes < 1440:
-            heure_str = k.split(" ")[1]
-            labels_chart.append(heure_str)
+    lignes_calculees = []
+    for k, s in slots.items():
+        e = s["entrees"]
+        so = s["sorties"]
+        pa = s["passants"]
+        total_entrees += e
+        total_sorties += so
+        total_passants += pa
+
+        flux_total_rue = e + pa
+        taux_cap = round((e / flux_total_rue * 100), 1) if flux_total_rue > 0 else 0.0
+
+        if e > pic_valeur:
+            pic_valeur = e
+            pic_creneau = s["label"]
+
+        if filtre_h == "actifs" and e == 0 and so == 0 and pa == 0:
+            continue
+
+        lignes_calculees.append(
+            {
+                "creneau": s["label"],
+                "label_chart": s["label_chart"],
+                "entrees": e,
+                "sorties": so,
+                "passants": pa,
+                "taux_capture": taux_cap,
+            }
+        )
+
+    # Définition du statut de chaque ligne pour le rendu visuel
+    for l in lignes_calculees:
+        e = l["entrees"]
+        if e > 0 and e == pic_valeur:
+            l["statut"] = "pic"
+        elif pic_valeur > 0 and e >= 0.5 * pic_valeur:
+            l["statut"] = "fort"
+        elif e > 0:
+            l["statut"] = "normal"
         else:
-            labels_chart.append(k)
-        data_chart.append(v)
+            l["statut"] = "neutre"
 
-    # Construction du tableau complet des lignes
-    toutes_lignes = [{"time": k, "valeur": v} for k, v in slots.items()]
-    total_lignes = len(toutes_lignes)
+    total_flux_rue = total_entrees + total_passants
+    taux_global = round((total_entrees / total_flux_rue * 100), 1) if total_flux_rue > 0 else 0.0
 
-    # Pagination (ex: 10 par page)
-    per_page_safe = max(5, min(100, int(per_page or 10)))
-    total_pages = max(1, (total_lignes + per_page_safe - 1) // per_page_safe)
-    page_safe = max(1, min(total_pages, int(page or 1)))
-    idx_debut = (page_safe - 1) * per_page_safe
-    idx_fin = idx_debut + per_page_safe
-    lignes_page = toutes_lignes[idx_debut:idx_fin]
+    chart_labels = [l["label_chart"] for l in lignes_calculees]
+    chart_entrees = [l["entrees"] for l in lignes_calculees]
+    chart_passants = [l["passants"] for l in lignes_calculees]
 
     return {
         "date_debut": debut,
@@ -486,17 +504,20 @@ async def calculer_flow_query(
         "camera_sn": camera_sn,
         "cameras": cameras,
         "nom_entite": nom_entite,
-        "metric": metric_cle,
-        "metric_label": metric_label,
-        "metric_total": total_metric,
-        "dimension": dimension_cle,
-        # Données graphiques
-        "chart_labels": labels_chart,
-        "chart_data": data_chart,
-        # Tableau paginé
-        "table_rows": lignes_page,
-        "total_rows": total_lignes,
-        "page": page_safe,
-        "per_page": per_page_safe,
-        "total_pages": total_pages,
+        "dimension": dim_cle,
+        "filtre_horaire": filtre_h,
+        # 4 KPIs clés
+        "total_entrees": total_entrees,
+        "total_sorties": total_sorties,
+        "total_passants": total_passants,
+        "taux_capture_global": taux_global,
+        "pic_valeur": pic_valeur,
+        "pic_creneau": pic_creneau,
+        # Graphique
+        "chart_labels": chart_labels,
+        "chart_entrees": chart_entrees,
+        "chart_passants": chart_passants,
+        # Tableau
+        "table_rows": lignes_calculees,
+        "total_lignes": len(lignes_calculees),
     }

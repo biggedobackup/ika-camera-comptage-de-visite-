@@ -144,28 +144,18 @@ async def detail_rapport(
 
     from app.rapports.services import calculer_flow_query, calculer_rapport_complet
 
-    metric = (request.query_params.get("metric") or "in").strip()
-    dimension = (request.query_params.get("dimension") or "5min").strip()
-    try:
-        page = max(1, int(request.query_params.get("page") or 1))
-    except ValueError:
-        page = 1
-    try:
-        per_page = max(5, min(100, int(request.query_params.get("per_page") or 10)))
-    except ValueError:
-        per_page = 10
+    dimension = (request.query_params.get("dimension") or "hour").strip()
+    filtre_horaire = (request.query_params.get("filtre_horaire") or "ouverture").strip()
 
     flow_query = None
     if type_rapport == "flux":
         flow_query = await calculer_flow_query(
             db,
             camera_sn=camera_sn,
-            metric=metric,
             dimension=dimension,
+            filtre_horaire=filtre_horaire,
             date_debut=date_debut,
             date_fin=date_fin,
-            page=page,
-            per_page=per_page,
         )
 
     rapport = await calculer_rapport_complet(

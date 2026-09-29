@@ -258,24 +258,39 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (ctxFlowQuery && flowQuery && Array.isArray(flowQuery.chart_labels)) {
+    var datasetsFQ = [
+      {
+        label: "Entrées boutique (In)",
+        data: flowQuery.chart_entrees || [],
+        borderColor: "#2563eb",
+        backgroundColor: "rgba(37, 99, 235, 0.12)",
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3.5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#2563eb"
+      },
+      {
+        label: "Passants rue (Pass-by)",
+        data: flowQuery.chart_passants || [],
+        borderColor: "#f59e0b",
+        backgroundColor: "rgba(245, 158, 11, 0.05)",
+        borderWidth: 2,
+        borderDash: [4, 4],
+        fill: false,
+        tension: 0.3,
+        pointRadius: 2.5,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#f59e0b"
+      }
+    ];
+
     var chartFQ = new Chart(ctxFlowQuery, {
       type: "line",
       data: {
         labels: flowQuery.chart_labels,
-        datasets: [
-          {
-            label: (flowQuery.nom_entite || "ikasolution") + "(" + (flowQuery.metric_label || "In") + ")",
-            data: flowQuery.chart_data || [],
-            borderColor: "#2563eb",
-            backgroundColor: "rgba(37, 99, 235, 0.05)",
-            borderWidth: 2,
-            fill: true,
-            tension: 0.25,
-            pointRadius: 2.5,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#2563eb"
-          }
-        ]
+        datasets: datasetsFQ
       },
       options: {
         responsive: true,
