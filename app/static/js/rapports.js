@@ -109,8 +109,8 @@ document.addEventListener("DOMContentLoaded", function () {
   var ctxAge = document.getElementById("graphique-age-foorir");
   if (ctxAge && demographie && Array.isArray(demographie.ages)) {
     var labelsAge = demographie.ages.map(function (a) { return a.nom; });
-    var dataHommes = demographie.ages.map(function (a) { return a.male || 0; });
-    var dataFemmes = demographie.ages.map(function (a) { return a.female || 0; });
+    var dataHommes = demographie.ages.map(function (a) { return a.hommes || a.male || 0; });
+    var dataFemmes = demographie.ages.map(function (a) { return a.femmes || a.female || 0; });
 
     new Chart(ctxAge, {
       type: "bar",
@@ -118,14 +118,14 @@ document.addEventListener("DOMContentLoaded", function () {
         labels: labelsAge,
         datasets: [
           {
-            label: "Hommes (Male)",
+            label: "Hommes",
             data: dataHommes,
             backgroundColor: "#2563eb",
             borderRadius: 4,
             maxBarThickness: 32
           },
           {
-            label: "Femmes (Female)",
+            label: "Femmes",
             data: dataFemmes,
             backgroundColor: "#10b981",
             borderRadius: 4,
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (ctxFlowQuery && flowQuery && Array.isArray(flowQuery.chart_labels)) {
     var datasetsFQ = [
       {
-        label: "Entrées boutique (In)",
+        label: "Entrées boutique",
         data: flowQuery.chart_entrees || [],
         borderColor: "#2563eb",
         backgroundColor: "rgba(37, 99, 235, 0.12)",
@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
         pointBackgroundColor: "#2563eb"
       },
       {
-        label: "Passants rue (Pass-by)",
+        label: "Passants devanture (Rue)",
         data: flowQuery.chart_passants || [],
         borderColor: "#f59e0b",
         backgroundColor: "rgba(245, 158, 11, 0.05)",

@@ -69,10 +69,9 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     assert reponse.status_code == 200
     texte = reponse.text
     if cle_rapport in ["journalier", "hebdomadaire", "mensuel"]:
-        assert "Visitor" in texte
-        assert "Store Entry Rate" in texte
-        assert "Flow Trend" in texte
-        assert "Entity Flow Trend" in texte
+        assert "Visiteurs boutique" in texte
+        assert "Taux d'entrée magasin" in texte
+        assert "Courbe comparative d'affluence" in texte
     elif cle_rapport == "flux":
         assert "Taux de capture vitrine" in texte
         assert "Trafic rue" in texte
@@ -106,4 +105,18 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     else:
         assert "Total Entrées" in texte
         assert "Clients réels (IA)" in texte
+
+    # Vérification stricte : aucun mot anglais résiduel Foorir
+    for terme_anglais in [
+        "Store Entry Rate",
+        "Avg Stay Time",
+        "Total Stay Time",
+        "Entity Name",
+        "Total Flow",
+        "No data",
+        "(Male)",
+        "(Female)",
+    ]:
+        assert terme_anglais not in texte, f"Terme anglais '{terme_anglais}' trouvé dans /rapports/{cle_rapport}"
+
     verifier_sans_inline(reponse.text, f"/rapports/{cle_rapport}")
