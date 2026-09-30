@@ -505,7 +505,20 @@ def requete_passages(parametres: ParametresListe) -> Select[tuple[PassageComptag
 
 
 async def obtenir_cameras(db: AsyncSession) -> Sequence[Camera]:
-    """Retourne toutes les caméras enregistrées."""
+    """Retourne toutes les caméras enregistrées en synchronisant leur état en ligne."""
+    seuil = maintenant() - timedelta(seconds=DELAI_EN_LIGNE_SECONDES)
+    await db.execute(
+        update(Camera)
+        .where(or_(Camera.dernier_heartbeat.is_(None), Camera.dernier_heartbeat < seuil))
+        .values(statut_en_ligne=False)
+    )
+    await db.execute(
+        update(Camera)
+        .where(Camera.dernier_heartbeat >= seuil)
+        .values(statut_en_ligne=True)
+    )
+    await db.flush()
+
     resultat = await db.execute(select(Camera).order_by(Camera.sn.asc()))
     return resultat.scalars().all()
 
@@ -777,7 +790,7 @@ async def generer_rapport_comptage(
                 "sorties": s,
                 "uniques": u,
                 "personnel": p,
-                "statut_en_ligne": cam_obj.statut_en_ligne if cam_obj else False,
+                "statut_en_ligne": cam_obj.est_en_ligne if cam_obj else False,
             }
         )
 
@@ -805,7 +818,7 @@ async def generer_rapport_comptage(
     ]
 
     total_cams = len(cameras)
-    cams_en_ligne = sum(1 for c in cameras if c.statut_en_ligne)
+    cams_en_ligne = sum(1 for c in cameras if c.est_en_ligne)
 
     return {
         "date_debut": debut,

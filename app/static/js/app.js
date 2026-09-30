@@ -234,6 +234,29 @@
       return;
     }
 
+    // Vérification dynamique du délai de signal (< 3 minutes / 180s)
+    if (tableauCameras) {
+      setInterval(function () {
+        var rows = tableauCameras.querySelectorAll("tbody tr[data-camera-sn]");
+        var now = Date.now();
+        rows.forEach(function (r) {
+          var hbCol = r.querySelector("[data-colonne-heartbeat]");
+          var statutCol = r.querySelector("[data-colonne-statut]");
+          if (hbCol && statutCol) {
+            var isoStr = hbCol.getAttribute("data-colonne-heartbeat-iso");
+            if (!isoStr) {
+              statutCol.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-circle-fill me-1 small"></i>Hors ligne</span>';
+            } else {
+              var diffSec = (now - new Date(isoStr).getTime()) / 1000;
+              if (diffSec > 180) {
+                statutCol.innerHTML = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-circle-fill me-1 small"></i>Hors ligne</span>';
+              }
+            }
+          }
+        });
+      }, 10000);
+    }
+
     var protocole = window.location.protocol === "https:" ? "wss:" : "ws:";
     var wsUrl = protocole + "//" + window.location.host + "/ws/comptage";
     var ws = null;
@@ -426,8 +449,9 @@
                   statutColActive.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-circle-fill me-1 small"></i>En ligne</span>';
                 }
                 var hbColActive = camRowActive.querySelector("[data-colonne-heartbeat]");
-                if (hbColActive && msg.horodatage) {
-                  hbColActive.textContent = msg.horodatage;
+                if (hbColActive) {
+                  if (msg.horodatage) hbColActive.textContent = msg.horodatage;
+                  hbColActive.setAttribute("data-colonne-heartbeat-iso", new Date().toISOString());
                 }
               }
             }
@@ -466,8 +490,9 @@
                   statutCol.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-circle-fill me-1 small"></i>En ligne</span>';
                 }
                 var hbCol = camRow.querySelector("[data-colonne-heartbeat]");
-                if (hbCol && msg.dernier_heartbeat) {
-                  hbCol.textContent = msg.dernier_heartbeat;
+                if (hbCol) {
+                  if (msg.dernier_heartbeat) hbCol.textContent = msg.dernier_heartbeat;
+                  hbCol.setAttribute("data-colonne-heartbeat-iso", new Date().toISOString());
                 }
               }
             }

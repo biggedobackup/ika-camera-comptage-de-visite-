@@ -1,7 +1,7 @@
 """Modèles du module caméra et comptage de flux (HX-CCD21)."""
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import (
@@ -52,10 +52,14 @@ class Camera(UUIDPKMixin, HorodatageMixin, Base):
 
     @property
     def est_en_ligne(self) -> bool:
-        """Indique si la caméra a émis un signal dans les 3 dernières minutes (180s) ou statut forcé."""
+        """Indique si la caméra a émis un signal dans les 3 dernières minutes (180s)."""
         if not self.dernier_heartbeat:
-            return self.statut_en_ligne
-        return (maintenant() - self.dernier_heartbeat).total_seconds() <= 180 or self.statut_en_ligne
+            return False
+        hb = self.dernier_heartbeat
+        if hb.tzinfo is None:
+            hb = hb.replace(tzinfo=UTC)
+        diff = (maintenant() - hb).total_seconds()
+        return -60 <= diff <= 180
 
     @property
     def hauteur_installation(self) -> int | None:

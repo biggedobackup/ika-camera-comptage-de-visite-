@@ -98,7 +98,7 @@
               <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-circle-fill me-1 small"></i>Hors ligne</span>
             {% endif %}
           </td>
-          <td class="text-muted small" data-colonne-heartbeat>
+          <td class="text-muted small" data-colonne-heartbeat data-colonne-heartbeat-iso="{{ cam.dernier_heartbeat.isoformat() if cam.dernier_heartbeat else '' }}">
             {% if cam.dernier_heartbeat %}
               {{ cam.dernier_heartbeat | date_heure }}
             {% else %}

@@ -991,14 +991,14 @@ async def calculer_donnees_analyse_entites(
                 "solde": e - s,
                 "uniques": u,
                 "part_pct": part_pct,
-                "statut_en_ligne": c.statut_en_ligne,
+                "statut_en_ligne": c.est_en_ligne,
             }
         )
 
     # Tri par entrées décroissantes
     portes_data.sort(key=lambda x: x["entrees"], reverse=True)
     top_porte = portes_data[0]["nom"] if portes_data else "Aucune porte"
-    cams_actives = sum(1 for c in cameras if c.statut_en_ligne) or len(cameras)
+    cams_actives = sum(1 for c in cameras if c.est_en_ligne) or len(cameras)
 
     return {
         "top_porte": top_porte,

@@ -469,6 +469,22 @@ async def test_statut_en_ligne_veridique(client_admin: httpx.AsyncClient) -> Non
         cam_maj = (await db.execute(select(Camera).where(Camera.sn == "SN-OFFLINE-TEST"))).scalar_one()
         assert cam_maj.est_en_ligne is True
 
+    # Simulation d'un arrêt de signal : le heartbeat date de 10 minutes (ou 2 jours)
+    from datetime import timedelta
+    async with SessionLocal() as db:
+        cam_stale = (await db.execute(select(Camera).where(Camera.sn == "SN-OFFLINE-TEST"))).scalar_one()
+        cam_stale.dernier_heartbeat = maintenant() - timedelta(minutes=10)
+        cam_stale.statut_en_ligne = True  # Même si statut_en_ligne est True en base
+        await db.commit()
+        await db.refresh(cam_stale)
+        assert cam_stale.est_en_ligne is False
+
+    # Sur la page /cameras, la caméra doit impérativement apparaître Hors ligne
+    page_apres = (await client_admin.get("/cameras")).text
+    assert "SN-OFFLINE-TEST" in page_apres
+    # Vérifier que le statut affiché est Hors ligne
+    assert "Hors ligne" in page_apres
+
     # Nettoyage
     async with SessionLocal() as db:
         cam_del = (await db.execute(select(Camera).where(Camera.sn == "SN-OFFLINE-TEST"))).scalar_one()

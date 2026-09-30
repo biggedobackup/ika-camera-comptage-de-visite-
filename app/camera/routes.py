@@ -321,7 +321,7 @@ async def fiche_camera(
                 "modele": camera.modele or "HX-CCD21",
                 "role_reseau": camera.role_reseau or "master",
                 "version_logiciel": camera.version_logiciel or "",
-                "statut_en_ligne": "true" if camera.statut_en_ligne else "false",
+                "statut_en_ligne": "true" if camera.est_en_ligne else "false",
                 "hauteur_installation": camera.hauteur_installation if camera.hauteur_installation is not None else "",
                 "hauteur_filtrage": camera.hauteur_filtrage if camera.hauteur_filtrage is not None else "",
                 "mode_enfant": camera.mode_enfant,
