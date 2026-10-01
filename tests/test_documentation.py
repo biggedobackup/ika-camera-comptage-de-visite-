@@ -26,4 +26,5 @@ async def test_acces_documentation_connecte(client_admin: httpx.AsyncClient) -> 
     assert "Total de Revisites" in texte
     assert "Courbe d'affluence" in texte
     assert "Temps de présence magasin" in texte
-    assert "Profil Démographique" in texte
+    assert "Répartition par genre" in texte
+    assert "Tranches d'âge" in texte

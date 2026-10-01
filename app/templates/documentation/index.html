@@ -4,7 +4,7 @@
 {% block titre %}Documentation - IKA COMPTEUR{% endblock %}
 
 {% block contenu %}
-{% call entete_page("Documentation", "Guide d'utilisation et explication des indicateurs clés de la plateforme.", "bi-book") %}
+{% call entete_page("Documentation", "Guide d'utilisation et explication synthétique des indicateurs.", "bi-book") %}
   <div class="d-flex align-items-center gap-2">
     <a class="btn btn-outline-primary" href="/tableau-de-bord"><i class="bi bi-speedometer2"></i><span>Tableau de bord</span></a>
   </div>
@@ -19,14 +19,14 @@
           <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
         </h3>
         <p class="text-muted small mb-0 mt-1">
-          Comprendre simplement chaque métrique et graphique affiché sur votre tableau de bord.
+          Définition simple et directe de chaque élément affiché sur votre tableau de bord.
         </p>
       </div>
       <div class="card-body p-4">
 
         <!-- 1. Les 6 indicateurs clés (KPIs) -->
         <h4 class="h5 fw-bold text-dark mb-3 pb-2 border-bottom">
-          <i class="bi bi-bar-chart me-2 text-primary"></i>1. Indicateurs clés de flux (KPIs)
+          <i class="bi bi-bar-chart me-2 text-primary"></i>1. Indicateurs clés de flux
         </h4>
 
         <div class="row g-3 mb-4">
@@ -38,7 +38,7 @@
                 <h5 class="h6 mb-0 fw-bold">Total visiteurs</h5>
               </div>
               <p class="small text-muted mb-0">
-                Représente le <strong>volume global de trafic physique</strong> enregistré sur la période sélectionnée. Il correspond à la somme des passages détectés (entrées + sorties).
+                Cumul de tous les passages physiques détectés (entrées + sorties).
               </p>
             </div>
           </div>
@@ -51,7 +51,7 @@
                 <h5 class="h6 mb-0 fw-bold">Total entrée</h5>
               </div>
               <p class="small text-muted mb-0">
-                Nombre total de <strong>personnes ayant franchi la ligne d'entrée</strong> vers l'intérieur de l'établissement ou de la boutique.
+                Nombre de personnes ayant franchi la porte vers l'intérieur.
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@
                 <h5 class="h6 mb-0 fw-bold">Total sortie</h5>
               </div>
               <p class="small text-muted mb-0">
-                Nombre total de <strong>personnes ayant franchi la ligne de sortie</strong> pour quitter l'établissement.
+                Nombre de personnes ayant franchi la porte vers l'extérieur.
               </p>
             </div>
           </div>
@@ -73,11 +73,11 @@
           <div class="col-md-6 col-lg-4">
             <div class="p-3 border rounded h-100 bg-light-subtle">
               <div class="d-flex align-items-center mb-2">
-                <span class="badge bg-purple text-white me-2 p-2" style="background-color: #6f42c1;"><i class="bi bi-stopwatch"></i></span>
+                <span class="badge text-white me-2 p-2" style="background-color: #6f42c1;"><i class="bi bi-stopwatch"></i></span>
                 <h5 class="h6 mb-0 fw-bold">Durée moyen d'une entrée</h5>
               </div>
               <p class="small text-muted mb-0">
-                <strong>Temps moyen passé à l'intérieur</strong> par un visiteur entre le moment de son entrée et celui de sa sortie. Cet indicateur permet de mesurer l'intérêt et l'engagement client en rayon.
+                Temps moyen passé par un visiteur dans l'établissement.
               </p>
             </div>
           </div>
@@ -90,7 +90,7 @@
                 <h5 class="h6 mb-0 fw-bold">Personnel exclu du comptage</h5>
               </div>
               <p class="small text-muted mb-0">
-                Nombre de passages identifiés comme <strong>employés, vendeurs, livreurs ou porteurs de badges</strong>. Ces passages sont automatiquement filtrés pour ne pas fausser les statistiques clients réels.
+                Passages du personnel, livreurs et porteurs de badges filtrés par l'IA.
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@
                 <h5 class="h6 mb-0 fw-bold">Total de Revisites</h5>
               </div>
               <p class="small text-muted mb-0">
-                Nombre de <strong>visiteurs récurrents ou fidèles</strong> reconnus par l'analyse biométrique / IA comme étant déjà venus au cours de la période. Il est accompagné du <strong>taux de fidélité (%)</strong>.
+                Nombre de clients récurrents reconnus comme déjà venus sur la période.
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@
 
         <!-- 2. Graphiques et Analyses détaillées -->
         <h4 class="h5 fw-bold text-dark mb-3 pb-2 border-bottom">
-          <i class="bi bi-graph-up-arrow me-2 text-primary"></i>2. Graphiques & Comportement des visiteurs
+          <i class="bi bi-graph-up-arrow me-2 text-primary"></i>2. Graphiques & Comportement
         </h4>
 
         <div class="row g-3 mb-4">
@@ -119,33 +119,23 @@
           <div class="col-md-6">
             <div class="p-3 border rounded h-100">
               <h5 class="h6 fw-bold text-primary mb-2">
-                <i class="bi bi-graph-up me-1"></i> Courbe d'affluence heure par heure (Flow Trend)
+                <i class="bi bi-graph-up me-1"></i> Courbe d'affluence (Flow Trend)
               </h5>
-              <p class="small text-muted mb-2">
-                Graphique chronologique visualisant les entrées et sorties tout au long de la journée.
+              <p class="small text-muted mb-0">
+                Évolution des entrées et sorties heure par heure pour identifier les pics d'activité.
               </p>
-              <ul class="small text-muted ps-3 mb-0">
-                <li>Permet d'identifier instantanément les <strong>heures de pointe (pics d'affluence)</strong> et les périodes creuses.</li>
-                <li>Facilite l'optimisation des plannings d'équipes et l'ouverture des caisses.</li>
-              </ul>
             </div>
           </div>
 
           <!-- Temps de présence magasin -->
           <div class="col-md-6">
             <div class="p-3 border rounded h-100">
-              <h5 class="h6 fw-bold text-purple mb-2" style="color: #6f42c1;">
-                <i class="bi bi-clock-history me-1"></i> Temps de présence magasin (Dwell Time)
+              <h5 class="h6 fw-bold mb-2" style="color: #6f42c1;">
+                <i class="bi bi-clock-history me-1"></i> Temps de présence magasin
               </h5>
-              <p class="small text-muted mb-2">
-                Répartition des durées de visite par tranches temporelles :
+              <p class="small text-muted mb-0">
+                Distribution des visiteurs par tranche de durée : rapide (&lt;1 min), courte (1-5 min), active (5-15 min) et longue (&gt;15 min).
               </p>
-              <ul class="small text-muted ps-3 mb-0">
-                <li><strong>&lt; 1 min :</strong> Passants rapides ou erreurs de direction.</li>
-                <li><strong>1 à 5 min :</strong> Visites express ou achats ciblés.</li>
-                <li><strong>5 à 15 min :</strong> Visites d'achat actives et recherche de produits.</li>
-                <li><strong>&gt; 15 min :</strong> Immersion longue en magasin, fort potentiel panier.</li>
-              </ul>
             </div>
           </div>
 
@@ -153,10 +143,10 @@
           <div class="col-md-6">
             <div class="p-3 border rounded h-100">
               <h5 class="h6 fw-bold text-info mb-2">
-                <i class="bi bi-gender-ambiguous me-1"></i> Profil Démographique : Genre (Hommes / Femmes)
+                <i class="bi bi-gender-ambiguous me-1"></i> Répartition par genre
               </h5>
               <p class="small text-muted mb-0">
-                Pourcentage d'hommes et de femmes détecté automatiquement par les capteurs stéréoscopiques 3D et les algorithmes de reconnaissance faciale/corporelle à l'entrée.
+                Proportion d'hommes et de femmes estimée à l'entrée par les capteurs 3D.
               </p>
             </div>
           </div>
@@ -165,16 +155,16 @@
           <div class="col-md-6">
             <div class="p-3 border rounded h-100">
               <h5 class="h6 fw-bold text-warning mb-2">
-                <i class="bi bi-pie-chart me-1"></i> Profil Démographique : Tranches d'âge
+                <i class="bi bi-pie-chart me-1"></i> Tranches d'âge
               </h5>
               <p class="small text-muted mb-0">
-                Classification par tranche d'âge estimée (&lt;18, 18-24, 25-34, 35-44, 45-54, 55+) afin de mieux comprendre le public qui fréquente vos magasins et d'adapter vos offres.
+                Répartition des visiteurs par groupe d'âge (&lt;18, 18-24, 25-34, 35-44, 45-54, 55+).
               </p>
             </div>
           </div>
         </div>
 
-        <!-- 3. Comparatifs et État du réseau -->
+        <!-- 3. Filtres et Comparatifs -->
         <h4 class="h5 fw-bold text-dark mb-3 pb-2 border-bottom">
           <i class="bi bi-sliders me-2 text-primary"></i>3. Filtres et Comparatifs
         </h4>
@@ -183,9 +173,9 @@
           <!-- Filtres de date et caméra -->
           <div class="col-md-6">
             <div class="p-3 border rounded h-100 bg-light-subtle">
-              <h5 class="h6 fw-bold text-dark mb-2"><i class="bi bi-funnel me-1 text-primary"></i> Filtres d'intervalle et de caméra</h5>
+              <h5 class="h6 fw-bold text-dark mb-2"><i class="bi bi-funnel me-1 text-primary"></i> Filtres</h5>
               <p class="small text-muted mb-0">
-                Par défaut, le tableau de bord affiche les <strong>données d'aujourd'hui</strong> pour <strong>toutes les caméras</strong>. Vous pouvez choisir un intervalle de dates personnalisé (date début / date fin) et filtrer sur une caméra spécifique pour analyser une entrée précise.
+                Par défaut réglé sur aujourd'hui et toutes les caméras. Permet de cibler une période ou une entrée précise.
               </p>
             </div>
           </div>
@@ -193,9 +183,9 @@
           <!-- Comparatifs temporels -->
           <div class="col-md-6">
             <div class="p-3 border rounded h-100 bg-light-subtle">
-              <h5 class="h6 fw-bold text-dark mb-2"><i class="bi bi-calendar3 me-1 text-primary"></i> Comparatifs temporels</h5>
+              <h5 class="h6 fw-bold text-dark mb-2"><i class="bi bi-calendar3 me-1 text-primary"></i> Comparatifs</h5>
               <p class="small text-muted mb-0">
-                Compare les données de la période en cours avec celles du <strong>jour précédent (J-1)</strong>, de la <strong>semaine précédente (J-7)</strong> et du <strong>mois précédent (M-1)</strong> pour mesurer la tendance de fréquentation en pourcentage (+/- %).
+                Tendance de fréquentation comparée à la veille (J-1), la semaine passée (J-7) et le mois passé (M-1).
               </p>
             </div>
           </div>
