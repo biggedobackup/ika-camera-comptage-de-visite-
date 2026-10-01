@@ -2,10 +2,10 @@
 {% import "composants/liste.html" as l with context %}
 {% from "composants/page.html" import entete_page %}
 
-{% block titre %}Historique des passages{% endblock %}
+{% block titre %}Flux des camera ( api ){% endblock %}
 
 {% block contenu %}
-{% call entete_page("Historique des passages", "Données de comptage minute par minute issues des caméras 3D HX-CCD21.", "bi-graph-up") %}
+{% call entete_page("Flux des camera ( api )", "Données de comptage minute par minute issues des caméras 3D HX-CCD21.", "bi-graph-up") %}
   <div class="d-flex align-items-center gap-2">
     <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
       <i class="bi bi-broadcast"></i> <span>En direct</span>
@@ -16,7 +16,7 @@
 {% endcall %}
 
 <div class="row g-3 mb-4">
-  <div class="col-sm-4">
+  <div class="col-sm-6">
     <div class="card border-0 shadow-sm py-2 px-3 d-flex flex-row align-items-center justify-content-between">
       <div>
         <span class="text-muted small">Total Entrées</span>
@@ -25,22 +25,13 @@
       <i class="bi bi-box-arrow-in-right fs-2 text-primary opacity-50"></i>
     </div>
   </div>
-  <div class="col-sm-4">
+  <div class="col-sm-6">
     <div class="card border-0 shadow-sm py-2 px-3 d-flex flex-row align-items-center justify-content-between">
       <div>
         <span class="text-muted small">Total Sorties</span>
         <h4 class="mb-0 fw-bold text-secondary" data-comptage-sorties>{{ indicateurs.sorties_jour }}</h4>
       </div>
       <i class="bi bi-box-arrow-right fs-2 text-secondary opacity-50"></i>
-    </div>
-  </div>
-  <div class="col-sm-4">
-    <div class="card border-0 shadow-sm py-2 px-3 d-flex flex-row align-items-center justify-content-between">
-      <div>
-        <span class="text-muted small">Clients uniques</span>
-        <h4 class="mb-0 fw-bold text-success" data-comptage-uniques>{{ indicateurs.visiteurs_uniques_jour }}</h4>
-      </div>
-      <i class="bi bi-people-fill fs-2 text-success opacity-50"></i>
     </div>
   </div>
 </div>

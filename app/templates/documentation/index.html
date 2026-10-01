@@ -193,6 +193,57 @@
 
       </div>
     </div>
+
+    <!-- Section Flux des camera ( api ) -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h3 class="card-title h4 mb-0 fw-bold text-primary">
+          <i class="bi bi-graph-up me-2"></i>Flux des camera ( api )
+        </h3>
+        <p class="text-muted small mb-0 mt-1">
+          Historique détaillé et temps réel des passages enregistrés par les caméras connectées.
+        </p>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <!-- Total Entrées -->
+          <div class="col-md-6">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-success me-2 p-2"><i class="bi bi-box-arrow-in-right"></i></span>
+                <h5 class="h6 mb-0 fw-bold">Total Entrées</h5>
+              </div>
+              <p class="small text-muted mb-0">
+                Nombre de personnes ayant franchi la ligne d'entrée sur la journée en cours.
+              </p>
+            </div>
+          </div>
+
+          <!-- Total Sorties -->
+          <div class="col-md-6">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-secondary me-2 p-2"><i class="bi bi-box-arrow-right"></i></span>
+                <h5 class="h6 mb-0 fw-bold">Total Sorties</h5>
+              </div>
+              <p class="small text-muted mb-0">
+                Nombre de personnes ayant franchi la ligne de sortie sur la journée en cours.
+              </p>
+            </div>
+          </div>
+
+          <!-- Tableau des passages -->
+          <div class="col-12">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <h5 class="h6 fw-bold text-dark mb-2"><i class="bi bi-table me-1 text-primary"></i> Journal des passages minute par minute</h5>
+              <p class="small text-muted mb-0">
+                Liste chronologique reçue via l'API des caméras indiquant pour chaque minute : l'horodatage, la caméra/entrée concernée, le nombre d'entrées et de sorties. Permet également l'export des données en PDF et Excel.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
