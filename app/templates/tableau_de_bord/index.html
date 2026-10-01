@@ -19,79 +19,112 @@
   </div>
 {% endcall %}
 
-<!-- 1. Bandeau supérieur : KPIs Commerciaux Majeurs (Style Foorir) -->
+<!-- Filtres de période et de caméra -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" action="/tableau-de-bord" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label for="date_debut" class="form-label small fw-medium">Date de début</label>
+        <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut }}">
+      </div>
+      <div class="col-md-3">
+        <label for="date_fin" class="form-label small fw-medium">Date de fin</label>
+        <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin }}">
+      </div>
+      <div class="col-md-4">
+        <label for="camera_sn" class="form-label small fw-medium">Caméra / Entrée</label>
+        <select class="form-select" id="camera_sn" name="camera_sn">
+          <option value="">Toutes les caméras (Global)</option>
+          {% for c in cameras %}
+          <option value="{{ c.sn }}" {% if camera_sn_actif == c.sn %}selected{% endif %}>
+            {{ c.libelle_affiche }} ({{ c.sn }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel"></i> Filtrer</button>
+        {% if est_filtre_actif %}
+        <a href="/tableau-de-bord" class="btn btn-outline-secondary" title="Réinitialiser (Aujourd'hui)"><i class="bi bi-x-lg"></i></a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 1. Bandeau supérieur : 6 KPIs demandés -->
 <section class="section-page mb-4" aria-labelledby="titre-kpis-flux">
   <h2 class="visually-hidden" id="titre-kpis-flux">Indicateurs clés de flux</h2>
   <div class="row g-3">
-    <!-- Total Visiteurs (Passages physiques) -->
+    <!-- 1. Total Visiteurs -->
     <div class="col-sm-6 col-lg-4">
       <div class="carte-indicateur h-100">
         <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Visiteurs (Total)</p>
-          <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-person-walking"></i></span>
+          <p class="carte-indicateur-libelle">Total visiteurs</p>
+          <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
         </div>
         <p class="carte-indicateur-valeur">{{ f.visiteurs_total }}</p>
-        <p class="carte-indicateur-sous-titre text-muted small"><span class="text-primary fw-semibold" data-comptage-entrees>{{ f.entrees_jour }}</span> in &bull; <span class="text-secondary fw-semibold" data-comptage-sorties>{{ f.sorties_jour }}</span> out</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-arrow-left-right"></i> Passages cumulés (Entrées + Sorties)</p>
       </div>
     </div>
 
-    <!-- Clients réels (IA) -->
+    <!-- 2. Total Entrées -->
     <div class="col-sm-6 col-lg-4">
       <div class="carte-indicateur h-100">
         <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Clients réels (IA)</p>
-          <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+          <p class="carte-indicateur-libelle">Total entrée</p>
+          <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
         </div>
-        <p class="carte-indicateur-valeur text-success" data-comptage-uniques>{{ f.clients_uniques }}</p>
-        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-fingerprint"></i> Visiteurs dédoublés</p>
+        <p class="carte-indicateur-valeur text-primary" data-comptage-entrees>{{ f.entrees_jour }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-walking"></i> Franchissements entrants</p>
       </div>
     </div>
 
-    <!-- Taux de capture / entrée magasin -->
+    <!-- 3. Total Sorties -->
     <div class="col-sm-6 col-lg-4">
       <div class="carte-indicateur h-100">
         <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Taux de capture</p>
-          <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-funnel-fill"></i></span>
+          <p class="carte-indicateur-libelle">Total sortie</p>
+          <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-box-arrow-right"></i></span>
         </div>
-        <p class="carte-indicateur-valeur text-warning-emphasis">{{ f.taux_capture_pct }}%</p>
-        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-arrow-right-short"></i> Entrées / Passants</p>
+        <p class="carte-indicateur-valeur text-secondary" data-comptage-sorties>{{ f.sorties_jour }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-walking"></i> Franchissements sortants</p>
       </div>
     </div>
 
-    <!-- Personnel & Agents filtrés -->
+    <!-- 4. Durée moyenne d'une entrée (au lieu de séjour moyen) -->
     <div class="col-sm-6 col-lg-4">
       <div class="carte-indicateur h-100">
         <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Personnel exclu</p>
-          <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
-        </div>
-        <p class="carte-indicateur-valeur text-secondary" data-comptage-personnel>{{ f.personnel_filtre }}</p>
-        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-badge"></i> Badges / livreurs</p>
-      </div>
-    </div>
-
-    <!-- Temps moyen de séjour (Dwell Time) -->
-    <div class="col-sm-6 col-lg-4">
-      <div class="carte-indicateur h-100">
-        <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Séjour moyen</p>
+          <p class="carte-indicateur-libelle">Durée moyen d'une entrée</p>
           <span class="carte-indicateur-icone violet" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
         </div>
         <p class="carte-indicateur-valeur texte-violet">{{ f.sejour_moyen_texte }}</p>
-        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps en boutique</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps de présence moyen en magasin</p>
       </div>
     </div>
 
-    <!-- Clients fidèles / revisites -->
+    <!-- 5. Personnel exclu du comptage (personnel, livreur, badge) -->
     <div class="col-sm-6 col-lg-4">
       <div class="carte-indicateur h-100">
         <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Revisites (Fidélité)</p>
+          <p class="carte-indicateur-libelle">Personnel exclu du comptage</p>
+          <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+        </div>
+        <p class="carte-indicateur-valeur text-warning-emphasis" data-comptage-personnel>{{ f.personnel_filtre }}</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-badge"></i> Personnel, livreurs, badges</p>
+      </div>
+    </div>
+
+    <!-- 6. Total de Revisites -->
+    <div class="col-sm-6 col-lg-4">
+      <div class="carte-indicateur h-100">
+        <div class="carte-indicateur-entete">
+          <p class="carte-indicateur-libelle">Total de Revisites</p>
           <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
         </div>
         <p class="carte-indicateur-valeur text-info">{{ f.clients_recidives }}</p>
-        <p class="carte-indicateur-sous-titre text-muted small">Taux : {{ f.taux_revisite_pct }}%</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-percent"></i> Taux de fidélité : {{ f.taux_revisite_pct }}%</p>
       </div>
     </div>
   </div>

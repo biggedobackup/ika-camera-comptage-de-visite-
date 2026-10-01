@@ -1,7 +1,7 @@
 """Services du tableau de bord : indicateurs de flux passagers et activités système."""
 
 from datetime import timedelta
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.camera.model import Camera, PassageComptage
@@ -79,16 +79,32 @@ async def calculer_indicateurs_admin(db: AsyncSession) -> IndicateursTableauDeBo
     )
 
 
-async def calculer_flux_complet(db: AsyncSession):
-    """Calcule l'ensemble des indicateurs de flux passagers (KPIs, heures, démographie, dwell time)."""
+async def calculer_flux_complet(
+    db: AsyncSession,
+    date_debut: str | None = None,
+    date_fin: str | None = None,
+    camera_sn: str | None = None,
+):
+    """Calcule l'ensemble des indicateurs de flux passagers avec filtres de période et de caméra."""
     instant = maintenant()
-    debut_jour = instant.strftime("%Y-%m-%d")
+    aujourdhui = instant.strftime("%Y-%m-%d")
+    d_debut = date_debut or aujourdhui
+    d_fin = date_fin or d_debut
+
     hier = (instant - timedelta(days=1)).strftime("%Y-%m-%d")
     debut_7j = (instant - timedelta(days=7)).strftime("%Y-%m-%d")
     debut_mois = instant.strftime("%Y-%m-01")
     debut_annee = instant.strftime("%Y-01-01")
 
-    # 1. Totaux du jour
+    # Clauses de filtrage sur la table PassageComptage
+    clauses = [
+        PassageComptage.batch_date >= d_debut,
+        PassageComptage.batch_date <= d_fin,
+    ]
+    if camera_sn:
+        clauses.append(PassageComptage.master_sn == camera_sn)
+
+    # 1. Totaux sur la période et la/les caméra(s) sélectionnée(s)
     totaux = (
         await db.execute(
             select(
@@ -99,7 +115,7 @@ async def calculer_flux_complet(db: AsyncSession):
                 func.coalesce(func.sum(PassageComptage.personnel_exclu), 0),
                 func.coalesce(func.sum(PassageComptage.passants), 0),
                 func.coalesce(func.round(func.avg(PassageComptage.duree_sejour_moyenne_sec)), 0),
-            ).where(PassageComptage.batch_date == debut_jour)
+            ).where(and_(*clauses))
         )
     ).one()
 
@@ -149,7 +165,7 @@ async def calculer_flux_complet(db: AsyncSession):
     comp_7j = (
         await db.scalar(
             select(func.coalesce(func.sum(PassageComptage.entrees), 0)).where(
-                PassageComptage.batch_date >= debut_7j, PassageComptage.batch_date < debut_jour
+                PassageComptage.batch_date >= debut_7j, PassageComptage.batch_date < aujourdhui
             )
         )
     ) or 0
@@ -179,7 +195,7 @@ async def calculer_flux_complet(db: AsyncSession):
     passages_jour = (
         await db.scalars(
             select(PassageComptage)
-            .where(PassageComptage.batch_date == debut_jour)
+            .where(and_(*clauses))
             .order_by(PassageComptage.horodatage_debut.asc())
         )
     ).all()
@@ -343,9 +359,16 @@ async def dernieres_activites(db: AsyncSession, limite: int = NB_DERNIERES_ACTIV
     return [ActiviteRecente.model_validate(entree) for entree in resultat.all()]
 
 
-async def tableau_de_bord_gestion(db: AsyncSession) -> TableauDeBordGestion:
+async def tableau_de_bord_gestion(
+    db: AsyncSession,
+    date_debut: str | None = None,
+    date_fin: str | None = None,
+    camera_sn: str | None = None,
+) -> TableauDeBordGestion:
     indicateurs_admin = await calculer_indicateurs_admin(db)
-    flux_kpi, comparatifs, heures, demographie, dwell_time, cams = await calculer_flux_complet(db)
+    flux_kpi, comparatifs, heures, demographie, dwell_time, cams = await calculer_flux_complet(
+        db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
+    )
     activites = await dernieres_activites(db)
 
     return TableauDeBordGestion(
