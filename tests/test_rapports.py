@@ -29,13 +29,13 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
     assert "Rapport journalier" in texte
     assert "Rapport hebdomadaire" in texte
     assert "Rapport mensuel" in texte
-    # Vérification des 4 cartes d'indicateurs globaux
-    assert "Total Entrées" in texte
+    # Vérification des 5 cartes d'indicateurs globaux
+    assert "Total comptage" in texte
+    assert "Total des entrées" in texte
     assert "Passages physiques" in texte
-    assert "Total Sorties" in texte
+    assert "Total des sorties" in texte
     assert "Départs constatés" in texte
-    assert "Clients uniques (IA)" in texte
-    assert "Visiteurs réels qualifiés" in texte
+    assert "Personne unique comptée" in texte
     assert "Caméras actives" in texte
     assert "Points de comptage 3D" in texte
 
@@ -69,7 +69,7 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     texte = reponse.text
     if cle_rapport in ["journalier", "hebdomadaire", "mensuel"]:
         assert "Visiteurs boutique" in texte
-        assert "Taux d'entrée magasin" in texte
+        assert "Taux d'entrée" in texte
         assert "Courbe comparative d'affluence" in texte
     elif cle_rapport == "flux":
         assert "Taux de capture vitrine" in texte

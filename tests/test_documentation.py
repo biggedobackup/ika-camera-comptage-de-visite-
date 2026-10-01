@@ -18,7 +18,7 @@ async def test_acces_documentation_connecte(client_admin: httpx.AsyncClient) -> 
     texte = contenu(reponse)
     assert "Documentation" in texte
     assert "Tableau de bord" in texte
-    assert "Total visiteurs" in texte
+    assert "Total comptage" in texte
     assert "Total entrée" in texte
     assert "Total sortie" in texte
     assert "Durée moyen d'une entrée" in texte

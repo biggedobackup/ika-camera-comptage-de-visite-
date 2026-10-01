@@ -129,6 +129,7 @@ async def index_rapports(request: Request, db: DbSession, utilisateur: LecteurCa
     cams_actives = sum(1 for c in cameras if getattr(c, "est_en_ligne", False))
 
     indicateurs = {
+        "total_comptage": int(t_entrees + t_sorties),
         "total_entrees": int(t_entrees),
         "total_sorties": int(t_sorties),
         "clients_uniques": int(t_uniques),

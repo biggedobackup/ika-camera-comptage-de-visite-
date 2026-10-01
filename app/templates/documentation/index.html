@@ -30,12 +30,12 @@
         </h4>
 
         <div class="row g-3 mb-4">
-          <!-- Total visiteurs -->
+          <!-- Total comptage -->
           <div class="col-md-6 col-lg-4">
             <div class="p-3 border rounded h-100 bg-light-subtle">
               <div class="d-flex align-items-center mb-2">
-                <span class="badge bg-primary me-2 p-2"><i class="bi bi-people-fill"></i></span>
-                <h5 class="h6 mb-0 fw-bold">Total visiteurs</h5>
+                <span class="badge bg-primary me-2 p-2"><i class="bi bi-calculator"></i></span>
+                <h5 class="h6 mb-0 fw-bold">Total comptage</h5>
               </div>
               <p class="small text-muted mb-0">
                 Cumul de tous les passages physiques détectés (entrées + sorties).
@@ -245,6 +245,64 @@
       </div>
     </div>
 
+    <!-- Section Rapports d'analyse de flux -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h3 class="card-title h4 mb-0 fw-bold text-primary">
+          <i class="bi bi-file-earmark-bar-graph me-2"></i>Rapports d'analyse de flux
+        </h3>
+        <p class="text-muted small mb-0 mt-1">
+          Portail analytique global, comparatifs temporels et analyse croisée des caméras.
+        </p>
+      </div>
+      <div class="card-body p-4">
+        <!-- 5 Indicateurs globaux -->
+        <h4 class="h5 fw-bold text-dark mb-3 pb-2 border-bottom">
+          <i class="bi bi-speedometer me-2 text-primary"></i>1. Indicateurs globaux
+        </h4>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <h5 class="h6 fw-bold text-dark mb-1"><i class="bi bi-calculator me-1"></i> Total comptage</h5>
+              <p class="small text-muted mb-0">Cumul général des mouvements physiques enregistrés (Total des entrées + Total des sorties).</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <h5 class="h6 fw-bold text-primary mb-1"><i class="bi bi-box-arrow-in-right me-1"></i> Total des entrées</h5>
+              <p class="small text-muted mb-0">Total des passages physiques entrants constatés sur l'ensemble des points d'accès.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-4">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <h5 class="h6 fw-bold text-danger mb-1"><i class="bi bi-box-arrow-left me-1"></i> Total des sorties</h5>
+              <p class="small text-muted mb-0">Total des franchissements sortants constatés aux accès.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-6">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <h5 class="h6 fw-bold text-success mb-1"><i class="bi bi-people-fill me-1"></i> Personne unique comptée</h5>
+              <p class="small text-muted mb-0">Comptabilisation des personnes réelles uniques identifiées par l'IA : les allers-retours multiples d'un même individu ne sont comptés qu'une seule fois.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-6">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <h5 class="h6 fw-bold text-secondary mb-1"><i class="bi bi-camera-video me-1"></i> Caméras actives</h5>
+              <p class="small text-muted mb-0">Nombre d'appareils de comptage 3D actuellement joignables et connectés au réseau.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analyse des caméras combinée -->
+        <h4 class="h5 fw-bold text-dark mb-3 pb-2 border-bottom">
+          <i class="bi bi-camera-video me-2 text-primary"></i>2. Analyse des caméras (Palmarès & Comparatif)
+        </h4>
+        <p class="small text-muted mb-0">
+          Combine le classement par volume (podium 🥇, 🥈, 🥉 avec part de marché %) et le tableau comparatif détaillé par caméra (entrées, sorties, solde net entrées - sorties et statut en ligne).
+        </p>
+      </div>
+    </div>
+
     <!-- Section Caméras 3D -->
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-white py-3 border-bottom">
@@ -271,7 +329,7 @@
           </div>
           <div class="col-md-6 col-lg-3">
             <div class="p-3 border rounded h-100 bg-light-subtle">
-              <h5 class="h6 fw-bold text-success mb-1"><i class="bi bi-people-fill me-1"></i> Total passages</h5>
+              <h5 class="h6 fw-bold text-success mb-1"><i class="bi bi-calculator me-1"></i> Total comptage</h5>
               <p class="small text-muted mb-0">Cumul global des mouvements (Entrées + Sorties) enregistrés aujourd'hui.</p>
             </div>
           </div>

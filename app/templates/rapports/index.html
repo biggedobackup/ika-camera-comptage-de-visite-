@@ -15,10 +15,21 @@
 
 <!-- Résumé rapide des flux globaux -->
 <div class="row g-3 mb-4">
-  <div class="col-sm-6 col-xl-3">
-    <div class="carte-indicateur">
+  <div class="col-sm-6 col-lg-4 col-xl-2dot4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Total Entrées</p>
+        <p class="carte-indicateur-libelle">Total comptage</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-calculator"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-dark">{{ indicateurs.total_comptage | default(0) }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-arrow-left-right"></i> Entrées + Sorties</p>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-4 col-xl-2dot4">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Total des entrées</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-primary">{{ indicateurs.total_entrees | default(0) }}</p>
@@ -26,10 +37,10 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-3">
-    <div class="carte-indicateur">
+  <div class="col-sm-6 col-lg-4 col-xl-2dot4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Total Sorties</p>
+        <p class="carte-indicateur-libelle">Total des sorties</p>
         <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-box-arrow-left"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-danger">{{ indicateurs.total_sorties | default(0) }}</p>
@@ -37,19 +48,19 @@
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-3">
-    <div class="carte-indicateur">
+  <div class="col-sm-6 col-lg-4 col-xl-2dot4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Clients uniques (IA)</p>
+        <p class="carte-indicateur-libelle">Personne unique comptée</p>
         <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-success">{{ indicateurs.clients_uniques | default(0) }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Visiteurs réels qualifiés</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Personnes uniques comptées</p>
     </div>
   </div>
 
-  <div class="col-sm-6 col-xl-3">
-    <div class="carte-indicateur">
+  <div class="col-sm-6 col-lg-4 col-xl-2dot4">
+    <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Caméras actives</p>
         <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-camera-video"></i></span>
