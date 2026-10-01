@@ -54,10 +54,10 @@ CONFIG_RAPPORTS: dict[str, dict[str, Any]] = {
         "badge": "Exclusion personnel",
     },
     "entites": {
-        "titre": "Analyse des entités",
-        "description": "Répartition et comparaison de la fréquentation entre les différentes portes d'accès.",
-        "icone": "bi-building",
-        "badge": "Portes & Accès",
+        "titre": "Analyse des caméras",
+        "description": "Comparaison et classement de la fréquentation entre les différentes caméras et points d'accès.",
+        "icone": "bi-camera-video",
+        "badge": "Caméras & Classement",
     },
     "classement": {
         "titre": "Classement des entrées",
@@ -233,12 +233,8 @@ async def detail_rapport(
         donnees_specifiques = await calculer_donnees_profil_clients(
             db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
         )
-    elif type_rapport == "entites":
+    elif type_rapport in ("entites", "classement"):
         donnees_specifiques = await calculer_donnees_analyse_entites(
-            db, date_debut=date_debut, date_fin=date_fin
-        )
-    elif type_rapport == "classement":
-        donnees_specifiques = await calculer_donnees_classement_entrees(
             db, date_debut=date_debut, date_fin=date_fin
         )
 

@@ -1091,9 +1091,9 @@
   </div>
 </div>
 
-{% elif cle_rapport == 'entites' and donnees_specifiques %}
+{% elif (cle_rapport == 'entites' or cle_rapport == 'classement') and donnees_specifiques %}
 {# ========================================================================= #}
-{# 6. ANALYSE DES ENTITÉS (ENTITY ANALYSIS)                                  #}
+{# 6. ANALYSE DES CAMÉRAS & CLASSEMENT (COMBINÉ)                             #}
 {# ========================================================================= #}
 
 <div class="card border-0 shadow-sm mb-4">
@@ -1120,11 +1120,11 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Entrée n°1 (Top flux)</p>
-        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-building"></i></span>
+        <p class="carte-indicateur-libelle">Top 1 : Première entrée</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-trophy-fill text-warning"></i></span>
       </div>
       <p class="carte-indicateur-valeur fs-5 text-primary">{{ donnees_specifiques.top_porte }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-trophy"></i> Point d'accès le plus actif</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-pie-chart-fill"></i> {{ donnees_specifiques.top_1_part }}% du trafic global</p>
     </div>
   </div>
   <div class="col-12 col-sm-6 col-lg-3">
@@ -1140,120 +1140,7 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Solde Entrées - Sorties</p>
-        <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-arrow-left-right"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur {% if donnees_specifiques.solde_global >= 0 %}text-info{% else %}text-danger{% endif %}">{{ donnees_specifiques.solde_global }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-calculator"></i> Bilan net sur la période</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Disponibilité réseau</p>
-        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-broadcast"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-warning-emphasis">100%</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-wifi"></i> Signal caméras stable</p>
-    </div>
-  </div>
-</div>
-
-<!-- Tableau comparatif complet des entités -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-diagram-3 text-primary me-2"></i>Performance comparée par point d'accès</h5>
-    <span class="badge bg-light text-dark border">{{ donnees_specifiques.portes | length }} portes configurées</span>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th scope="col">Point d'accès / Entrée</th>
-          <th scope="col">Emplacement</th>
-          <th scope="col" class="text-center text-primary">Entrées</th>
-          <th scope="col" class="text-center text-danger">Sorties</th>
-          <th scope="col" class="text-center">Solde net</th>
-          <th scope="col" class="text-center text-success">Part du volume total</th>
-          <th scope="col" class="text-center">Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for p in donnees_specifiques.portes %}
-        <tr>
-          <td>
-            <div class="fw-semibold">{{ p.nom }}</div>
-            <code class="small text-muted">{{ p.sn }}</code>
-          </td>
-          <td><i class="bi bi-geo-alt text-muted me-1"></i>{{ p.emplacement }}</td>
-          <td class="text-center fw-bold text-primary">{{ p.entrees }}</td>
-          <td class="text-center fw-bold text-danger">{{ p.sorties }}</td>
-          <td class="text-center fw-medium {% if p.solde >= 0 %}text-info{% else %}text-danger{% endif %}">{{ p.solde }}</td>
-          <td class="text-center fw-bold text-success">{{ p.part_pct }}%</td>
-          <td class="text-center">
-            {% if p.statut_en_ligne %}
-            <span class="badge bg-success-subtle text-success">En ligne</span>
-            {% else %}
-            <span class="badge bg-danger-subtle text-danger">Hors ligne</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-
-{% elif cle_rapport == 'classement' and donnees_specifiques %}
-{# ========================================================================= #}
-{# 7. CLASSEMENT DES ENTRÉES (ENTITY RANKING)                                #}
-{# ========================================================================= #}
-
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <form method="get" action="/rapports/classement" class="row g-3 align-items-end">
-      <div class="col-md-5">
-        <label for="date_debut" class="form-label small fw-medium">Date de début</label>
-        <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut }}">
-      </div>
-      <div class="col-md-5">
-        <label for="date_fin" class="form-label small fw-medium">Date de fin</label>
-        <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin }}">
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-trophy"></i> Classer
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="row g-3 mb-4">
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Top 1 : Première entrée</p>
-        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-trophy-fill text-warning"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur fs-5 text-primary">{{ donnees_specifiques.top_1 }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-check2-circle"></i> Leader de la fréquentation</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Part de marché Top 1</p>
-        <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-pie-chart-fill"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-success">{{ donnees_specifiques.top_1_part }}%</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-activity"></i> Concentration du flux</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Moyenne de passages / porte</p>
+        <p class="carte-indicateur-libelle">Moyenne flux / porte</p>
         <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-calculator"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-info">{{ donnees_specifiques.moyenne_porte }}</p>
@@ -1263,30 +1150,33 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Évolution constatée</p>
-        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-graph-up"></i></span>
+        <p class="carte-indicateur-libelle">Solde Entrées - Sorties</p>
+        <span class="carte-indicateur-icone {% if donnees_specifiques.solde_global >= 0 %}succes{% else %}neutre{% endif %}" aria-hidden="true"><i class="bi bi-arrow-left-right"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-warning-emphasis">+0.0%</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-arrow-up-right"></i> Stabilité du trafic</p>
+      <p class="carte-indicateur-valeur {% if donnees_specifiques.solde_global >= 0 %}text-success{% else %}text-danger{% endif %}">{{ donnees_specifiques.solde_global }}</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-calculator"></i> Bilan net sur la période</p>
     </div>
   </div>
 </div>
 
-<!-- Tableau du podium et du classement -->
+<!-- Tableau du podium et du classement avec répartition -->
 <div class="card border-0 shadow-sm mb-4">
-  <div class="card-header bg-transparent py-3">
-    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-award text-warning me-2"></i>Palmarès et classement des accès</h5>
+  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-award text-warning me-2"></i>Palmarès & Classement des caméras</h5>
+    <span class="badge bg-light text-dark border">{{ donnees_specifiques.portes | length }} caméra(s) analysée(s)</span>
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
           <th scope="col" class="text-center">Rang</th>
-          <th scope="col">Point d'accès</th>
+          <th scope="col">Caméra / Point d'accès</th>
+          <th scope="col">Emplacement</th>
           <th scope="col" class="text-center text-primary">Entrées</th>
-          <th scope="col" class="w-25">Part de marché relative</th>
+          <th scope="col" class="w-25">Part du flux global</th>
           <th scope="col" class="text-center text-danger">Sorties</th>
-          <th scope="col" class="text-end">Progression</th>
+          <th scope="col" class="text-center">Solde net</th>
+          <th scope="col" class="text-center">Statut</th>
         </tr>
       </thead>
       <tbody>
@@ -1297,17 +1187,25 @@
             <div class="fw-bold">{{ c.nom }}</div>
             <code class="small text-muted">{{ c.sn }}</code>
           </td>
+          <td><i class="bi bi-geo-alt text-muted me-1"></i>{{ c.emplacement }}</td>
           <td class="text-center fw-bold text-primary">{{ c.entrees }}</td>
           <td>
             <div class="d-flex align-items-center gap-2">
               <div class="progress flex-grow-1">
                 <div class="progress-bar bg-primary" role="progressbar" data-largeur="{{ c.part_pct }}" aria-valuenow="{{ c.part_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
-              <span class="small fw-semibold text-muted">{{ c.part_pct }}%</span>
+              <span class="small fw-bold text-dark">{{ c.part_pct }}%</span>
             </div>
           </td>
           <td class="text-center fw-medium text-danger">{{ c.sorties }}</td>
-          <td class="text-end"><span class="badge bg-light text-dark border">{{ c.progression }}</span></td>
+          <td class="text-center fw-bold {% if c.solde >= 0 %}text-success{% else %}text-danger{% endif %}">{{ c.solde }}</td>
+          <td class="text-center">
+            {% if c.statut_en_ligne %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle">En ligne</span>
+            {% else %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Hors ligne</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

@@ -970,16 +970,12 @@ async def calculer_donnees_analyse_entites(
     )
     resultats = {sn: (int(e), int(s), int(u)) for sn, e, s, u in (await db.execute(requete)).all()}
 
-    tot_entrees_all = sum(v[0] for v in resultats.values()) or 150
+    tot_entrees_all = sum(v[0] for v in resultats.values())
 
     portes_data = []
+    medailles = ["🥇", "🥈", "🥉", "4e", "5e", "6e"]
     for c in cameras:
         e, s, u = resultats.get(c.sn, (0, 0, 0))
-        if e == 0 and c.sn == cameras[0].sn and tot_entrees_all > 0:
-            e = 150
-            s = 604
-            u = 151
-
         part_pct = round((e / tot_entrees_all * 100), 1) if tot_entrees_all > 0 else 0.0
         portes_data.append(
             {
@@ -995,16 +991,29 @@ async def calculer_donnees_analyse_entites(
             }
         )
 
-    # Tri par entrées décroissantes
+    # Tri par entrées décroissantes pour le classement
     portes_data.sort(key=lambda x: x["entrees"], reverse=True)
-    top_porte = portes_data[0]["nom"] if portes_data else "Aucune porte"
-    cams_actives = sum(1 for c in cameras if c.est_en_ligne) or len(cameras)
+    for idx, p in enumerate(portes_data):
+        p["rang"] = idx + 1
+        p["medaille"] = medailles[idx] if idx < len(medailles) else f"{idx+1}e"
+
+    top_porte = portes_data[0]["nom"] if portes_data else "Aucune caméra"
+    top_1_part = portes_data[0]["part_pct"] if portes_data else 0.0
+    cams_actives = sum(1 for c in cameras if c.est_en_ligne)
+    total_entrees = sum(p["entrees"] for p in portes_data)
+    moyenne_par_porte = round(total_entrees / len(portes_data), 1) if portes_data else 0
 
     return {
         "top_porte": top_porte,
+        "top_1": top_porte,
+        "top_1_part": top_1_part,
+        "moyenne_porte": moyenne_par_porte,
         "cameras_actives": cams_actives,
         "total_cameras": len(cameras),
         "portes": portes_data,
+        "classement": portes_data,
+        "total_entrees": total_entrees,
+        "total_sorties": sum(p["sorties"] for p in portes_data),
         "solde_global": sum(p["solde"] for p in portes_data),
     }
 

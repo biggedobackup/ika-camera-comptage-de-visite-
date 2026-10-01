@@ -25,8 +25,7 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
     assert "Analyse visiteurs" in texte
     assert "Personnel & Employés" in texte
     assert "Profil des clients" in texte
-    assert "Analyse des entités" in texte
-    assert "Classement des entrées" in texte
+    assert "Analyse des caméras" in texte
     assert "Rapport journalier" in texte
     assert "Rapport hebdomadaire" in texte
     assert "Rapport mensuel" in texte
@@ -96,12 +95,9 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Profils analysés (IA)" in texte
         assert "Hommes" in texte
         assert "Femmes" in texte
-    elif cle_rapport == "entites":
-        assert "Performance comparée par point d'accès" in texte
+    elif cle_rapport in ["entites", "classement"]:
+        assert "Palmarès & Classement des caméras" in texte
         assert "Caméras actives / réseau" in texte
-    elif cle_rapport == "classement":
-        assert "Palmarès et classement des accès" in texte
-        assert "Part de marché Top 1" in texte
     else:
         assert "Total Entrées" in texte
         assert "Clients réels (IA)" in texte

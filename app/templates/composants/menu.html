@@ -38,13 +38,8 @@
       <p class="menu-section">Entrées & Périodes</p>
       <ul class="menu-liste mb-2">
         <li>
-          <a class="menu-lien{% if request.url.path == '/rapports/entites' %} active{% endif %}" href="/rapports/entites"{% if request.url.path == '/rapports/entites' %} aria-current="page"{% endif %}>
-            <i class="bi bi-building" aria-hidden="true"></i><span>Analyse des entités</span>
-          </a>
-        </li>
-        <li>
-          <a class="menu-lien{% if request.url.path == '/rapports/classement' %} active{% endif %}" href="/rapports/classement"{% if request.url.path == '/rapports/classement' %} aria-current="page"{% endif %}>
-            <i class="bi bi-trophy" aria-hidden="true"></i><span>Classement des entrées</span>
+          <a class="menu-lien{% if request.url.path in ['/rapports/entites', '/rapports/classement'] %} active{% endif %}" href="/rapports/entites"{% if request.url.path in ['/rapports/entites', '/rapports/classement'] %} aria-current="page"{% endif %}>
+            <i class="bi bi-camera-video" aria-hidden="true"></i><span>Analyse des cameras</span>
           </a>
         </li>
         <li>
