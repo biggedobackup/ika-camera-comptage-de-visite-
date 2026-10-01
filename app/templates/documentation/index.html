@@ -244,6 +244,82 @@
         </div>
       </div>
     </div>
+
+    <!-- Section Utilisateurs -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h3 class="card-title h4 mb-0 fw-bold text-primary">
+          <i class="bi bi-people me-2"></i>Utilisateurs
+        </h3>
+        <p class="text-muted small mb-0 mt-1">
+          Gestion des accès et permissions des collaborateurs.
+        </p>
+      </div>
+      <div class="card-body p-4">
+        <p class="small text-muted mb-0">
+          Permet aux administrateurs de créer, modifier, activer ou désactiver les comptes utilisateurs et d'attribuer leurs rôles (Administrateur, Manager, Utilisateur).
+        </p>
+      </div>
+    </div>
+
+    <!-- Section Historique -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h3 class="card-title h4 mb-0 fw-bold text-primary">
+          <i class="bi bi-clock-history me-2"></i>Historique
+        </h3>
+        <p class="text-muted small mb-0 mt-1">
+          Journal d'audit et traçabilité des opérations.
+        </p>
+      </div>
+      <div class="card-body p-4">
+        <p class="small text-muted mb-0">
+          Enregistre toutes les actions de sécurité et de gestion (connexions, modifications de paramètres, ajouts ou suppressions) pour garantir un suivi complet.
+        </p>
+      </div>
+    </div>
+
+    <!-- Section Mon compte -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h3 class="card-title h4 mb-0 fw-bold text-primary">
+          <i class="bi bi-person-gear me-2"></i>Mon compte
+        </h3>
+        <p class="text-muted small mb-0 mt-1">
+          Gestion de vos informations personnelles et de la sécurité de votre accès.
+        </p>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <!-- Mon profil -->
+          <div class="col-md-6">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-primary me-2 p-2"><i class="bi bi-person-circle"></i></span>
+                <h5 class="h6 mb-0 fw-bold">Mon profil</h5>
+              </div>
+              <p class="small text-muted mb-0">
+                Consultez et modifiez vos informations personnelles (nom, email, téléphone) et mettez à jour votre mot de passe.
+              </p>
+            </div>
+          </div>
+
+          <!-- Double auth -->
+          <div class="col-md-6">
+            <div class="p-3 border rounded h-100 bg-light-subtle">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-success me-2 p-2"><i class="bi bi-shield-lock"></i></span>
+                <h5 class="h6 mb-0 fw-bold">Double auth (2FA)</h5>
+              </div>
+              <p class="small text-muted mb-0">
+                Renforce la sécurité de votre compte en exigeant un code à 6 chiffres généré par une application d'authentification (Google Authenticator) lors de la connexion.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}
