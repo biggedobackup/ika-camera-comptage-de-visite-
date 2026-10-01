@@ -21,6 +21,7 @@ from app.historique.routes import router as historique_router
 from app.rapports.routes import router as rapports_router
 from app.tableau_de_bord.routes import router as tableau_de_bord_router
 from app.utilisateur.routes import router as utilisateur_router
+from app.documentation.routes import router as documentation_router
 
 
 def configurer_journalisation() -> None:
@@ -89,6 +90,7 @@ app.include_router(utilisateur_router, dependencies=protection_csrf)
 app.include_router(historique_router, dependencies=protection_csrf)
 app.include_router(camera_ui_router, dependencies=protection_csrf)
 app.include_router(rapports_router, dependencies=protection_csrf)
+app.include_router(documentation_router, dependencies=protection_csrf)
 
 
 @app.get("/", include_in_schema=False)
