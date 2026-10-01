@@ -2,10 +2,10 @@
 {% import "composants/liste.html" as l with context %}
 {% from "composants/page.html" import entete_page %}
 
-{% block titre %}Flux des cameras ( api ){% endblock %}
+{% block titre %}Flux des cameras ( API ){% endblock %}
 
 {% block contenu %}
-{% call entete_page("Flux des cameras ( api )", "Données de comptage minute par minute issues des caméras 3D HX-CCD21.", "bi-graph-up") %}
+{% call entete_page("Flux des cameras ( API )", "Données de comptage minute par minute issues des caméras 3D HX-CCD21.", "bi-graph-up") %}
   <div class="d-flex align-items-center gap-2">
     <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6" id="badge-temps-reel">
       <i class="bi bi-broadcast"></i> <span>En direct</span>

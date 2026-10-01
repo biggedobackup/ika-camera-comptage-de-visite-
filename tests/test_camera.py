@@ -271,7 +271,7 @@ async def test_passages_liste_et_exports(
     # Page HTML
     rep_html = await client_admin.get("/cameras/passages")
     assert rep_html.status_code == 200
-    assert "Flux des cameras ( api )" in rep_html.text
+    assert "Flux des cameras ( API )" in rep_html.text
     assert "211000002604280142" in rep_html.text
 
     # Export Excel

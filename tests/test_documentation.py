@@ -28,7 +28,7 @@ async def test_acces_documentation_connecte(client_admin: httpx.AsyncClient) -> 
     assert "Temps de présence" in texte
     assert "Répartition par genre" in texte
     assert "Tranches d'âge" in texte
-    assert "Flux des cameras ( api )" in texte
+    assert "Flux des cameras ( API )" in texte
     assert "Caméras 3D" in texte
     assert "Utilisateurs" in texte
     assert "Historique" in texte
