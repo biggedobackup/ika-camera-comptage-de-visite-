@@ -19,11 +19,11 @@
 {% endcall %}
 
 <div class="row g-3 mb-4">
-  <!-- 1. Entrées du jour -->
+  <!-- 1. Total Entrées du jour -->
   <div class="col-sm-6 col-xl-3">
     <div class="carte-indicateur">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Entrées du jour</p>
+        <p class="carte-indicateur-libelle">total Entrées du jour</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-primary" data-comptage-entrees>{{ indicateurs.entrees_jour }}</p>
@@ -31,11 +31,11 @@
     </div>
   </div>
 
-  <!-- 2. Sorties du jour -->
+  <!-- 2. Total Sorties du jour -->
   <div class="col-sm-6 col-xl-3">
     <div class="carte-indicateur">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Sorties du jour</p>
+        <p class="carte-indicateur-libelle">total Sorties du jour</p>
         <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-box-arrow-right"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-secondary" data-comptage-sorties>{{ indicateurs.sorties_jour }}</p>
@@ -43,11 +43,11 @@
     </div>
   </div>
 
-  <!-- 3. Total comptage -->
+  <!-- 3. Total comptage ( entree + sortie ) -->
   <div class="col-sm-6 col-xl-3">
     <div class="carte-indicateur">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Total comptage</p>
+        <p class="carte-indicateur-libelle">Total comptage ( entree + sortie )</p>
         <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-calculator"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-success" data-comptage-total>{{ indicateurs.total_passages }}</p>

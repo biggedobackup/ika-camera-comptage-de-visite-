@@ -58,12 +58,12 @@ async def calculer_rapport_complet(
     passants = int(passants)
     personnel = int(personnel)
 
-    # Visiteurs : sorties physiques si disponibles (départs magasin) ou entrées
+    # Visiteurs : sorties physiques si disponibles (départs établissement) ou entrées
     visiteurs = sorties if sorties > 0 else (entrees if entrees > 0 else 601)
     pass_total = passants if passants > 0 else 5428
     clients = uniques if uniques > 0 else (76 if entrees == 0 else entrees)
 
-    # Taux d'entrée magasin (Store Entry Rate)
+    # Taux d'entrée établissement (Entry Rate)
     # Ratio des entrées / flux total extérieur (passants)
     if pass_total > 0:
         store_entry_rate = round((clients / pass_total * 100), 1)

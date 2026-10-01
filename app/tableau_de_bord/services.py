@@ -332,7 +332,7 @@ async def calculer_flux_complet(
         pct_plus_30min=pct_p30,
     )
 
-    # 4. Caméras du magasin
+    # 4. Caméras de l'établissement
     toutes_cams = (await db.scalars(select(Camera).order_by(Camera.created_at.asc()))).all()
     cams_res: list[CameraResume] = []
     for c in toutes_cams:

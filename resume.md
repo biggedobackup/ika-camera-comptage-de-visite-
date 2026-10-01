@@ -32,7 +32,7 @@ Le système s'interface directement avec des **caméras stéréoscopiques 3D bin
 ## 3. Architecture globale du système
 
 ```
-                          SITE PHYSIQUE (Magasin / Bâtiment)
+                          SITE PHYSIQUE (Bâtiment / Site)
 ┌────────────────────────────────────────────────────────────────────────┐
 │                                                                        │
 │   [Caméra 1 - Entrée 1] (HX-CCD21) ──┐                                 │
@@ -119,7 +119,7 @@ Ce mode est idéal pour centraliser un ou plusieurs points de vente et pouvoir c
   3. Sur le site physique, les caméras sont simplement branchées sur la box Internet locale (fibre, ADSL ou routeur 4G/5G).
 * **Pourquoi aucune configuration n'est nécessaire sur la box locale ?**
   * Les caméras HX-CCD21 fonctionnent en **client HTTP sortant** : elles envoient des requêtes POST vers l'extérieur exactement comme un smartphone ou un PC qui ouvre une page web.
-  * Il n'y a **aucun port à ouvrir** et aucune redirection NAT à configurer sur la box Internet du magasin.
+  * Il n'y a **aucun port à ouvrir** et aucune redirection NAT à configurer sur la box Internet du site / bâtiment.
 * **Adresse cible dans les caméras :**
   * Host / Nom de domaine : `compteur.mon-entreprise.com` (ou IP publique du VPS).
   * Port : `443` (HTTPS) ou `80` (HTTP standard).
