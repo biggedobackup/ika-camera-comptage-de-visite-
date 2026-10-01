@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labels: dataEmployes.labels,
         datasets: [
           {
-            label: "Clients réels en magasin",
+            label: "Clients réels",
             data: dataEmployes.clients || [],
             borderColor: "#2563eb",
             backgroundColor: "rgba(37, 99, 235, 0.1)",

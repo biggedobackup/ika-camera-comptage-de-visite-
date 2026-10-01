@@ -100,7 +100,7 @@
           <span class="carte-indicateur-icone violet" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
         </div>
         <p class="carte-indicateur-valeur texte-violet">{{ f.sejour_moyen_texte }}</p>
-        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps de présence moyen en magasin</p>
+        <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps moyen d'une entrée</p>
       </div>
     </div>
 
@@ -155,8 +155,8 @@
     <div class="col-lg-4">
       <div class="card border-0 shadow-sm h-100">
         <div class="card-header bg-transparent py-3">
-          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history texte-violet me-2"></i>Temps de présence magasin</h5>
-          <span class="text-muted small">Distribution du temps de parcours client</span>
+          <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history texte-violet me-2"></i>Temps de présence</h5>
+          <span class="text-muted small">Distribution du temps de visite</span>
         </div>
         <div class="card-body d-flex flex-column justify-content-around">
           {% set dw = g.dwell_time %}
@@ -201,7 +201,7 @@
           </div>
 
           <div class="alert alert-light border small mb-0 py-2 mt-2">
-            <i class="bi bi-info-circle text-primary me-1"></i> <strong>{{ dw.pct_plus_30min }}%</strong> des visiteurs passent plus de 15 minutes en rayon.
+            <i class="bi bi-info-circle text-primary me-1"></i> <strong>{{ dw.pct_plus_30min }}%</strong> des visiteurs passent plus de 15 minutes sur site.
           </div>
         </div>
       </div>
@@ -311,7 +311,7 @@
   </div>
 </section>
 
-<!-- 4. Caméras du magasin & Activités récentes -->
+<!-- 4. Caméras & Activités récentes -->
 <section class="section-page mb-4">
   <div class="row g-4">
     <!-- Statut des Caméras -->

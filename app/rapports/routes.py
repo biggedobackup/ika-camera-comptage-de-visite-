@@ -79,7 +79,7 @@ CONFIG_RAPPORTS: dict[str, dict[str, Any]] = {
     },
     "mensuel": {
         "titre": "Rapport mensuel",
-        "description": "Consolidation mensuelle du trafic magasin et comparaison par rapport au mois précédent.",
+        "description": "Consolidation mensuelle du trafic et comparaison par rapport au mois précédent.",
         "icone": "bi-calendar-month",
         "badge": "Mensuel",
     },

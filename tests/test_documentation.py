@@ -25,7 +25,7 @@ async def test_acces_documentation_connecte(client_admin: httpx.AsyncClient) -> 
     assert "Personnel exclu du comptage" in texte
     assert "Total de Revisites" in texte
     assert "Courbe d'affluence" in texte
-    assert "Temps de présence magasin" in texte
+    assert "Temps de présence" in texte
     assert "Répartition par genre" in texte
     assert "Tranches d'âge" in texte
     assert "Flux des camera ( api )" in texte

@@ -76,16 +76,16 @@
   </div>
 </div>
 
-<!-- Les 4 KPIs clés et actionnables pour le magasin -->
+<!-- Les 4 KPIs clés et actionnables -->
 <div class="row g-3 mb-4">
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Entrées boutique</p>
+        <p class="carte-indicateur-libelle">Entrées</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-primary">{{ flow_query.total_entrees }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Passages en boutique</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Passages entrants</p>
     </div>
   </div>
 
@@ -128,7 +128,7 @@
   <div class="card-header bg-transparent py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
       <h5 class="card-title mb-1 fw-bold">Conversion du trafic : Entrées vs Passants de rue</h5>
-      <span class="text-muted small">Visualisez comment le flux de rue se convertit en visites magasin</span>
+      <span class="text-muted small">Visualisez comment le flux de rue se convertit en visites sur site</span>
     </div>
     <div class="d-flex gap-2">
       <button type="button" id="btn-export-image" class="btn btn-sm btn-outline-secondary">
@@ -736,7 +736,7 @@
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-primary">{{ donnees_specifiques.duree_moyenne }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-shop"></i> Séjour moyen en magasin</p>
+      <p class="carte-indicateur-sous-titre"><i class="bi bi-clock-history"></i> Séjour moyen sur site</p>
     </div>
   </div>
   <div class="col-12 col-sm-6 col-lg-3">
@@ -756,7 +756,7 @@
   <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
     <div>
       <h5 class="card-title mb-0 fw-bold"><i class="bi bi-bar-chart-steps text-primary me-2"></i>Distribution des clients par tranche de durée de présence</h5>
-      <span class="text-muted small">Évaluation de l'engagement client en boutique</span>
+      <span class="text-muted small">Évaluation de l'engagement client sur site</span>
     </div>
     <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Rétention client</span>
   </div>
@@ -791,9 +791,9 @@
           <td class="text-muted small">
             {% if '< 2' in t.nom %}Transit rapide ou retrait express
             {% elif '2 à 5' in t.nom %}Achat ciblé ou repérage
-            {% elif '5 à 15' in t.nom %}Parcours standard magasin
-            {% elif '15 à 30' in t.nom %}Shopping approfondi avec essayage
-            {% else %}Très longue présence / conseil vendeur{% endif %}
+            {% elif '5 à 15' in t.nom %}Parcours standard sur site
+            {% elif '15 à 30' in t.nom %}Visite approfondie
+            {% else %}Très longue présence{% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -1174,7 +1174,7 @@
           <th scope="col" class="text-center text-primary">Entrées</th>
           <th scope="col" class="text-center text-danger">Sorties</th>
           <th scope="col" class="text-center">Solde net</th>
-          <th scope="col" class="text-center text-success">Part du magasin</th>
+          <th scope="col" class="text-center text-success">Part du volume total</th>
           <th scope="col" class="text-center">Statut</th>
         </tr>
       </thead>

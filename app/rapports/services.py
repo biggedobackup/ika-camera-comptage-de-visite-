@@ -985,7 +985,7 @@ async def calculer_donnees_analyse_entites(
             {
                 "sn": c.sn,
                 "nom": c.libelle_affiche,
-                "emplacement": c.emplacement or "Accès magasin",
+                "emplacement": c.emplacement or "Accès principal",
                 "entrees": e,
                 "sorties": s,
                 "solde": e - s,
