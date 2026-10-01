@@ -682,6 +682,7 @@ async def calculer_indicateurs_comptage(db: AsyncSession) -> IndicateursComptage
     return IndicateursComptage(
         entrees_jour=totaux[0],
         sorties_jour=totaux[1],
+        total_passages=totaux[0] + totaux[1],
         visiteurs_uniques_jour=totaux[2],
         visiteurs_recidives_jour=totaux[3],
         personnel_exclu_jour=totaux[4],

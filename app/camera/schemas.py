@@ -208,6 +208,7 @@ class CameraReponse(BaseModel):
 class IndicateursComptage(BaseModel):
     entrees_jour: int = 0
     sorties_jour: int = 0
+    total_passages: int = 0
     visiteurs_uniques_jour: int = 0
     visiteurs_recidives_jour: int = 0
     personnel_exclu_jour: int = 0
