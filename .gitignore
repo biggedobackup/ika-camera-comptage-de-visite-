@@ -19,3 +19,5 @@ htmlcov/
 *.log
 .DS_Store
 *.zip
+backups/
+*.dump
