@@ -23,7 +23,7 @@ async def test_acces_documentation_connecte(client_admin: httpx.AsyncClient) -> 
     assert "Total sortie" in texte
     assert "Durée moyen d'une entrée" in texte
     assert "Personnel exclu du comptage" in texte
-    assert "Personne passage personne similaire" in texte
+    assert "Passages répétés (profils similaires)" in texte
     assert "Courbe d'affluence" in texte
     assert "Temps de présence" in texte
     assert "Répartition par genre" in texte

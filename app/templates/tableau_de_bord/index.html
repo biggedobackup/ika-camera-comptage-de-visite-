@@ -116,11 +116,11 @@
       </div>
     </div>
 
-    <!-- 6. Personne passage personne similaire (ex-revisites) -->
+    <!-- 6. Passages répétés (profils similaires) -->
     <div class="col-sm-6 col-lg-4">
       <div class="carte-indicateur h-100">
         <div class="carte-indicateur-entete">
-          <p class="carte-indicateur-libelle">Personne passage personne similaire</p>
+          <p class="carte-indicateur-libelle">Passages répétés (profils similaires)</p>
           <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
         </div>
         <p class="carte-indicateur-valeur text-info">{{ f.clients_recidives }}</p>
@@ -176,7 +176,7 @@
               <span class="text-muted">{{ dw.entre_1_5min }}</span>
             </div>
             <div class="progress hauteur-barre-8">
-              <div class="progress-bar bg-primary" data-dwell-barre="60"></div>
+              <div class="progress-bar bg-primary" data-dwell-barre="{{ dw.pct_entre_1_5min }}"></div>
             </div>
           </div>
 
@@ -186,7 +186,7 @@
               <span class="text-muted">{{ dw.entre_5_15min }}</span>
             </div>
             <div class="progress hauteur-barre-8">
-              <div class="progress-bar bg-success" data-dwell-barre="25"></div>
+              <div class="progress-bar bg-success" data-dwell-barre="{{ dw.pct_entre_5_15min }}"></div>
             </div>
           </div>
 
@@ -196,7 +196,7 @@
               <span class="text-muted">{{ dw.entre_15_30min + dw.plus_30min }}</span>
             </div>
             <div class="progress hauteur-barre-8">
-              <div class="progress-bar bg-warning" data-dwell-barre="{{ dw.pct_plus_30min if dw.pct_plus_30min > 0 else 10 }}"></div>
+              <div class="progress-bar bg-warning" data-dwell-barre="{{ dw.pct_plus_30min }}"></div>
             </div>
           </div>
 

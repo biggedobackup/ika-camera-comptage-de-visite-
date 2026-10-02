@@ -99,6 +99,8 @@ class DwellTimeStats(BaseModel):
     entre_15_30min: int = 0
     plus_30min: int = 0
     pct_moins_1min: float = 0.0
+    pct_entre_1_5min: float = 0.0
+    pct_entre_5_15min: float = 0.0
     pct_plus_30min: float = 0.0
 
 

@@ -320,6 +320,8 @@ async def calculer_flux_complet(
 
     total_dwell = moins_1m + entre_1_5m + entre_5_15m + entre_15_30m + plus_30m
     pct_m1 = round(moins_1m / total_dwell * 100, 1) if total_dwell > 0 else 0.0
+    pct_1_5 = round(entre_1_5m / total_dwell * 100, 1) if total_dwell > 0 else 0.0
+    pct_5_15 = round(entre_5_15m / total_dwell * 100, 1) if total_dwell > 0 else 0.0
     pct_p30 = round((entre_15_30m + plus_30m) / total_dwell * 100, 1) if total_dwell > 0 else 0.0
 
     dwell_time = DwellTimeStats(
@@ -329,6 +331,8 @@ async def calculer_flux_complet(
         entre_15_30min=entre_15_30m,
         plus_30min=plus_30m,
         pct_moins_1min=pct_m1,
+        pct_entre_1_5min=pct_1_5,
+        pct_entre_5_15min=pct_5_15,
         pct_plus_30min=pct_p30,
     )
 
