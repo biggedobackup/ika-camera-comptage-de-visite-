@@ -123,7 +123,7 @@
   </div>
 </div>
 
-<!-- Graphique : Entrées boutique vs Trafic rue -->
+<!-- Graphique : Entrées vs Trafic rue -->
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-transparent py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
@@ -239,38 +239,84 @@
   </div>
 </div>
 
-<!-- 1. Six cartes d'indicateurs clés : 3 en haut et 3 en bas -->
+<!-- 1. Cartes d'indicateurs clés : 10 indicateurs demandés -->
 <div class="row g-3 mb-4">
-  <!-- Ligne 1 : Les 3 du haut -->
-  <div class="col-12 col-md-4">
+  <!-- 1. Total comptage -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Visiteurs boutique</p>
-        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+        <p class="carte-indicateur-libelle">Total comptage</p>
+        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-calculator"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-primary">{{ rapport.visiteurs }}</p>
-      <div class="badge-peak">
-        <span class="d-block"><strong>Pic d'affluence :</strong> {{ rapport.visiteurs_pic }}</span>
-        <span class="d-block text-muted">Créneau : {{ rapport.visiteurs_creneau }}</span>
-      </div>
+      <p class="carte-indicateur-valeur">{{ rapport.total_comptage }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-arrow-left-right"></i> Passages cumulés</p>
     </div>
   </div>
 
-  <div class="col-12 col-md-4">
+  <!-- 2. Total entrée -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Passants devanture (Rue)</p>
-        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-person-walking"></i></span>
+        <p class="carte-indicateur-libelle">Total entrée</p>
+        <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-warning-emphasis">{{ rapport.passants }}</p>
-      <div class="badge-peak">
-        <span class="d-block"><strong>Pic d'affluence :</strong> {{ rapport.passants_pic }}</span>
-        <span class="d-block text-muted">Créneau : {{ rapport.passants_creneau }}</span>
-      </div>
+      <p class="carte-indicateur-valeur text-primary">{{ rapport.entrees }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-walking"></i> Franchissements entrants</p>
     </div>
   </div>
 
-  <div class="col-12 col-md-4">
+  <!-- 3. Total sortie -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Total sortie</p>
+        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-box-arrow-right"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-secondary">{{ rapport.sorties }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-walking"></i> Franchissements sortants</p>
+    </div>
+  </div>
+
+  <!-- 4. Durée moyen d'une entrée -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Durée moyen d'une entrée</p>
+        <span class="carte-indicateur-icone violet" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur texte-violet">{{ rapport.sejour_moyen }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps moyen d'une entrée</p>
+    </div>
+  </div>
+
+  <!-- 5. Personnel exclu du comptage -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Personnel exclu du comptage</p>
+        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-warning-emphasis">{{ rapport.personnel_exclu }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-badge"></i> Personnel, livreurs, badges</p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- 6. Passages répétés (profils similaires) -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Passages répétés (profils similaires)</p>
+        <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-info">{{ rapport.recidives }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-people"></i> Passages de profils similaires</p>
+    </div>
+  </div>
+
+  <!-- 7. Taux d'entrée -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Taux d'entrée</p>
@@ -278,43 +324,48 @@
       </div>
       <p class="carte-indicateur-valeur text-success">{{ rapport.taux_entree }}%</p>
       <div class="badge-peak">
-        <span class="d-block"><strong>Pic d'affluence :</strong> {{ rapport.taux_entree_pic }}%</span>
-        <span class="d-block text-muted">Créneau : {{ rapport.taux_entree_creneau }}</span>
+        <span class="d-block small"><strong>Pic :</strong> {{ rapport.taux_entree_pic }}%</span>
+        <span class="d-block text-muted small">Créneau : {{ rapport.taux_entree_creneau }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Ligne 2 : Les 3 du bas -->
-  <div class="col-12 col-md-4">
+  <!-- 8. Passants devanture (Rue) -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Clients uniques (IA)</p>
-        <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+        <p class="carte-indicateur-libelle">Passants devanture (Rue)</p>
+        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-person-walking"></i></span>
       </div>
-      <p class="carte-indicateur-valeur text-info">{{ rapport.clients }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Visiteurs uniques dédoublés (IA)</p>
+      <p class="carte-indicateur-valeur text-warning-emphasis">{{ rapport.passants }}</p>
+      <div class="badge-peak">
+        <span class="d-block small"><strong>Pic :</strong> {{ rapport.passants_pic }}</span>
+        <span class="d-block text-muted small">Créneau : {{ rapport.passants_creneau }}</span>
+      </div>
     </div>
   </div>
 
-  <div class="col-12 col-md-4">
+  <!-- 9. Séjour moyen -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Séjour moyen</p>
         <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
       </div>
       <p class="carte-indicateur-valeur fs-3 text-secondary">{{ rapport.sejour_moyen }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-clock"></i> Durée moyenne de présence</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-clock"></i> Durée moyenne de présence</p>
     </div>
   </div>
 
-  <div class="col-12 col-md-4">
+  <!-- 10. Temps cumulé de la visite -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Temps cumulé sur site</p>
+        <p class="carte-indicateur-libelle">Temps cumulé de la visite</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
       </div>
       <p class="carte-indicateur-valeur fs-3 text-dark">{{ rapport.sejour_total }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-calendar-check"></i> Temps total cumulé sur le site</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-calendar-check"></i> Temps total cumulé sur le site</p>
     </div>
   </div>
 </div>
@@ -472,7 +523,7 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Entrées réelles boutique</p>
+        <p class="carte-indicateur-libelle">Entrées réelles</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-primary">{{ donnees_specifiques.entrees }}</p>
@@ -528,7 +579,7 @@
         <tr>
           <th scope="col">Créneau horaire</th>
           <th scope="col" class="text-center text-warning-emphasis">Passants rue</th>
-          <th scope="col" class="text-center text-primary">Entrées boutique</th>
+          <th scope="col" class="text-center text-primary">Entrées</th>
           <th scope="col" class="text-center text-success">Taux de capture</th>
           <th scope="col" class="text-center text-secondary">Demi-tours</th>
         </tr>
@@ -598,7 +649,7 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Durée médiane en boutique</p>
+        <p class="carte-indicateur-libelle">Durée médiane sur site</p>
         <span class="carte-indicateur-icone cyan" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
       </div>
       <p class="carte-indicateur-valeur text-info">{{ donnees_specifiques.duree_mediane }}</p>

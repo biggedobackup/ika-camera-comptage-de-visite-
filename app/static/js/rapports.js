@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
             pointBackgroundColor: "#ef4444"
           },
           {
-            label: "Clients uniques (IA)",
+            label: "Passages répétés (profils similaires)",
             data: uniquesH,
             borderColor: "#10b981",
             backgroundColor: "rgba(16, 185, 129, 0.1)",
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (ctxFlowQuery && flowQuery && Array.isArray(flowQuery.chart_labels)) {
     var datasetsFQ = [
       {
-        label: "Entrées boutique",
+        label: "Entrées",
         data: flowQuery.chart_entrees || [],
         borderColor: "#2563eb",
         backgroundColor: "rgba(37, 99, 235, 0.12)",
@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", function () {
         datasets: [
           {
             type: "bar",
-            label: "Entrées réelles boutique",
+            label: "Entrées réelles",
             data: dataCombinaison.entrees || [],
             backgroundColor: "#2563eb",
             borderRadius: 4,

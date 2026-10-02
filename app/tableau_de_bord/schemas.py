@@ -91,7 +91,7 @@ class DemographieRatio(BaseModel):
 
 
 class DwellTimeStats(BaseModel):
-    """Segmentation du temps de présence en boutique."""
+    """Segmentation du temps de présence sur site."""
 
     moins_1min: int = 0
     entre_1_5min: int = 0

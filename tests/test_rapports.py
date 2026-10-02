@@ -68,20 +68,22 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     assert reponse.status_code == 200
     texte = reponse.text
     if cle_rapport in ["journalier", "hebdomadaire", "mensuel"]:
-        assert "Visiteurs boutique" in texte
+        assert "Total comptage" in texte
+        assert "Total entrée" in texte
+        assert "Total sortie" in texte
         assert "Taux d'entrée" in texte
         assert "Courbe comparative d'affluence" in texte
     elif cle_rapport == "flux":
         assert "Taux de capture vitrine" in texte
         assert "Trafic rue" in texte
-        assert "Entrées boutique" in texte
+        assert "Entrées" in texte
     elif cle_rapport == "combinaison":
         assert "Passants devanture (Rue)" in texte
-        assert "Entrées réelles boutique" in texte
+        assert "Entrées réelles" in texte
         assert "Taux de capture vitrine" in texte
     elif cle_rapport == "clients":
         assert "Clients qualifiés (IA)" in texte
-        assert "Durée médiane en boutique" in texte
+        assert "Durée médiane sur site" in texte
         assert "Journal des sessions" in texte
     elif cle_rapport == "visiteurs":
         assert "Nouveaux visiteurs" in texte

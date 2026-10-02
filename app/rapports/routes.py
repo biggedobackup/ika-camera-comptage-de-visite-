@@ -43,7 +43,7 @@ CONFIG_RAPPORTS: dict[str, dict[str, Any]] = {
     },
     "visiteurs": {
         "titre": "Analyse des visiteurs",
-        "description": "Étude du comportement de visite : fidélisation, revisites et durée de rétention en boutique.",
+        "description": "Étude du comportement de visite : fidélisation, revisites et durée de rétention sur site.",
         "icone": "bi-people",
         "badge": "Rétention & Fidélité",
     },

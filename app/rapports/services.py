@@ -381,9 +381,11 @@ async def calculer_rapport_complet(
         "customer": clients,
         "avg_stay_time": avg_stay_time,
         "total_stay_time": total_stay_time,
+        "total_comptage": entrees + sorties,
         "entrees": entrees,
         "sorties": sorties,
         "visiteurs_uniques": uniques,
+        "recidives": recidives,
         "personnel_exclu": personnel,
         "taux_revisite_pct": round((recidives / (uniques + recidives) * 100), 1) if (uniques + recidives) > 0 else 0.0,
     }
