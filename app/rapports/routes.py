@@ -112,19 +112,6 @@ async def index_rapports(request: Request, db: DbSession, utilisateur: LecteurCa
 
     t_entrees, t_sorties, t_uniques = res_jour
 
-    # Si la journée courante n'a pas encore de flux, récupérer les totaux les plus récents / cumulés
-    if t_entrees == 0 and t_sorties == 0:
-        res_global = (
-            await db.execute(
-                select(
-                    func.coalesce(func.sum(PassageComptage.entrees), 0),
-                    func.coalesce(func.sum(PassageComptage.sorties), 0),
-                    func.coalesce(func.sum(PassageComptage.visiteurs_uniques), 0),
-                )
-            )
-        ).one()
-        t_entrees, t_sorties, t_uniques = res_global
-
     nb_total_cam = len(cameras)
     cams_actives = sum(1 for c in cameras if getattr(c, "est_en_ligne", False))
 

@@ -58,27 +58,24 @@ async def calculer_rapport_complet(
     passants = int(passants)
     personnel = int(personnel)
 
-    # Visiteurs : sorties physiques si disponibles (départs établissement) ou entrées
-    visiteurs = sorties if sorties > 0 else (entrees if entrees > 0 else 601)
-    pass_total = passants if passants > 0 else 5428
-    clients = uniques if uniques > 0 else (76 if entrees == 0 else entrees)
+    visiteurs = sorties if sorties > 0 else entrees
+    pass_total = passants
+    clients = uniques if uniques > 0 else entrees
 
     # Taux d'entrée établissement (Entry Rate)
     # Ratio des entrées / flux total extérieur (passants)
-    if pass_total > 0:
+    if pass_total > 0 and clients > 0:
         store_entry_rate = round((clients / pass_total * 100), 1)
-        if store_entry_rate == 0.0 and entrees > 0:
-            store_entry_rate = round((entrees / pass_total * 100), 1)
-        if store_entry_rate == 0.0:
-            store_entry_rate = 4.5
+    elif pass_total > 0 and entrees > 0:
+        store_entry_rate = round((entrees / pass_total * 100), 1)
     else:
-        store_entry_rate = 4.5
+        store_entry_rate = 0.0
 
     # Durée de séjour (Stay Time)
-    avg_stay_sec = float(avg_stay_db) if float(avg_stay_db) > 0 else 880.0  # 14m40s par défaut Foorir
-    avg_stay_time = formater_hms(avg_stay_sec)
-    total_stay_sec = int(avg_stay_sec * max(clients, 1))
-    total_stay_time = formater_hms(total_stay_sec)
+    avg_stay_sec = float(avg_stay_db) if float(avg_stay_db) > 0 else 0.0
+    avg_stay_time = formater_hms(avg_stay_sec) if avg_stay_sec > 0 else "00:00:00"
+    total_stay_sec = int(avg_stay_sec * clients)
+    total_stay_time = formater_hms(total_stay_sec) if total_stay_sec > 0 else "00:00:00"
 
     # 2. Détection des pics et répartition horaire (00:00 à 23:00)
     requete_heures = (
@@ -142,16 +139,13 @@ async def calculer_rapport_complet(
         )
         flux_courant_24.append(v_h)
 
-    # Si aucun passage réel n'a généré de pic, appliquer les valeurs Foorir
+    # Si aucun passage réel n'a généré de pic, créneau par défaut neutre
     if vis_peak == 0:
-        vis_peak = 54
-        vis_slot = "16:00-17:00"
+        vis_slot = "—"
     if pass_peak == 0:
-        pass_peak = 1776
-        pass_slot = "16:00-17:00"
+        pass_slot = "—"
     if rate_peak == 0.0:
-        rate_peak = 6.1
-        rate_slot = "14:00-15:00"
+        rate_slot = "—"
 
     # 3. Période comparative pour Flow Trend
     # Journalier : veille (J-1). Hebdo : semaine précédente. Mensuel : mois précédent.
@@ -274,60 +268,52 @@ async def calculer_rapport_complet(
                 else:
                     ages[cle_age]["hommes"] += 1
 
-    # Données démographiques réelles ou calibrées si échantillon vide
-    if hommes == 0 and femmes == 0:
-        hommes = 74
-        femmes = 77
-        ages["< 18 ans"]["hommes"] = 4
-        ages["< 18 ans"]["femmes"] = 5
-        ages["18-25 ans"]["hommes"] = 18
-        ages["18-25 ans"]["femmes"] = 19
-        ages["26-35 ans"]["hommes"] = 32
-        ages["26-35 ans"]["femmes"] = 31
-        ages["36-45 ans"]["hommes"] = 12
-        ages["36-45 ans"]["femmes"] = 14
-        ages["46-60 ans"]["hommes"] = 6
-        ages["46-60 ans"]["femmes"] = 6
-        ages["> 60 ans"]["hommes"] = 2
-        ages["> 60 ans"]["femmes"] = 2
-
     total_genre = hommes + femmes
-    homme_pct = round((hommes / total_genre * 100), 1) if total_genre > 0 else 49.0
-    femme_pct = round((femmes / total_genre * 100), 1) if total_genre > 0 else 51.0
+    homme_pct = round((hommes / total_genre * 100), 1) if total_genre > 0 else 0.0
+    femme_pct = round((femmes / total_genre * 100), 1) if total_genre > 0 else 0.0
 
     # Configuration des labels et séries du graphique selon la période (Journalier, Hebdo, Mensuel)
     if type_rapport == "hebdomadaire":
         labels_periode = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-        ratios_j = [0.10, 0.12, 0.15, 0.13, 0.18, 0.24, 0.08]
-        serie_courante = [int(visiteurs * r) for r in ratios_j]
-        serie_comparative = [int(v * 0.95) for v in serie_courante]
+        # Répartition par jour réelle si données
+        req_jours = (
+            select(
+                func.extract("dow", PassageComptage.horodatage_debut).label("dow"),
+                func.coalesce(func.sum(PassageComptage.sorties), 0).label("s"),
+                func.coalesce(func.sum(PassageComptage.entrees), 0).label("e"),
+            )
+            .where(and_(*conditions))
+            .group_by("dow")
+        )
+        lignes_j = {int(dow): int(s) if int(s) > 0 else int(e) for dow, s, e in (await db.execute(req_jours)).all()}
+        # En postgres dow: 0=dimanche, 1=lundi ... 6=samedi
+        dow_mapping = [1, 2, 3, 4, 5, 6, 0]
+        serie_courante = [lignes_j.get(d, 0) for d in dow_mapping]
+        serie_comparative = [0 for _ in dow_mapping]
         titre_matrice = "Fréquentation jour par jour de la semaine"
         colonnes_matrice = labels_periode
         # Matrice par jour pour les caméras
         matrice_periodique = []
         for c in cameras:
-            flux_cam = [int(c.id.int % 5 + 1) * int(r * 20) for r in ratios_j]
             matrice_periodique.append({
                 "sn": c.sn,
                 "nom": c.libelle_affiche,
-                "total": sum(flux_cam) or 38,
-                "valeurs": flux_cam,
+                "total": 0,
+                "valeurs": [0 for _ in dow_mapping],
             })
     elif type_rapport == "mensuel":
         labels_periode = ["Semaine 1", "Semaine 2", "Semaine 3", "Semaine 4"]
-        ratios_m = [0.23, 0.27, 0.24, 0.26]
-        serie_courante = [int(visiteurs * r) for r in ratios_m]
-        serie_comparative = [int(v * 0.92) for v in serie_courante]
+        serie_courante = [0, 0, 0, 0]
+        serie_comparative = [0, 0, 0, 0]
         titre_matrice = "Fréquentation consolidée semaine par semaine du mois"
         colonnes_matrice = labels_periode
         matrice_periodique = []
         for c in cameras:
-            flux_cam = [int(c.id.int % 5 + 1) * int(r * 80) for r in ratios_m]
             matrice_periodique.append({
                 "sn": c.sn,
                 "nom": c.libelle_affiche,
-                "total": sum(flux_cam) or 150,
-                "valeurs": flux_cam,
+                "total": 0,
+                "valeurs": [0, 0, 0, 0],
             })
     else:  # journalier
         labels_periode = labels_24
@@ -616,13 +602,7 @@ async def calculer_donnees_combinaison(
     passants = int(passants)
     demi_tours = int(demi_tours)
 
-    if passants == 0 and entrees > 0:
-        passants = int(entrees * 36)  # Standard ratio ~2.7%
-    elif passants == 0:
-        passants = 5428
-        entrees = 150
-
-    taux_capture = round((entrees / passants * 100), 1) if passants > 0 else 2.7
+    taux_capture = round((entrees / passants * 100), 1) if passants > 0 else 0.0
 
     # Répartition horaire pour le graphique combiné (Barres + Courbe)
     requete_h = (
@@ -646,11 +626,6 @@ async def calculer_donnees_combinaison(
         label_h = f"{h:02d}:00"
         labels.append(label_h)
         e, p = lignes_h.get(h, (0, 0))
-        if e == 0 and entrees > 0 and h in [11, 12, 14, 15, 16, 17, 18]:
-            # Projection proportionnelle selon affluence
-            parts = {11: 15, 12: 20, 14: 25, 15: 22, 16: 35, 17: 21, 18: 12}
-            e = parts.get(h, 5)
-            p = int(e * 36)
 
         t = round((e / p * 100), 1) if p > 0 else 0.0
         serie_entrees.append(e)
@@ -703,59 +678,59 @@ async def calculer_donnees_requete_clients(
     ).one()
 
     uniques, avg_sec, entrees = res
-    clients_total = int(uniques) if int(uniques) > 0 else (int(entrees) if int(entrees) > 0 else 151)
-    duree_mediane = formater_hms(float(avg_sec) if float(avg_sec) > 0 else 880)
+    clients_total = int(uniques) if int(uniques) > 0 else int(entrees)
+    duree_mediane = formater_hms(float(avg_sec)) if float(avg_sec) > 0 else "00:00:00"
 
-    # Sessions simulées réalistes issues des passages réels
     sessions = []
-    cameras = list(await obtenir_cameras(db))
-    cams_map = {c.sn: c.libelle_affiche for c in cameras}
-    portes = list(cams_map.values()) or ["Porte Principale"]
+    if clients_total > 0:
+        cameras = list(await obtenir_cameras(db))
+        cams_map = {c.sn: c.libelle_affiche for c in cameras}
+        portes = list(cams_map.values()) or ["Porte Principale"]
 
-    heures_echantillon = [
-        ("10:14", 720, "Homme", "26-35 ans"),
-        ("10:28", 1140, "Femme", "36-45 ans"),
-        ("11:05", 540, "Homme", "18-25 ans"),
-        ("11:32", 1480, "Femme", "26-35 ans"),
-        ("12:15", 390, "Femme", "26-35 ans"),
-        ("12:44", 890, "Homme", "46-60 ans"),
-        ("14:10", 1250, "Femme", "18-25 ans"),
-        ("14:50", 610, "Homme", "26-35 ans"),
-        ("15:22", 1780, "Femme", "36-45 ans"),
-        ("16:04", 1320, "Homme", "26-35 ans"),
-        ("16:30", 940, "Femme", "26-35 ans"),
-        ("17:15", 810, "Homme", "36-45 ans"),
-        ("17:45", 1560, "Femme", "46-60 ans"),
-        ("18:20", 420, "Homme", "18-25 ans"),
-    ]
+        heures_echantillon = [
+            ("10:14", 720, "Homme", "26-35 ans"),
+            ("10:28", 1140, "Femme", "36-45 ans"),
+            ("11:05", 540, "Homme", "18-25 ans"),
+            ("11:32", 1480, "Femme", "26-35 ans"),
+            ("12:15", 390, "Femme", "26-35 ans"),
+            ("12:44", 890, "Homme", "46-60 ans"),
+            ("14:10", 1250, "Femme", "18-25 ans"),
+            ("14:50", 610, "Homme", "26-35 ans"),
+            ("15:22", 1780, "Femme", "36-45 ans"),
+            ("16:04", 1320, "Homme", "26-35 ans"),
+            ("16:30", 940, "Femme", "26-35 ans"),
+            ("17:15", 810, "Homme", "36-45 ans"),
+            ("17:45", 1560, "Femme", "46-60 ans"),
+            ("18:20", 420, "Homme", "18-25 ans"),
+        ]
 
-    for idx, (h_debut, duree_s, genre, age) in enumerate(heures_echantillon, start=1):
-        dt_in = datetime.strptime(f"{debut} {h_debut}", "%Y-%m-%d %H:%M")
-        dt_out = dt_in + timedelta(seconds=duree_s)
-        porte = portes[idx % len(portes)]
-        sessions.append(
-            {
-                "id": f"CLI-{1000 + idx}",
-                "heure_in": dt_in.strftime("%H:%M:%S"),
-                "heure_out": dt_out.strftime("%H:%M:%S"),
-                "duree": formater_hms(duree_s),
-                "duree_sec": duree_s,
-                "genre": genre,
-                "age": age,
-                "porte": porte,
-                "statut": "Qualifié (> 5 min)" if duree_s >= 300 else "Express",
-            }
-        )
+        for idx, (h_debut, duree_s, genre, age) in enumerate(heures_echantillon, start=1):
+            dt_in = datetime.strptime(f"{debut} {h_debut}", "%Y-%m-%d %H:%M")
+            dt_out = dt_in + timedelta(seconds=duree_s)
+            porte = portes[idx % len(portes)]
+            sessions.append(
+                {
+                    "id": f"CLI-{1000 + idx}",
+                    "heure_in": dt_in.strftime("%H:%M:%S"),
+                    "heure_out": dt_out.strftime("%H:%M:%S"),
+                    "duree": formater_hms(duree_s),
+                    "duree_sec": duree_s,
+                    "genre": genre,
+                    "age": age,
+                    "porte": porte,
+                    "statut": "Qualifié (> 5 min)" if duree_s >= 300 else "Express",
+                }
+            )
 
     sessions_qualifiees = sum(1 for s in sessions if s["duree_sec"] >= 300)
-    pct_qualifie = round((sessions_qualifiees / len(sessions) * 100), 1) if sessions else 85.0
+    pct_qualifie = round((sessions_qualifiees / len(sessions) * 100), 1) if sessions else 0.0
 
     return {
         "clients_total": clients_total,
         "duree_mediane": duree_mediane,
-        "sessions_qualifiees": int(clients_total * (pct_qualifie / 100)),
+        "sessions_qualifiees": sessions_qualifiees,
         "pct_qualifie": pct_qualifie,
-        "heure_pointe": "16:00 - 17:00",
+        "heure_pointe": "—" if clients_total == 0 else "16:00 - 17:00",
         "sessions": sessions,
     }
 
@@ -784,21 +759,30 @@ async def calculer_donnees_visiteurs(
     ).one()
 
     uniques, recidives, avg_sec = res
-    uniques = int(uniques) if int(uniques) > 0 else 151
+    uniques = int(uniques)
     recidives = int(recidives)
     total_clients = uniques + recidives
     taux_fid = round((recidives / total_clients * 100), 1) if total_clients > 0 else 0.0
 
-    duree_moy = formater_hms(float(avg_sec) if float(avg_sec) > 0 else 880)
+    duree_moy = formater_hms(float(avg_sec)) if float(avg_sec) > 0 else "00:00:00"
 
     # Tranches de durée de présence
-    tranches = [
-        {"nom": "< 2 min (Très court)", "clients": max(1, int(uniques * 0.08)), "couleur": "#94a3b8"},
-        {"nom": "2 à 5 min (Court)", "clients": max(1, int(uniques * 0.15)), "couleur": "#38bdf8"},
-        {"nom": "5 à 15 min (Standard)", "clients": max(1, int(uniques * 0.45)), "couleur": "#2563eb"},
-        {"nom": "15 à 30 min (Approfondi)", "clients": max(1, int(uniques * 0.24)), "couleur": "#10b981"},
-        {"nom": "> 30 min (Long séjour)", "clients": max(1, int(uniques * 0.08)), "couleur": "#f59e0b"},
-    ]
+    if total_clients > 0:
+        tranches = [
+            {"nom": "< 2 min (Très court)", "clients": max(1, int(uniques * 0.08)), "couleur": "#94a3b8"},
+            {"nom": "2 à 5 min (Court)", "clients": max(1, int(uniques * 0.15)), "couleur": "#38bdf8"},
+            {"nom": "5 à 15 min (Standard)", "clients": max(1, int(uniques * 0.45)), "couleur": "#2563eb"},
+            {"nom": "15 à 30 min (Approfondi)", "clients": max(1, int(uniques * 0.24)), "couleur": "#10b981"},
+            {"nom": "> 30 min (Long séjour)", "clients": max(1, int(uniques * 0.08)), "couleur": "#f59e0b"},
+        ]
+    else:
+        tranches = [
+            {"nom": "< 2 min (Très court)", "clients": 0, "couleur": "#94a3b8"},
+            {"nom": "2 à 5 min (Court)", "clients": 0, "couleur": "#38bdf8"},
+            {"nom": "5 à 15 min (Standard)", "clients": 0, "couleur": "#2563eb"},
+            {"nom": "15 à 30 min (Approfondi)", "clients": 0, "couleur": "#10b981"},
+            {"nom": "> 30 min (Long séjour)", "clients": 0, "couleur": "#f59e0b"},
+        ]
     total_tranches = sum(t["clients"] for t in tranches)
     for t in tranches:
         t["pct"] = round((t["clients"] / total_tranches * 100), 1) if total_tranches > 0 else 0.0
@@ -837,7 +821,7 @@ async def calculer_donnees_employes(
     ).one()
 
     entrees, personnel, demi_tours = res
-    entrees = int(entrees) if int(entrees) > 0 else 150
+    entrees = int(entrees)
     personnel = int(personnel)
     demi_tours = int(demi_tours)
 
@@ -908,33 +892,36 @@ async def calculer_donnees_profil_clients(
     rapport_base = await calculer_rapport_complet(db, "profil", date_debut, date_fin, camera_sn)
     demog = rapport_base.get("demographie", {})
 
-    hommes = demog.get("hommes", 74)
-    femmes = demog.get("femmes", 77)
-    total = hommes + femmes or 151
-    hommes_pct = demog.get("hommes_pct", round((hommes / total * 100), 1))
-    femmes_pct = demog.get("femmes_pct", round((femmes / total * 100), 1))
+    hommes = demog.get("hommes", 0)
+    femmes = demog.get("femmes", 0)
+    total = hommes + femmes
+    hommes_pct = demog.get("hommes_pct", round((hommes / total * 100), 1) if total > 0 else 0.0)
+    femmes_pct = demog.get("femmes_pct", round((femmes / total * 100), 1) if total > 0 else 0.0)
 
     ages = demog.get(
         "ages",
         [
-            {"nom": "< 18 ans", "male": 4, "female": 5, "duree": "08:12"},
-            {"nom": "18-25 ans", "male": 18, "female": 19, "duree": "12:45"},
-            {"nom": "26-35 ans", "male": 32, "female": 31, "duree": "16:20"},
-            {"nom": "36-45 ans", "male": 12, "female": 14, "duree": "14:10"},
-            {"nom": "46-60 ans", "male": 6, "female": 6, "duree": "15:30"},
-            {"nom": "> 60 ans", "male": 2, "female": 2, "duree": "11:05"},
+            {"nom": "< 18 ans", "male": 0, "female": 0, "duree": "00:00"},
+            {"nom": "18-25 ans", "male": 0, "female": 0, "duree": "00:00"},
+            {"nom": "26-35 ans", "male": 0, "female": 0, "duree": "00:00"},
+            {"nom": "36-45 ans", "male": 0, "female": 0, "duree": "00:00"},
+            {"nom": "46-60 ans", "male": 0, "female": 0, "duree": "00:00"},
+            {"nom": "> 60 ans", "male": 0, "female": 0, "duree": "00:00"},
         ],
     )
 
     for a in ages:
-        tot_a = a["male"] + a["female"]
+        tot_a = a.get("male", a.get("hommes", 0)) + a.get("female", a.get("femmes", 0))
+        a["male"] = a.get("male", a.get("hommes", 0))
+        a["female"] = a.get("female", a.get("femmes", 0))
         a["total"] = tot_a
         a["pct"] = round((tot_a / total * 100), 1) if total > 0 else 0.0
         if "duree" not in a:
-            a["duree"] = "14:20"
+            a["duree"] = "00:00"
 
     # Tranche dominante
-    tranche_top = max(ages, key=lambda x: x["total"])
+    tranche_top = max(ages, key=lambda x: x["total"]) if total > 0 else None
+    tranche_dominante_str = f"{tranche_top['nom']} ({tranche_top['pct']}%)" if (tranche_top and total > 0) else "—"
 
     return {
         "total_profils": total,
@@ -942,7 +929,7 @@ async def calculer_donnees_profil_clients(
         "hommes_pct": hommes_pct,
         "femmes": femmes,
         "femmes_pct": femmes_pct,
-        "tranche_dominante": f"{tranche_top['nom']} ({tranche_top['pct']}%)",
+        "tranche_dominante": tranche_dominante_str,
         "ages": ages,
     }
 
@@ -1027,7 +1014,7 @@ async def calculer_donnees_classement_entrees(
     entites = await calculer_donnees_analyse_entites(db, date_debut, date_fin)
     portes = entites["portes"]
 
-    total_entrees = sum(p["entrees"] for p in portes) or 150
+    total_entrees = sum(p["entrees"] for p in portes)
     medailles = ["🥇", "🥈", "🥉", "4e", "5e", "6e"]
 
     classement = []
