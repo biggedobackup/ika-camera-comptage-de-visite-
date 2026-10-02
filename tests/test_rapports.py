@@ -88,10 +88,15 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Passages personnel exclus" in texte
         assert "Impact sur le trafic brut" in texte
         assert "Demi-tours constatés" in texte
+        assert "Flux physique brut total" not in texte
     elif cle_rapport == "profil":
-        assert "Profils analysés (IA)" in texte
         assert "Hommes" in texte
         assert "Femmes" in texte
+        assert "Tranche d'âge fréquente" in texte
+        assert "Genre le plus fréquent" in texte
+        assert "Répartition par Genre" in texte
+        assert "Pyramide des âges par genre" in texte
+        assert "Matrice démographique détaillée" in texte
     elif cle_rapport in ["entites", "classement"]:
         assert "Palmarès & Classement des caméras" in texte
         assert "Caméras actives / réseau" in texte

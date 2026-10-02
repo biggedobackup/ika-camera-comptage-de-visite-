@@ -993,9 +993,20 @@ async def calculer_donnees_profil_clients(
         if "duree" not in a:
             a["duree"] = "00:00"
 
-    # Tranche dominante
+    # Tranche dominante / fréquente
     tranche_top = max(ages, key=lambda x: x["total"]) if total > 0 else None
     tranche_dominante_str = f"{tranche_top['nom']} ({tranche_top['pct']}%)" if (tranche_top and total > 0) else "—"
+
+    # Genre le plus fréquent
+    if total > 0:
+        if hommes > femmes:
+            genre_dominant = f"Hommes ({hommes_pct}%)"
+        elif femmes > hommes:
+            genre_dominant = f"Femmes ({femmes_pct}%)"
+        else:
+            genre_dominant = "Égalité (50%)"
+    else:
+        genre_dominant = "—"
 
     return {
         "total_profils": total,
@@ -1003,7 +1014,9 @@ async def calculer_donnees_profil_clients(
         "hommes_pct": hommes_pct,
         "femmes": femmes,
         "femmes_pct": femmes_pct,
+        "tranche_frequente": tranche_dominante_str,
         "tranche_dominante": tranche_dominante_str,
+        "genre_dominant": genre_dominant,
         "ages": ages,
     }
 

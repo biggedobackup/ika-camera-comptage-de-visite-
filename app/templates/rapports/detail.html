@@ -609,7 +609,7 @@
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-12 col-sm-6 col-lg-3">
+  <div class="col-12 col-md-4">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Passages personnel exclus</p>
@@ -619,7 +619,7 @@
       <p class="carte-indicateur-sous-titre"><i class="bi bi-person-badge"></i> Badges / Allers-retours filtrés</p>
     </div>
   </div>
-  <div class="col-12 col-sm-6 col-lg-3">
+  <div class="col-12 col-md-4">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Impact sur le trafic brut</p>
@@ -629,17 +629,7 @@
       <p class="carte-indicateur-sous-titre"><i class="bi bi-dash-circle"></i> Déduit du comptage client</p>
     </div>
   </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Flux physique brut total</p>
-        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-door-open"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-primary">{{ donnees_specifiques.entrees_brutes }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-eye"></i> Avant nettoyage par l'IA</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
+  <div class="col-12 col-md-4">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Demi-tours constatés</p>
@@ -736,16 +726,6 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Profils analysés (IA)</p>
-        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-person-bounding-box"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-primary">{{ donnees_specifiques.total_profils }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-fingerprint"></i> Visages/Silhouettes qualifiés</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Hommes</p>
         <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-gender-male"></i></span>
       </div>
@@ -766,11 +746,21 @@
   <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Cœur de cible dominant</p>
-        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-award"></i></span>
+        <p class="carte-indicateur-libelle">Tranche d'âge fréquente</p>
+        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-calendar-event"></i></span>
       </div>
-      <p class="carte-indicateur-valeur fs-5 text-dark">{{ donnees_specifiques.tranche_dominante }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-people"></i> Tranche d'âge prioritaire</p>
+      <p class="carte-indicateur-valeur fs-5 text-dark">{{ donnees_specifiques.tranche_frequente }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-people"></i> Tranche d'âge la plus représentée</p>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Genre le plus fréquent</p>
+        <span class="carte-indicateur-icone violet" aria-hidden="true"><i class="bi bi-award"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur fs-5 texte-violet">{{ donnees_specifiques.genre_dominant }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-check"></i> Genre majoritaire</p>
     </div>
   </div>
 </div>
