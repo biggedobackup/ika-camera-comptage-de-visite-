@@ -290,16 +290,23 @@ async def calculer_rapport_complet(
         req_jours = (
             select(
                 func.extract("dow", PassageComptage.horodatage_debut).label("dow"),
-                func.coalesce(func.sum(PassageComptage.sorties), 0).label("s"),
                 func.coalesce(func.sum(PassageComptage.entrees), 0).label("e"),
+                func.coalesce(func.sum(PassageComptage.sorties), 0).label("s"),
+                func.coalesce(func.sum(PassageComptage.passants), 0).label("p"),
             )
             .where(and_(*conditions))
             .group_by("dow")
         )
-        lignes_j = {int(dow): int(s) if int(s) > 0 else int(e) for dow, s, e in (await db.execute(req_jours)).all()}
+        lignes_j = {
+            int(dow): (int(e), int(s), int(p))
+            for dow, e, s, p in (await db.execute(req_jours)).all()
+        }
         # En postgres dow: 0=dimanche, 1=lundi ... 6=samedi
         dow_mapping = [1, 2, 3, 4, 5, 6, 0]
-        serie_courante = [lignes_j.get(d, 0) for d in dow_mapping]
+        serie_courante = [
+            lignes_j.get(d, (0, 0, 0))[1] if lignes_j.get(d, (0, 0, 0))[1] > 0 else lignes_j.get(d, (0, 0, 0))[0]
+            for d in dow_mapping
+        ]
         serie_comparative = [0 for _ in dow_mapping]
         titre_matrice = "Fréquentation jour par jour de la semaine"
         colonnes_matrice = labels_periode
@@ -312,11 +319,50 @@ async def calculer_rapport_complet(
                 "total": 0,
                 "valeurs": [0 for _ in dow_mapping],
             })
+        comb_labels = labels_periode
+        comb_entrees = [lignes_j.get(d, (0, 0, 0))[0] for d in dow_mapping]
+        comb_sorties = [lignes_j.get(d, (0, 0, 0))[1] for d in dow_mapping]
+        comb_passants = [lignes_j.get(d, (0, 0, 0))[2] for d in dow_mapping]
+        comb_taux = [
+            round((e / p * 100), 1) if p > 0 else 0.0
+            for e, p in zip(comb_entrees, comb_passants)
+        ]
     elif type_rapport == "mensuel":
-        labels_periode = ["Semaine 1", "Semaine 2", "Semaine 3", "Semaine 4"]
-        serie_courante = [0, 0, 0, 0]
-        serie_comparative = [0, 0, 0, 0]
-        titre_matrice = "Fréquentation consolidée semaine par semaine du mois"
+        try:
+            dt_m = datetime.strptime(date_debut, "%Y-%m-%d")
+            import calendar
+            _, last_day = calendar.monthrange(dt_m.year, dt_m.month)
+        except Exception:
+            last_day = 31
+        comb_labels = [f"J{d:02d}" for d in range(1, last_day + 1)]
+        req_m = (
+            select(
+                func.extract("day", PassageComptage.horodatage_debut).label("day"),
+                func.coalesce(func.sum(PassageComptage.entrees), 0).label("e"),
+                func.coalesce(func.sum(PassageComptage.sorties), 0).label("s"),
+                func.coalesce(func.sum(PassageComptage.passants), 0).label("p"),
+            )
+            .where(and_(*conditions))
+            .group_by("day")
+        )
+        lignes_m = {
+            int(d): (int(e), int(s), int(p))
+            for d, e, s, p in (await db.execute(req_m)).all()
+        }
+        comb_entrees = [lignes_m.get(d, (0, 0, 0))[0] for d in range(1, last_day + 1)]
+        comb_sorties = [lignes_m.get(d, (0, 0, 0))[1] for d in range(1, last_day + 1)]
+        comb_passants = [lignes_m.get(d, (0, 0, 0))[2] for d in range(1, last_day + 1)]
+        comb_taux = [
+            round((e / p * 100), 1) if p > 0 else 0.0
+            for e, p in zip(comb_entrees, comb_passants)
+        ]
+        labels_periode = comb_labels
+        serie_courante = [
+            s if s > 0 else e
+            for e, s in zip(comb_entrees, comb_sorties)
+        ]
+        serie_comparative = [0 for _ in range(last_day)]
+        titre_matrice = "Fréquentation consolidée jour par jour du mois"
         colonnes_matrice = labels_periode
         matrice_periodique = []
         for c in cameras:
@@ -324,7 +370,7 @@ async def calculer_rapport_complet(
                 "sn": c.sn,
                 "nom": c.libelle_affiche,
                 "total": 0,
-                "valeurs": [0, 0, 0, 0],
+                "valeurs": [0 for _ in range(last_day)],
             })
     else:  # journalier
         labels_periode = labels_24
@@ -336,6 +382,19 @@ async def calculer_rapport_complet(
             {"sn": ent["sn"], "nom": ent["nom"], "total": ent["total"], "valeurs": ent["heures"]}
             for ent in entity_flow_trend
         ]
+        comb_labels = labels_24
+        comb_entrees = [h["entrees"] for h in heures_24]
+        comb_sorties = [h["sorties"] for h in heures_24]
+        comb_passants = [h["passants"] for h in heures_24]
+        comb_taux = [h["taux_entree"] for h in heures_24]
+
+    combinaison = {
+        "labels": comb_labels,
+        "entrees": comb_entrees,
+        "sorties": comb_sorties,
+        "passants": comb_passants,
+        "taux": comb_taux,
+    }
 
     return {
         "date_debut": date_debut,
@@ -399,6 +458,7 @@ async def calculer_rapport_complet(
         "recidives": recidives,
         "personnel_exclu": personnel,
         "demi_tours": demi_tours,
+        "combinaison": combinaison,
         "taux_revisite_pct": round((recidives / (uniques + recidives) * 100), 1) if (uniques + recidives) > 0 else 0.0,
     }
 

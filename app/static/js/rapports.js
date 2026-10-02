@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // 5. Graphique Analyse combinée (Barres Entrées/Passants + Courbe Taux de capture)
+  // 5. Graphique Croisement Flux extérieur vs Entrées & Taux de capture (Barres Entrées/Sorties/Passants + Courbe Taux)
   var ctxCombinaison = document.getElementById("graphique-combinaison");
   var dataCombinaison = null;
   try {
@@ -402,7 +402,7 @@ document.addEventListener("DOMContentLoaded", function () {
         datasets: [
           {
             type: "bar",
-            label: "Entrées réelles",
+            label: "Entrées",
             data: dataCombinaison.entrees || [],
             backgroundColor: "#2563eb",
             borderRadius: 4,
@@ -410,15 +410,23 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           {
             type: "bar",
-            label: "Passants rue (Trafic extérieur)",
+            label: "Sorties",
+            data: dataCombinaison.sorties || [],
+            backgroundColor: "#ef4444",
+            borderRadius: 4,
+            yAxisID: "y"
+          },
+          {
+            type: "bar",
+            label: "Passants devanture (Rue)",
             data: dataCombinaison.passants || [],
-            backgroundColor: "#e2e8f0",
+            backgroundColor: "#cbd5e1",
             borderRadius: 4,
             yAxisID: "y"
           },
           {
             type: "line",
-            label: "Taux de capture vitrine (%)",
+            label: "Taux d'entrée (%)",
             data: dataCombinaison.taux || [],
             borderColor: "#10b981",
             backgroundColor: "#10b981",
@@ -454,7 +462,7 @@ document.addEventListener("DOMContentLoaded", function () {
             beginAtZero: true,
             grid: { drawOnChartArea: false },
             ticks: { callback: function(val) { return val + "%"; } },
-            title: { display: true, text: "Taux de capture (%)", color: "#10b981" }
+            title: { display: true, text: "Taux d'entrée (%)", color: "#10b981" }
           }
         }
       }

@@ -215,7 +215,23 @@
   </div>
 </div>
 
-<!-- 3. Matrice de fréquentation par point d'accès -->
+<!-- 3. Croisement Flux extérieur vs Entrées & Taux de capture -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="card-title mb-0 fw-bold"><i class="bi bi-intersect text-primary me-2"></i>Croisement Flux extérieur vs Entrées & Taux de capture</h5>
+      <span class="text-muted small">Comparatif des flux : Entrées, Sorties, Passants devanture et Taux d'entrée</span>
+    </div>
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Comparatif flux</span>
+  </div>
+  <div class="card-body">
+    <div class="zone-graphique-trend">
+      <canvas id="graphique-combinaison"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Matrice de fréquentation par point d'accès -->
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
     <div>
@@ -299,132 +315,6 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-{% elif cle_rapport == 'combinaison' and donnees_specifiques %}
-{# ========================================================================= #}
-{# 1. ANALYSE COMBINÉE (COMBINATION ANALYSIS)                                #}
-{# ========================================================================= #}
-
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <form method="get" action="/rapports/combinaison" class="row g-3 align-items-end">
-      <div class="col-md-3">
-        <label for="date_debut" class="form-label small fw-medium">Date de début</label>
-        <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut }}">
-      </div>
-      <div class="col-md-3">
-        <label for="date_fin" class="form-label small fw-medium">Date de fin</label>
-        <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin }}">
-      </div>
-      <div class="col-md-4">
-        <label for="camera_sn" class="form-label small fw-medium">Filtrer par entrée / caméra</label>
-        <select class="form-select" id="camera_sn" name="camera_sn">
-          <option value="">Toutes les entrées (Global)</option>
-          {% for c in cameras %}
-          <option value="{{ c.sn }}" {% if camera_sn_actif == c.sn %}selected{% endif %}>
-            {{ c.libelle_affiche }} ({{ c.sn }})
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-funnel"></i> Filtrer
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="row g-3 mb-4">
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Passants devanture (Rue)</p>
-        <span class="carte-indicateur-icone avertissement" aria-hidden="true"><i class="bi bi-people"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-warning-emphasis">{{ donnees_specifiques.passants }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-arrow-left-right"></i> Trafic piéton extérieur</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Entrées réelles</p>
-        <span class="carte-indicateur-icone" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-primary">{{ donnees_specifiques.entrees }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-person-walking"></i> Visiteurs ayant franchi le seuil</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Taux de capture vitrine</p>
-        <span class="carte-indicateur-icone succes" aria-hidden="true"><i class="bi bi-percent"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-success">{{ donnees_specifiques.taux_capture }}%</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-bullseye"></i> Efficacité de la vitrine</p>
-    </div>
-  </div>
-  <div class="col-12 col-sm-6 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Demi-tours / Hésitations</p>
-        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-secondary">{{ donnees_specifiques.demi_tours }}</p>
-      <p class="carte-indicateur-sous-titre"><i class="bi bi-signpost"></i> Abandons devant le seuil</p>
-    </div>
-  </div>
-</div>
-
-<!-- Graphique combiné Barres + Courbe -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-    <div>
-      <h5 class="card-title mb-0 fw-bold"><i class="bi bi-intersect text-primary me-2"></i>Croisement Flux extérieur vs Entrées & Taux de capture</h5>
-      <span class="text-muted small">Évolution par heure d'ouverture : volumes piétons en barres et taux de capture en courbe</span>
-    </div>
-    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Attractivité vitrine</span>
-  </div>
-  <div class="card-body">
-    <div class="zone-graphique-trend">
-      <canvas id="graphique-combinaison"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- Tableau croisé -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-header bg-transparent py-3">
-    <h5 class="card-title mb-0 fw-bold">Matrice de conversion heure par heure</h5>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th scope="col">Créneau horaire</th>
-          <th scope="col" class="text-center text-warning-emphasis">Passants rue</th>
-          <th scope="col" class="text-center text-primary">Entrées</th>
-          <th scope="col" class="text-center text-success">Taux de capture</th>
-          <th scope="col" class="text-center text-secondary">Demi-tours</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in donnees_specifiques.table_rows %}
-        <tr>
-          <td class="fw-semibold"><i class="bi bi-clock text-muted me-1"></i>{{ r.creneau }}</td>
-          <td class="text-center fw-medium">{{ r.passants }}</td>
-          <td class="text-center fw-bold text-primary">{{ r.entrees }}</td>
-          <td class="text-center fw-bold text-success">{{ r.taux_capture }}%</td>
-          <td class="text-center text-muted">{{ r.demi_tours }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
 </div>
 
@@ -1267,7 +1157,7 @@
   data-flow-trend='{"labels": [{% for l in rapport.flow_trend.labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "label_courant": "{{ rapport.flow_trend.label_courant }}", "serie_courante": {{ rapport.flow_trend.serie_courante }}, "label_comparatif": "{{ rapport.flow_trend.label_comparatif }}", "serie_comparative": {{ rapport.flow_trend.serie_comparative }}}'
   data-demographie='{"hommes": {{ rapport.demographie.hommes }}, "hommes_pct": {{ rapport.demographie.hommes_pct }}, "femmes": {{ rapport.demographie.femmes }}, "femmes_pct": {{ rapport.demographie.femmes_pct }}, "ages": [{% for a in rapport.demographie.ages %}{"nom": "{{ a.nom }}", "male": {{ a.male }}, "female": {{ a.female }}}{% if not loop.last %},{% endif %}{% endfor %}]}'
   data-flow-query='{% if flow_query %}{"nom_entite": "{{ flow_query.nom_entite }}", "chart_labels": [{% for l in flow_query.chart_labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "chart_entrees": {{ flow_query.chart_entrees }}, "chart_passants": {{ flow_query.chart_passants }}}{% else %}null{% endif %}'
-  data-combinaison='{% if cle_rapport == "combinaison" and donnees_specifiques %}{"labels": [{% for l in donnees_specifiques.chart_labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "entrees": {{ donnees_specifiques.chart_entrees }}, "passants": {{ donnees_specifiques.chart_passants }}, "taux": {{ donnees_specifiques.chart_taux }}}{% else %}null{% endif %}'
+  data-combinaison='{% if rapport.combinaison %}{"labels": [{% for l in rapport.combinaison.labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "entrees": {{ rapport.combinaison.entrees }}, "sorties": {{ rapport.combinaison.sorties }}, "passants": {{ rapport.combinaison.passants }}, "taux": {{ rapport.combinaison.taux }}}{% else %}null{% endif %}'
   data-visiteurs='{% if cle_rapport == "visiteurs" and donnees_specifiques %}{"labels": [{% for t in donnees_specifiques.tranches %}"{{ t.nom }}"{% if not loop.last %},{% endif %}{% endfor %}], "clients": [{% for t in donnees_specifiques.tranches %}{{ t.clients }}{% if not loop.last %},{% endif %}{% endfor %}], "couleurs": [{% for t in donnees_specifiques.tranches %}"{{ t.couleur }}"{% if not loop.last %},{% endif %}{% endfor %}]}{% else %}null{% endif %}'
   data-employes='{% if cle_rapport == "employes" and donnees_specifiques %}{"labels": [{% for l in donnees_specifiques.chart_labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "clients": {{ donnees_specifiques.chart_clients }}, "employes": {{ donnees_specifiques.chart_employes }}}{% else %}null{% endif %}'>
 </div>

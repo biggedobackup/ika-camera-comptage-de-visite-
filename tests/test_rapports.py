@@ -19,7 +19,7 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
     texte = contenu(reponse)
     assert "Rapports d'analyse de flux" in texte
     assert "Données horaires" in texte
-    assert "Analyse combinée" in texte
+    assert "Analyse combinée" not in texte
     assert "Requête clients" in texte
     assert "Analyse visiteurs" in texte
     assert "Personnel & Employés" in texte
@@ -49,7 +49,6 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
     "cle_rapport",
     [
         "horaire",
-        "combinaison",
         "clients",
         "visiteurs",
         "employes",
@@ -72,14 +71,11 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Taux d'entrée" in texte
         assert "Courbe comparative d'affluence" in texte
         assert "Demi-tours / Hésitations" in texte
+        assert "Croisement Flux extérieur vs Entrées & Taux de capture" in texte
     elif cle_rapport == "horaire":
         assert "Courbe comparative heure par heure" in texte
         assert "Détail des 24 tranches horaires" in texte
         assert "Demi-tours / Hésitations" in texte
-    elif cle_rapport == "combinaison":
-        assert "Passants devanture (Rue)" in texte
-        assert "Entrées réelles" in texte
-        assert "Taux de capture vitrine" in texte
     elif cle_rapport == "clients":
         assert "Clients qualifiés (IA)" in texte
         assert "Durée médiane sur site" in texte

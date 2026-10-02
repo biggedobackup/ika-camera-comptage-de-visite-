@@ -78,9 +78,9 @@
     <h5 class="mb-0 fw-bold">Entrées & Périodes</h5>
   </div>
   <div class="row g-3">
-    {% for cle in ["entites", "journalier", "hebdomadaire", "mensuel"] %}
+    {% for cle in ["entites", "journalier", "hebdomadaire", "mensuel", "horaire"] %}
     {% set item = rapports_config[cle] %}
-    <div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-lg-4 col-xl-2dot4">
       <div class="card border-0 shadow-sm h-100 p-2">
         <div class="card-body d-flex flex-column justify-content-between">
           <div>
@@ -105,41 +105,7 @@
   </div>
 </div>
 
-<!-- SECTION 2 : Flux & Fréquentation -->
-<div class="mb-4">
-  <div class="d-flex align-items-center gap-2 mb-3">
-    <i class="bi bi-activity fs-5 text-primary"></i>
-    <h5 class="mb-0 fw-bold">Flux & Fréquentation</h5>
-  </div>
-  <div class="row g-3">
-    {% for cle in ["horaire", "combinaison"] %}
-    {% set item = rapports_config[cle] %}
-    <div class="col-md-6 col-xl-6">
-      <div class="card border-0 shadow-sm h-100 p-2">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <div>
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
-                <i class="bi {{ item.icone }}"></i> {{ item.badge }}
-              </span>
-              <i class="bi {{ item.icone }} fs-4 text-muted"></i>
-            </div>
-            <h6 class="card-title fw-bold text-dark mt-2 mb-2">{{ item.titre }}</h6>
-            <p class="card-text text-muted small">{{ item.description }}</p>
-          </div>
-          <div class="mt-3 pt-2 border-top">
-            <a href="/rapports/{{ cle }}" class="btn btn-sm btn-outline-primary w-100">
-              Consulter <i class="bi bi-arrow-right"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-<!-- SECTION 3 : Clients & Visiteurs -->
+<!-- SECTION 2 : Clients & Visiteurs -->
 <div class="mb-4">
   <div class="d-flex align-items-center gap-2 mb-3">
     <i class="bi bi-people fs-5 text-success"></i>

@@ -23,12 +23,6 @@ CONFIG_RAPPORTS: dict[str, dict[str, Any]] = {
         "icone": "bi-clock",
         "badge": "Heure par heure",
     },
-    "combinaison": {
-        "titre": "Analyse combinée",
-        "description": "Croisement multidimensionnel entre entrées, sorties physiques et taux d'attractivité vitrine.",
-        "icone": "bi-intersect",
-        "badge": "Attractivité vitrine",
-    },
     "clients": {
         "titre": "Requête clients",
         "description": "Recherche ciblée et journal des clients réels qualifiés (visiteurs uniques dédoublés).",
@@ -186,11 +180,7 @@ async def detail_rapport(
     flow_query = None
     donnees_specifiques: dict[str, Any] | None = None
 
-    if type_rapport == "combinaison":
-        donnees_specifiques = await calculer_donnees_combinaison(
-            db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
-        )
-    elif type_rapport == "clients":
+    if type_rapport == "clients":
         donnees_specifiques = await calculer_donnees_requete_clients(
             db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
         )
