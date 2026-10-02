@@ -18,7 +18,6 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
     assert reponse.status_code == 200
     texte = contenu(reponse)
     assert "Rapports d'analyse de flux" in texte
-    assert "Requête de flux" in texte
     assert "Données horaires" in texte
     assert "Analyse combinée" in texte
     assert "Requête clients" in texte
@@ -49,7 +48,6 @@ async def test_acces_portail_rapports_connecte(client_admin: httpx.AsyncClient) 
 @pytest.mark.parametrize(
     "cle_rapport",
     [
-        "flux",
         "horaire",
         "combinaison",
         "clients",
@@ -73,10 +71,9 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Total sortie" in texte
         assert "Taux d'entrée" in texte
         assert "Courbe comparative d'affluence" in texte
-    elif cle_rapport == "flux":
-        assert "Taux de capture vitrine" in texte
-        assert "Trafic rue" in texte
-        assert "Entrées" in texte
+    elif cle_rapport == "horaire":
+        assert "Courbe comparative heure par heure" in texte
+        assert "Détail des 24 tranches horaires" in texte
     elif cle_rapport == "combinaison":
         assert "Passants devanture (Rue)" in texte
         assert "Entrées réelles" in texte
@@ -100,9 +97,6 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     elif cle_rapport in ["entites", "classement"]:
         assert "Palmarès & Classement des caméras" in texte
         assert "Caméras actives / réseau" in texte
-    else:
-        assert "Total Entrées" in texte
-        assert "Clients réels (IA)" in texte
 
     # Vérification stricte : aucun mot anglais résiduel Foorir
     for terme_anglais in [

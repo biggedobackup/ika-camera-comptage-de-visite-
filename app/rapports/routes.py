@@ -17,12 +17,6 @@ from sqlalchemy import func, select
 router = APIRouter(prefix="/rapports", tags=["Rapports de flux"])
 
 CONFIG_RAPPORTS: dict[str, dict[str, Any]] = {
-    "flux": {
-        "titre": "Requête de flux",
-        "description": "Visualisation et extraction des flux bruts de franchissement avec filtrage multi-critères.",
-        "icone": "bi-search",
-        "badge": "Flux bruts",
-    },
     "horaire": {
         "titre": "Données horaires",
         "description": "Analyse de l'affluence heure par heure (00h à 23h) et détection des pics de fréquentation.",
@@ -192,16 +186,7 @@ async def detail_rapport(
     flow_query = None
     donnees_specifiques: dict[str, Any] | None = None
 
-    if type_rapport == "flux":
-        flow_query = await calculer_flow_query(
-            db,
-            camera_sn=camera_sn,
-            dimension=dimension,
-            filtre_horaire=filtre_horaire,
-            date_debut=date_debut,
-            date_fin=date_fin,
-        )
-    elif type_rapport == "combinaison":
+    if type_rapport == "combinaison":
         donnees_specifiques = await calculer_donnees_combinaison(
             db, date_debut=date_debut, date_fin=date_fin, camera_sn=camera_sn
         )
