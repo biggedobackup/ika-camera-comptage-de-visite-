@@ -185,6 +185,18 @@
       <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-calendar-check"></i> Temps total cumulé sur le site</p>
     </div>
   </div>
+
+  <!-- 11. Demi-tours / Hésitations -->
+  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Demi-tours / Hésitations</p>
+        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-secondary">{{ rapport.demi_tours }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-signpost"></i> Abandons devant le seuil</p>
+    </div>
+  </div>
 </div>
 
 <!-- 2. Courbe comparative d'affluence -->
@@ -1118,6 +1130,20 @@
   </div>
 </div>
 
+<!-- Carte indicateur Demi-tours / Hésitations -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+    <div class="carte-indicateur h-100">
+      <div class="carte-indicateur-entete">
+        <p class="carte-indicateur-libelle">Demi-tours / Hésitations</p>
+        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
+      </div>
+      <p class="carte-indicateur-valeur text-secondary">{{ rapport.demi_tours }}</p>
+      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-signpost"></i> Abandons devant le seuil</p>
+    </div>
+  </div>
+</div>
+
 <!-- Graphique comparatif heure par heure (00:00 à 23:00) -->
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
@@ -1150,6 +1176,7 @@
               <th scope="col" class="text-center text-primary">Entrées</th>
               <th scope="col" class="text-center text-success">Uniques (IA)</th>
               <th scope="col" class="text-center text-secondary">Personnel</th>
+              <th scope="col" class="text-center text-secondary">Demi-tours</th>
               <th scope="col" class="text-center">Statut</th>
             </tr>
           </thead>
@@ -1163,6 +1190,7 @@
               <td class="text-center fw-bold text-primary">{{ c.entrees }}</td>
               <td class="text-center fw-bold text-success">{{ c.uniques }}</td>
               <td class="text-center text-muted">{{ c.personnel }}</td>
+              <td class="text-center text-muted">{{ c.demi_tours }}</td>
               <td class="text-center">
                 {% if c.statut_en_ligne %}
                 <span class="badge bg-success-subtle text-success">En ligne</span>
@@ -1173,7 +1201,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="5" class="text-center py-4 text-muted">Aucune caméra configurée ou aucune donnée disponible.</td>
+              <td colspan="6" class="text-center py-4 text-muted">Aucune caméra configurée ou aucune donnée disponible.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -1197,6 +1225,7 @@
               <th scope="col" class="text-center text-primary">Entrées</th>
               <th scope="col" class="text-center text-danger">Sorties</th>
               <th scope="col" class="text-center text-success">Clients IA</th>
+              <th scope="col" class="text-center text-secondary">Demi-tours</th>
               <th scope="col" class="text-end">Part journalière</th>
             </tr>
           </thead>
@@ -1209,6 +1238,7 @@
               <td class="text-center fw-bold text-primary">{{ h.entrees }}</td>
               <td class="text-center fw-bold text-danger">{{ h.sorties }}</td>
               <td class="text-center fw-semibold text-success">{{ h.uniques }}</td>
+              <td class="text-center text-muted">{{ h.demi_tours }}</td>
               <td class="text-end text-muted small">
                 {% if rapport.entrees > 0 %}
                   {{ "%.1f" | format(h.entrees / rapport.entrees * 100) }}%
@@ -1219,7 +1249,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="5" class="text-center py-3 text-muted">Aucun passage enregistré pour ces dates.</td>
+              <td colspan="6" class="text-center py-3 text-muted">Aucun passage enregistré pour ces dates.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -1233,7 +1263,7 @@
 <!-- Stockage des données pour le rendu JS sans injection inline (CSP strict) -->
 <div id="data-rapport-horaire" class="d-none"
   data-cle="{{ cle_rapport }}"
-  data-heures='[{% for h in rapport.heures_24 %}{"heure": "{{ h.heure }}", "entrees": {{ h.entrees }}, "sorties": {{ h.sorties }}, "uniques": {{ h.uniques }}}{% if not loop.last %},{% endif %}{% endfor %}]'
+  data-heures='[{% for h in rapport.heures_24 %}{"heure": "{{ h.heure }}", "entrees": {{ h.entrees }}, "sorties": {{ h.sorties }}, "uniques": {{ h.uniques }}, "demi_tours": {{ h.demi_tours }}}{% if not loop.last %},{% endif %}{% endfor %}]'
   data-flow-trend='{"labels": [{% for l in rapport.flow_trend.labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "label_courant": "{{ rapport.flow_trend.label_courant }}", "serie_courante": {{ rapport.flow_trend.serie_courante }}, "label_comparatif": "{{ rapport.flow_trend.label_comparatif }}", "serie_comparative": {{ rapport.flow_trend.serie_comparative }}}'
   data-demographie='{"hommes": {{ rapport.demographie.hommes }}, "hommes_pct": {{ rapport.demographie.hommes_pct }}, "femmes": {{ rapport.demographie.femmes }}, "femmes_pct": {{ rapport.demographie.femmes_pct }}, "ages": [{% for a in rapport.demographie.ages %}{"nom": "{{ a.nom }}", "male": {{ a.male }}, "female": {{ a.female }}}{% if not loop.last %},{% endif %}{% endfor %}]}'
   data-flow-query='{% if flow_query %}{"nom_entite": "{{ flow_query.nom_entite }}", "chart_labels": [{% for l in flow_query.chart_labels %}"{{ l }}"{% if not loop.last %},{% endif %}{% endfor %}], "chart_entrees": {{ flow_query.chart_entrees }}, "chart_passants": {{ flow_query.chart_passants }}}{% else %}null{% endif %}'

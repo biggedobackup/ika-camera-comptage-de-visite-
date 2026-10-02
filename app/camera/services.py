@@ -775,13 +775,14 @@ async def generer_rapport_comptage(
             func.coalesce(func.sum(PassageComptage.sorties), 0).label("sorties"),
             func.coalesce(func.sum(PassageComptage.visiteurs_uniques), 0).label("uniques"),
             func.coalesce(func.sum(PassageComptage.personnel_exclu), 0).label("personnel"),
+            func.coalesce(func.sum(PassageComptage.demi_tours), 0).label("demi_tours"),
         )
         .where(and_(*conditions))
         .group_by(PassageComptage.master_sn)
     )
     lignes_cams = (await db.execute(requete_cams)).all()
     repartition_cameras = []
-    for sn, e, s, u, p in lignes_cams:
+    for sn, e, s, u, p, dt in lignes_cams:
         cam_obj = cameras_map.get(sn)
         repartition_cameras.append(
             {
@@ -791,6 +792,7 @@ async def generer_rapport_comptage(
                 "sorties": s,
                 "uniques": u,
                 "personnel": p,
+                "demi_tours": dt,
                 "statut_en_ligne": cam_obj.est_en_ligne if cam_obj else False,
             }
         )
@@ -802,18 +804,20 @@ async def generer_rapport_comptage(
             func.coalesce(func.sum(PassageComptage.entrees), 0).label("entrees"),
             func.coalesce(func.sum(PassageComptage.sorties), 0).label("sorties"),
             func.coalesce(func.sum(PassageComptage.visiteurs_uniques), 0).label("uniques"),
+            func.coalesce(func.sum(PassageComptage.demi_tours), 0).label("demi_tours"),
         )
         .where(and_(*conditions))
         .group_by("heure")
     )
     lignes_heures = (await db.execute(requete_heures)).all()
-    heures_dict = {int(h): {"entrees": e, "sorties": s, "uniques": u} for h, e, s, u in lignes_heures}
+    heures_dict = {int(h): {"entrees": e, "sorties": s, "uniques": u, "demi_tours": dt} for h, e, s, u, dt in lignes_heures}
     repartition_heures = [
         {
             "heure": f"{h:02d}:00",
             "entrees": heures_dict.get(h, {}).get("entrees", 0),
             "sorties": heures_dict.get(h, {}).get("sorties", 0),
             "uniques": heures_dict.get(h, {}).get("uniques", 0),
+            "demi_tours": heures_dict.get(h, {}).get("demi_tours", 0),
         }
         for h in range(0, 24)
     ]

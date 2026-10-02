@@ -71,9 +71,11 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
         assert "Total sortie" in texte
         assert "Taux d'entrée" in texte
         assert "Courbe comparative d'affluence" in texte
+        assert "Demi-tours / Hésitations" in texte
     elif cle_rapport == "horaire":
         assert "Courbe comparative heure par heure" in texte
         assert "Détail des 24 tranches horaires" in texte
+        assert "Demi-tours / Hésitations" in texte
     elif cle_rapport == "combinaison":
         assert "Passants devanture (Rue)" in texte
         assert "Entrées réelles" in texte

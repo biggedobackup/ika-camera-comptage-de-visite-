@@ -47,16 +47,18 @@ async def calculer_rapport_complet(
                 func.coalesce(func.sum(PassageComptage.personnel_exclu), 0),
                 func.coalesce(func.sum(PassageComptage.passants), 0),
                 func.coalesce(func.avg(PassageComptage.duree_sejour_moyenne_sec), 0),
+                func.coalesce(func.sum(PassageComptage.demi_tours), 0),
             ).where(and_(*conditions))
         )
     ).one()
 
-    entrees, sorties, uniques, recidives, personnel, passants, avg_stay_db = res_totaux
+    entrees, sorties, uniques, recidives, personnel, passants, avg_stay_db, demi_tours = res_totaux
     entrees = int(entrees)
     sorties = int(sorties)
     uniques = int(uniques)
     passants = int(passants)
     personnel = int(personnel)
+    demi_tours = int(demi_tours)
 
     visiteurs = sorties if sorties > 0 else entrees
     pass_total = passants
@@ -85,14 +87,21 @@ async def calculer_rapport_complet(
             func.coalesce(func.sum(PassageComptage.sorties), 0).label("s"),
             func.coalesce(func.sum(PassageComptage.passants), 0).label("p"),
             func.coalesce(func.sum(PassageComptage.visiteurs_uniques), 0).label("u"),
+            func.coalesce(func.sum(PassageComptage.demi_tours), 0).label("d"),
         )
         .where(and_(*conditions))
         .group_by("h")
     )
     lignes_heures = (await db.execute(requete_heures)).all()
     heures_dict = {
-        int(h): {"entrees": int(e), "sorties": int(s), "passants": int(p), "uniques": int(u)}
-        for h, e, s, p, u in lignes_heures
+        int(h): {
+            "entrees": int(e),
+            "sorties": int(s),
+            "passants": int(p),
+            "uniques": int(u),
+            "demi_tours": int(d),
+        }
+        for h, e, s, p, u, d in lignes_heures
     }
 
     # Calcul des pics et créneaux (Peaks & Time Slots)
@@ -109,10 +118,11 @@ async def calculer_rapport_complet(
 
     for h in range(24):
         slot = f"{h:02d}:00-{(h+1):02d}:00"
-        vals = heures_dict.get(h, {"entrees": 0, "sorties": 0, "passants": 0, "uniques": 0})
+        vals = heures_dict.get(h, {"entrees": 0, "sorties": 0, "passants": 0, "uniques": 0, "demi_tours": 0})
         v_h = vals["sorties"] if vals["sorties"] > 0 else vals["entrees"]
         p_h = vals["passants"]
         e_h = vals["entrees"]
+        d_h = vals.get("demi_tours", 0)
         r_h = round((e_h / p_h * 100), 1) if p_h > 0 else 0.0
 
         if v_h > vis_peak:
@@ -134,6 +144,7 @@ async def calculer_rapport_complet(
                 "entrees": e_h,
                 "sorties": vals["sorties"],
                 "uniques": vals["uniques"],
+                "demi_tours": d_h,
                 "taux_entree": r_h,
             }
         )
@@ -387,6 +398,7 @@ async def calculer_rapport_complet(
         "visiteurs_uniques": uniques,
         "recidives": recidives,
         "personnel_exclu": personnel,
+        "demi_tours": demi_tours,
         "taux_revisite_pct": round((recidives / (uniques + recidives) * 100), 1) if (uniques + recidives) > 0 else 0.0,
     }
 
