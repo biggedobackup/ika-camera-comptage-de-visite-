@@ -43,7 +43,13 @@ class Settings(BaseSettings):
     PASSWORD_RESET_EXPIRE_MINUTES: int = Field(default=30, ge=1)
     # None = automatique : True en production, False sinon (développement en http://).
     COOKIE_SECURE: bool | None = None
-    ALLOWED_HOSTS: Annotated[list[str], NoDecode] = ["127.0.0.1", "localhost"]
+    ALLOWED_HOSTS: Annotated[list[str], NoDecode] = [
+        "127.0.0.1",
+        "localhost",
+        "compteur.ikavisite.com",
+        "172.17.18.42",
+        "test.ikavisite.com",
+    ]
     # Vide = uniquement APP_BASE_URL.
     CORS_ORIGINS: Annotated[list[str], NoDecode] = []
 
