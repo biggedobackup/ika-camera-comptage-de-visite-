@@ -154,32 +154,43 @@ async def calculer_flux_complet(
         cameras_en_ligne=nb_cams_en_ligne,
     )
 
-    # 2. Comparatifs temporels
+    # 2. Comparatifs temporels (avec filtre caméra si sélectionnée)
+    comp_conds_hier = [PassageComptage.batch_date == hier]
+    comp_conds_7j = [PassageComptage.batch_date >= debut_7j, PassageComptage.batch_date <= aujourdhui]
+    comp_conds_mois = [PassageComptage.batch_date >= debut_mois, PassageComptage.batch_date <= aujourdhui]
+    comp_conds_annee = [PassageComptage.batch_date >= debut_annee, PassageComptage.batch_date <= aujourdhui]
+
+    if camera_sn:
+        comp_conds_hier.append(PassageComptage.master_sn == camera_sn)
+        comp_conds_7j.append(PassageComptage.master_sn == camera_sn)
+        comp_conds_mois.append(PassageComptage.master_sn == camera_sn)
+        comp_conds_annee.append(PassageComptage.master_sn == camera_sn)
+
     comp_hier = (
         await db.scalar(
             select(func.coalesce(func.sum(PassageComptage.entrees), 0)).where(
-                PassageComptage.batch_date == hier
+                and_(*comp_conds_hier)
             )
         )
     ) or 0
     comp_7j = (
         await db.scalar(
             select(func.coalesce(func.sum(PassageComptage.entrees), 0)).where(
-                PassageComptage.batch_date >= debut_7j, PassageComptage.batch_date < aujourdhui
+                and_(*comp_conds_7j)
             )
         )
     ) or 0
     comp_mois = (
         await db.scalar(
             select(func.coalesce(func.sum(PassageComptage.entrees), 0)).where(
-                PassageComptage.batch_date >= debut_mois
+                and_(*comp_conds_mois)
             )
         )
     ) or 0
     comp_annee = (
         await db.scalar(
             select(func.coalesce(func.sum(PassageComptage.entrees), 0)).where(
-                PassageComptage.batch_date >= debut_annee
+                and_(*comp_conds_annee)
             )
         )
     ) or 0
@@ -254,16 +265,18 @@ async def calculer_flux_complet(
                 age_range = a.get("age")
                 if isinstance(age_range, list) and len(age_range) >= 2:
                     age_max = age_range[1]
-                    if age_max <= 16:
-                        kids += 1
-                    elif age_max <= 30:
-                        youth += 1
-                    elif age_max <= 45:
-                        prime += 1
-                    elif age_max <= 60:
-                        middle += 1
-                    else:
-                        seniors += 1
+                    # Exclure le code 255 (non détecté / inconnu envoyé par la caméra)
+                    if 0 < age_max <= 120:
+                        if age_max <= 16:
+                            kids += 1
+                        elif age_max <= 30:
+                            youth += 1
+                        elif age_max <= 45:
+                            prime += 1
+                        elif age_max <= 60:
+                            middle += 1
+                        else:
+                            seniors += 1
 
     heures_liste = [
         TrancheHoraire(
@@ -276,26 +289,27 @@ async def calculer_flux_complet(
     ]
 
     # Ratios démographiques
-    total_genre = hommes + femmes + inconnu
-    if total_genre == 0 and uniques > 0:
-        hommes = int(uniques * 0.95)
-        inconnu = uniques - hommes
-        total_genre = uniques
+    # Calcul des pourcentages sur les personnes identifiées afin que le total affiché soit cohérent à 100%
+    total_identifie_genre = hommes + femmes
+    if total_identifie_genre > 0:
+        h_pct = round(hommes / total_identifie_genre * 100, 1)
+        f_pct = round(100.0 - h_pct, 1)
+    else:
+        h_pct = 0.0
+        f_pct = 0.0
 
-    h_pct = round(hommes / total_genre * 100, 1) if total_genre > 0 else 0.0
-    f_pct = round(femmes / total_genre * 100, 1) if total_genre > 0 else 0.0
+    total_genre = hommes + femmes + inconnu
     inc_pct = round(inconnu / total_genre * 100, 1) if total_genre > 0 else 0.0
 
     total_age = kids + youth + prime + middle + seniors
-    if total_age == 0 and total_genre > 0:
-        prime = total_genre
-        total_age = total_genre
-
-    k_pct = round(kids / total_age * 100, 1) if total_age > 0 else 0.0
-    y_pct = round(youth / total_age * 100, 1) if total_age > 0 else 0.0
-    p_pct = round(prime / total_age * 100, 1) if total_age > 0 else 0.0
-    m_pct = round(middle / total_age * 100, 1) if total_age > 0 else 0.0
-    s_pct = round(seniors / total_age * 100, 1) if total_age > 0 else 0.0
+    if total_age > 0:
+        k_pct = round(kids / total_age * 100, 1)
+        y_pct = round(youth / total_age * 100, 1)
+        p_pct = round(prime / total_age * 100, 1)
+        m_pct = round(middle / total_age * 100, 1)
+        s_pct = round(seniors / total_age * 100, 1)
+    else:
+        k_pct = y_pct = p_pct = m_pct = s_pct = 0.0
 
     demographie = DemographieRatio(
         hommes=hommes,

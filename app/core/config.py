@@ -48,7 +48,6 @@ class Settings(BaseSettings):
         "localhost",
         "compteur.ikavisite.com",
         "172.17.18.42",
-        "test.ikavisite.com",
     ]
     # Vide = uniquement APP_BASE_URL.
     CORS_ORIGINS: Annotated[list[str], NoDecode] = []
