@@ -31,6 +31,7 @@ async def index(request: Request, db: DbSession, utilisateur: UtilisateurCourant
         contexte.update(
             gestion=gestion,
             cameras=cameras,
+            aujourdhui=aujourdhui,
             date_debut=date_debut,
             date_fin=date_fin,
             camera_sn_actif=camera_sn,

@@ -75,7 +75,7 @@ async def test_acces_tous_les_rapports_detailles(client_admin: httpx.AsyncClient
     elif cle_rapport == "horaire":
         assert "Courbe comparative heure par heure" in texte
         assert "Détail des 24 tranches horaires" in texte
-        assert "Demi-tours / Hésitations" in texte
+        assert "Demi-tours / Hésitations" not in texte
     elif cle_rapport == "clients":
         assert "Clients qualifiés (IA)" in texte
         assert "Durée médiane sur site" in texte

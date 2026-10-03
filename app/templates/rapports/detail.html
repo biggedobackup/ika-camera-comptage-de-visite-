@@ -53,10 +53,10 @@
   </div>
 </div>
 
-<!-- 1. Cartes d'indicateurs clés : 10 indicateurs demandés -->
+<!-- 1. Cartes d'indicateurs clés : 11 indicateurs répartis en 4 en haut, 4 au milieu et 3 en bas -->
 <div class="row g-3 mb-4">
   <!-- 1. Total comptage -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Total comptage</p>
@@ -68,7 +68,7 @@
   </div>
 
   <!-- 2. Total entrée -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Total entrée</p>
@@ -83,7 +83,7 @@
   </div>
 
   <!-- 3. Total sortie -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Total sortie</p>
@@ -95,7 +95,7 @@
   </div>
 
   <!-- 4. Durée moyen d'une entrée -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Durée moyen d'une entrée</p>
@@ -105,9 +105,11 @@
       <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-hourglass-split"></i> Temps moyen d'une entrée</p>
     </div>
   </div>
+</div>
 
+<div class="row g-3 mb-4">
   <!-- 5. Personnel exclu du comptage -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Personnel exclu du comptage</p>
@@ -117,11 +119,9 @@
       <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-person-badge"></i> Personnel, livreurs, badges</p>
     </div>
   </div>
-</div>
 
-<div class="row g-3 mb-4">
   <!-- 6. Passages répétés (profils similaires) -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Passages répétés (profils similaires)</p>
@@ -133,7 +133,7 @@
   </div>
 
   <!-- 7. Taux d'entrée -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Taux d'entrée</p>
@@ -148,7 +148,7 @@
   </div>
 
   <!-- 8. Passants devanture (Rue) -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-lg-3">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Passants devanture (Rue)</p>
@@ -161,9 +161,11 @@
       </div>
     </div>
   </div>
+</div>
 
+<div class="row g-3 mb-4">
   <!-- 9. Séjour moyen -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-md-4 col-lg-4">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Séjour moyen</p>
@@ -175,7 +177,7 @@
   </div>
 
   <!-- 10. Temps cumulé de la visite -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-md-4 col-lg-4">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Temps cumulé de la visite</p>
@@ -187,7 +189,7 @@
   </div>
 
   <!-- 11. Demi-tours / Hésitations -->
-  <div class="col-12 col-sm-6 col-lg-4 col-xl">
+  <div class="col-12 col-sm-6 col-md-4 col-lg-4">
     <div class="carte-indicateur h-100">
       <div class="carte-indicateur-entete">
         <p class="carte-indicateur-libelle">Demi-tours / Hésitations</p>
@@ -1010,20 +1012,6 @@
   </div>
 </div>
 
-<!-- Carte indicateur Demi-tours / Hésitations -->
-<div class="row g-3 mb-4">
-  <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-    <div class="carte-indicateur h-100">
-      <div class="carte-indicateur-entete">
-        <p class="carte-indicateur-libelle">Demi-tours / Hésitations</p>
-        <span class="carte-indicateur-icone neutre" aria-hidden="true"><i class="bi bi-arrow-counterclockwise"></i></span>
-      </div>
-      <p class="carte-indicateur-valeur text-secondary">{{ rapport.demi_tours }}</p>
-      <p class="carte-indicateur-sous-titre text-muted small"><i class="bi bi-signpost"></i> Abandons devant le seuil</p>
-    </div>
-  </div>
-</div>
-
 <!-- Graphique comparatif heure par heure (00:00 à 23:00) -->
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
@@ -1056,7 +1044,6 @@
               <th scope="col" class="text-center text-primary">Entrées</th>
               <th scope="col" class="text-center text-success">Uniques (IA)</th>
               <th scope="col" class="text-center text-secondary">Personnel</th>
-              <th scope="col" class="text-center text-secondary">Demi-tours</th>
               <th scope="col" class="text-center">Statut</th>
             </tr>
           </thead>
@@ -1070,7 +1057,6 @@
               <td class="text-center fw-bold text-primary">{{ c.entrees }}</td>
               <td class="text-center fw-bold text-success">{{ c.uniques }}</td>
               <td class="text-center text-muted">{{ c.personnel }}</td>
-              <td class="text-center text-muted">{{ c.demi_tours }}</td>
               <td class="text-center">
                 {% if c.statut_en_ligne %}
                 <span class="badge bg-success-subtle text-success">En ligne</span>
@@ -1081,7 +1067,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="6" class="text-center py-4 text-muted">Aucune caméra configurée ou aucune donnée disponible.</td>
+              <td colspan="5" class="text-center py-4 text-muted">Aucune caméra configurée ou aucune donnée disponible.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -1105,7 +1091,6 @@
               <th scope="col" class="text-center text-primary">Entrées</th>
               <th scope="col" class="text-center text-danger">Sorties</th>
               <th scope="col" class="text-center text-success">Clients IA</th>
-              <th scope="col" class="text-center text-secondary">Demi-tours</th>
               <th scope="col" class="text-end">Part journalière</th>
             </tr>
           </thead>
@@ -1118,7 +1103,6 @@
               <td class="text-center fw-bold text-primary">{{ h.entrees }}</td>
               <td class="text-center fw-bold text-danger">{{ h.sorties }}</td>
               <td class="text-center fw-semibold text-success">{{ h.uniques }}</td>
-              <td class="text-center text-muted">{{ h.demi_tours }}</td>
               <td class="text-end text-muted small">
                 {% if rapport.entrees > 0 %}
                   {{ "%.1f" | format(h.entrees / rapport.entrees * 100) }}%
@@ -1129,7 +1113,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="6" class="text-center py-3 text-muted">Aucun passage enregistré pour ces dates.</td>
+              <td colspan="5" class="text-center py-3 text-muted">Aucun passage enregistré pour ces dates.</td>
             </tr>
             {% endfor %}
           </tbody>

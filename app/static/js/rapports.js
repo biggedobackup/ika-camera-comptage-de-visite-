@@ -172,7 +172,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var entreesH = heures.map(function (h) { return h.entrees; });
     var sortiesH = heures.map(function (h) { return h.sorties; });
     var uniquesH = heures.map(function (h) { return h.uniques; });
-    var demiToursH = heures.map(function (h) { return h.demi_tours || 0; });
 
     new Chart(ctxHoraire, {
       type: "line",
@@ -215,19 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
             pointRadius: 3,
             pointHoverRadius: 6,
             pointBackgroundColor: "#10b981"
-          },
-          {
-            label: "Demi-tours / Hésitations",
-            data: demiToursH,
-            borderColor: "#64748b",
-            backgroundColor: "rgba(100, 116, 139, 0.08)",
-            borderWidth: 2,
-            borderDash: [2, 2],
-            fill: false,
-            tension: 0.35,
-            pointRadius: 2.5,
-            pointHoverRadius: 5,
-            pointBackgroundColor: "#64748b"
           }
         ]
       },

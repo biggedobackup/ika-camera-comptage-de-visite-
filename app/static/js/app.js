@@ -424,9 +424,13 @@
 
           // Indicateurs généraux pour le dashboard ou la liste
           if (msg.indicateurs) {
-            animerChiffre(document.querySelector("[data-comptage-entrees]"), msg.indicateurs.entrees_jour);
-            animerChiffre(document.querySelector("[data-comptage-uniques]"), msg.indicateurs.visiteurs_uniques_jour);
-            animerChiffre(document.querySelector("[data-comptage-personnel]"), msg.indicateurs.personnel_exclu_jour);
+            var dashEl = document.querySelector("[data-page-dashboard]");
+            var estFiltreDashboard = dashEl && dashEl.getAttribute("data-est-filtre") === "1";
+            if (!estFiltreDashboard) {
+              animerChiffre(document.querySelector("[data-comptage-entrees]"), msg.indicateurs.entrees_jour);
+              animerChiffre(document.querySelector("[data-comptage-uniques]"), msg.indicateurs.visiteurs_uniques_jour);
+              animerChiffre(document.querySelector("[data-comptage-personnel]"), msg.indicateurs.personnel_exclu_jour);
+            }
             var activesEl = document.querySelector("[data-comptage-cameras-actives]");
             if (activesEl) {
               animerChiffre(activesEl, msg.indicateurs.cameras_en_ligne + " / " + msg.indicateurs.cameras_total);
@@ -438,6 +442,40 @@
             // Si on est sur la page rapport, rafraîchir le rapport complet en direct
             if (conteneurRapport) {
               demanderDonneesRapport();
+            }
+
+            // Gestion temps réel sur le tableau de bord avec respect strict des filtres
+            var dashEl = document.querySelector("[data-page-dashboard]");
+            if (dashEl) {
+              var dashCam = (dashEl.getAttribute("data-camera-sn") || "").trim();
+              var dashDebut = (dashEl.getAttribute("data-date-debut") || "").trim();
+              var dashFin = (dashEl.getAttribute("data-date-fin") || "").trim();
+              var dashAujourdhui = (dashEl.getAttribute("data-aujourdhui") || "").trim();
+
+              // Si le filtre temporel n'inclut pas aujourd'hui, on n'incrémente pas en temps réel
+              var inclutAujourdhui = !dashFin || !dashAujourdhui || (dashFin >= dashAujourdhui && (!dashDebut || dashDebut <= dashAujourdhui));
+              var cameraCorrespond = !dashCam || (msg.camera_sn && msg.camera_sn === dashCam);
+
+              if (inclutAujourdhui && cameraCorrespond) {
+                var elEntrees = dashEl.querySelector("[data-comptage-entrees]");
+                var elSorties = dashEl.querySelector("[data-comptage-sorties]");
+                var elTotal = dashEl.querySelector("[data-comptage-total]");
+
+                var entVal = parseInt(elEntrees ? elEntrees.textContent.replace(/\s/g, "") : "0", 10) || 0;
+                var sortVal = parseInt(elSorties ? elSorties.textContent.replace(/\s/g, "") : "0", 10) || 0;
+                var ajEnt = parseInt(msg.entrees, 10) || 0;
+                var ajSort = parseInt(msg.sorties, 10) || 0;
+
+                if (ajEnt > 0 && elEntrees) {
+                  animerChiffre(elEntrees, entVal + ajEnt);
+                }
+                if (ajSort > 0 && elSorties) {
+                  animerChiffre(elSorties, sortVal + ajSort);
+                }
+                if ((ajEnt > 0 || ajSort > 0) && elTotal) {
+                  animerChiffre(elTotal, entVal + ajEnt + sortVal + ajSort);
+                }
+              }
             }
 
             // Mettre à jour l'état de la caméra dans la liste
